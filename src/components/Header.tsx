@@ -1,7 +1,19 @@
 import { Button } from "@/components/ui/button";
-import { ShoppingCart, User, Search } from "lucide-react";
+import { ShoppingCart, User, Search, LogOut } from "lucide-react";
+import { useAuth } from '@/contexts/AuthContext';
+import { Link } from 'react-router-dom';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 export const Header = () => {
+  const { user, profile, signOut } = useAuth();
+
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container mx-auto px-4">
@@ -35,10 +47,59 @@ export const Header = () => {
               <span className="ml-2">Giỏ hàng</span>
             </Button>
             
-            <Button variant="outline" size="sm">
-              <User className="h-4 w-4" />
-              <span className="ml-2 hidden sm:inline">Đăng nhập</span>
-            </Button>
+            {user ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm">
+                    <User className="h-4 w-4" />
+                    <span className="ml-2 hidden sm:inline">
+                      {profile?.full_name || 'Tài khoản'}
+                    </span>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuLabel>
+                    <div className="flex flex-col space-y-1">
+                      <p className="text-sm font-medium leading-none">
+                        {profile?.full_name || 'Người dùng'}
+                      </p>
+                      <p className="text-xs leading-none text-muted-foreground">
+                        {user.email}
+                      </p>
+                    </div>
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem>
+                    Quản lý tài khoản
+                  </DropdownMenuItem>
+                  <DropdownMenuItem>
+                    Đơn hàng của tôi
+                  </DropdownMenuItem>
+                  {profile?.role === 'seller' && (
+                    <DropdownMenuItem>
+                      Dashboard bán hàng
+                    </DropdownMenuItem>
+                  )}
+                  {profile?.role === 'admin' && (
+                    <DropdownMenuItem>
+                      Quản trị hệ thống
+                    </DropdownMenuItem>
+                  )}
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={signOut} className="text-red-600">
+                    <LogOut className="h-4 w-4 mr-2" />
+                    Đăng xuất
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <Link to="/auth">
+                <Button variant="outline" size="sm">
+                  <User className="h-4 w-4" />
+                  <span className="ml-2 hidden sm:inline">Đăng nhập</span>
+                </Button>
+              </Link>
+            )}
             
             <Button variant="hero" size="sm">
               Đăng ký bán hàng

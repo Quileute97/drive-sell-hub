@@ -101,9 +101,11 @@ export const Header = () => {
               </Link>
             )}
             
-            <Button variant="hero" size="sm">
-              Đăng ký bán hàng
-            </Button>
+            <Link to="/seller-signup">
+              <Button variant="hero" size="sm">
+                Đăng ký bán hàng
+              </Button>
+            </Link>
           </div>
         </div>
       </div>

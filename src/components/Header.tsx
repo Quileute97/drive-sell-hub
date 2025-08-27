@@ -42,10 +42,12 @@ export const Header = () => {
 
           {/* Right Navigation */}
           <div className="flex items-center space-x-4">
-            <Button variant="ghost" size="sm" className="hidden sm:flex">
-              <ShoppingCart className="h-4 w-4" />
-              <span className="ml-2">Giỏ hàng</span>
-            </Button>
+            <Link to="/cart">
+              <Button variant="ghost" size="sm" className="hidden sm:flex">
+                <ShoppingCart className="h-4 w-4" />
+                <span className="ml-2">Giỏ hàng</span>
+              </Button>
+            </Link>
             
             {user ? (
               <DropdownMenu>

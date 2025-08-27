@@ -76,9 +76,11 @@ export const Header = () => {
                     Đơn hàng của tôi
                   </DropdownMenuItem>
                   {profile?.role === 'seller' && (
-                    <DropdownMenuItem>
-                      Dashboard bán hàng
-                    </DropdownMenuItem>
+                    <Link to="/seller-dashboard">
+                      <DropdownMenuItem>
+                        Dashboard bán hàng
+                      </DropdownMenuItem>
+                    </Link>
                   )}
                   {profile?.role === 'admin' && (
                     <DropdownMenuItem>

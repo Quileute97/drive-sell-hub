@@ -1,0 +1,1 @@
+UPDATE profiles SET role = 'seller' WHERE user_id = 'e14120f3-fc99-4f8b-9f52-fa227ed1bad4';

@@ -9,7 +9,8 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import AddProductForm from '@/components/AddProductForm';
 import { 
   Store, 
   Package, 
@@ -30,6 +31,8 @@ import {
 const SellerDashboard = () => {
   const { user, profile } = useAuth();
   const [activeTab, setActiveTab] = useState('shop');
+  const [showAddProductForm, setShowAddProductForm] = useState(false);
+  const queryClient = useQueryClient();
   
   // Fetch seller's products
   const { data: products = [] } = useQuery({
@@ -84,6 +87,10 @@ const SellerDashboard = () => {
   const totalRevenue = completedOrders.reduce((sum, order) => sum + Number(order.seller_amount), 0);
   const totalOrders = orders.length;
   const totalProducts = products.length;
+
+  const handleAddProductSuccess = () => {
+    queryClient.invalidateQueries({ queryKey: ['seller-products', user?.id] });
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -180,7 +187,7 @@ const SellerDashboard = () => {
           <TabsContent value="products" className="space-y-6">
             <div className="flex justify-between items-center">
               <h2 className="text-2xl font-semibold">Sản phẩm của tôi</h2>
-              <Button>
+              <Button onClick={() => setShowAddProductForm(true)}>
                 <Plus className="h-4 w-4 mr-2" />
                 Thêm sản phẩm mới
               </Button>
@@ -242,7 +249,7 @@ const SellerDashboard = () => {
                     <p className="text-muted-foreground mb-4">
                       Bắt đầu bán hàng bằng cách thêm sản phẩm đầu tiên của bạn
                     </p>
-                    <Button>
+                    <Button onClick={() => setShowAddProductForm(true)}>
                       <Plus className="h-4 w-4 mr-2" />
                       Thêm sản phẩm đầu tiên
                     </Button>
@@ -367,6 +374,13 @@ const SellerDashboard = () => {
       </main>
       
       <Footer />
+      
+      {showAddProductForm && (
+        <AddProductForm
+          onClose={() => setShowAddProductForm(false)}
+          onSuccess={handleAddProductSuccess}
+        />
+      )}
     </div>
   );
 };

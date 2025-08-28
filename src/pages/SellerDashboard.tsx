@@ -10,6 +10,14 @@ import { Textarea } from '@/components/ui/textarea';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useToast } from '@/components/ui/use-toast';
+import { 
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import AddProductForm from '@/components/AddProductForm';
 import { 
   Store, 
@@ -33,6 +41,16 @@ const SellerDashboard = () => {
   const [activeTab, setActiveTab] = useState('shop');
   const [showAddProductForm, setShowAddProductForm] = useState(false);
   const queryClient = useQueryClient();
+  const { toast } = useToast();
+  
+  // Form state for shop information
+  const [shopForm, setShopForm] = useState({
+    full_name: profile?.full_name || '',
+    email: profile?.email || '',
+    description: '',
+    phone: '',
+    address: ''
+  });
   
   // Fetch seller's products
   const { data: products = [] } = useQuery({
@@ -92,6 +110,58 @@ const SellerDashboard = () => {
     queryClient.invalidateQueries({ queryKey: ['seller-products', user?.id] });
   };
 
+  const handleUpdateProfile = async () => {
+    try {
+      if (!user?.id) return;
+      
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          full_name: shopForm.full_name
+        })
+        .eq('user_id', user.id);
+
+      if (error) throw error;
+      
+      toast({
+        title: "Thành công",
+        description: "Đã cập nhật thông tin cửa hàng",
+      });
+      
+      queryClient.invalidateQueries({ queryKey: ['profile'] });
+    } catch (error) {
+      toast({
+        title: "Lỗi",
+        description: "Không thể cập nhật thông tin cửa hàng",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleUpdateOrderStatus = async (orderId: string, newStatus: "pending" | "paid" | "delivered" | "cancelled" | "refunded") => {
+    try {
+      const { error } = await supabase
+        .from('orders')
+        .update({ status: newStatus })
+        .eq('id', orderId);
+
+      if (error) throw error;
+      
+      toast({
+        title: "Thành công",
+        description: "Đã cập nhật trạng thái đơn hàng",
+      });
+      
+      queryClient.invalidateQueries({ queryKey: ['seller-orders', user?.id] });
+    } catch (error) {
+      toast({
+        title: "Lỗi",
+        description: "Không thể cập nhật trạng thái đơn hàng",
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <Header />
@@ -143,7 +213,8 @@ const SellerDashboard = () => {
                     <Input
                       id="shop-name"
                       placeholder="Nhập tên cửa hàng"
-                      defaultValue={profile?.full_name}
+                      value={shopForm.full_name}
+                      onChange={(e) => setShopForm(prev => ({ ...prev, full_name: e.target.value }))}
                     />
                   </div>
                   <div>
@@ -152,7 +223,30 @@ const SellerDashboard = () => {
                       id="shop-email"
                       type="email"
                       placeholder="shop@example.com"
-                      defaultValue={profile?.email}
+                      value={shopForm.email}
+                      disabled
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">Email không thể thay đổi</p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="shop-phone">Số điện thoại</Label>
+                    <Input
+                      id="shop-phone"
+                      placeholder="Nhập số điện thoại"
+                      value={shopForm.phone}
+                      onChange={(e) => setShopForm(prev => ({ ...prev, phone: e.target.value }))}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="shop-address">Địa chỉ</Label>
+                    <Input
+                      id="shop-address"
+                      placeholder="Nhập địa chỉ"
+                      value={shopForm.address}
+                      onChange={(e) => setShopForm(prev => ({ ...prev, address: e.target.value }))}
                     />
                   </div>
                 </div>
@@ -163,19 +257,12 @@ const SellerDashboard = () => {
                     id="shop-description"
                     placeholder="Giới thiệu về cửa hàng và sản phẩm của bạn..."
                     rows={4}
+                    value={shopForm.description}
+                    onChange={(e) => setShopForm(prev => ({ ...prev, description: e.target.value }))}
                   />
                 </div>
 
-                <div>
-                  <Label htmlFor="shop-logo">Logo cửa hàng</Label>
-                  <Input
-                    id="shop-logo"
-                    type="file"
-                    accept="image/*"
-                  />
-                </div>
-
-                <Button className="w-full">
+                <Button className="w-full" onClick={handleUpdateProfile}>
                   <Edit2 className="h-4 w-4 mr-2" />
                   Cập nhật thông tin
                 </Button>
@@ -280,15 +367,26 @@ const SellerDashboard = () => {
                         </div>
                       </div>
                       
-                      <div className="text-right">
-                        <div className={`inline-flex px-2 py-1 rounded-full text-xs font-medium ${
-                          order.status === 'delivered' ? 'bg-green-100 text-green-800' :
-                          order.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                          'bg-gray-100 text-gray-800'
-                        }`}>
-                          {order.status}
+                      <div className="text-right space-y-2">
+                        <div>
+                          <Label className="text-xs">Trạng thái đơn hàng</Label>
+                          <Select
+                            value={order.status as string}
+                            onValueChange={(value) => handleUpdateOrderStatus(order.id, value as "pending" | "paid" | "delivered" | "cancelled" | "refunded")}
+                          >
+                            <SelectTrigger className="w-32">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="pending">Chờ xử lý</SelectItem>
+                              <SelectItem value="paid">Đã thanh toán</SelectItem>
+                              <SelectItem value="delivered">Đã giao</SelectItem>
+                              <SelectItem value="cancelled">Đã hủy</SelectItem>
+                              <SelectItem value="refunded">Đã hoàn tiền</SelectItem>
+                            </SelectContent>
+                          </Select>
                         </div>
-                        <p className="text-sm text-muted-foreground mt-1">
+                        <p className="text-sm text-muted-foreground">
                           {formatDate(order.created_at)}
                         </p>
                       </div>

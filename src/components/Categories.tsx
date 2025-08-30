@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { 
@@ -11,59 +12,111 @@ import {
   Presentation,
   ArrowRight
 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
-const categories = [
-  {
-    icon: BookOpen,
-    name: "Ebook & Tài liệu",
-    count: "15,234",
-    color: "from-blue-500 to-blue-600"
-  },
-  {
-    icon: GraduationCap,
-    name: "Khóa học Online",
-    count: "8,567",
-    color: "from-green-500 to-green-600"
-  },
-  {
-    icon: Palette,
-    name: "Template & Design",
-    count: "12,890",
-    color: "from-purple-500 to-purple-600"
-  },
-  {
-    icon: Code,
-    name: "Source Code",
-    count: "5,432",
-    color: "from-orange-500 to-orange-600"
-  },
-  {
-    icon: Music,
-    name: "Audio & Music",
-    count: "7,654",
-    color: "from-pink-500 to-pink-600"
-  },
-  {
-    icon: Camera,
-    name: "Video & Phim",
-    count: "9,123",
-    color: "from-indigo-500 to-indigo-600"
-  },
-  {
-    icon: FileText,
-    name: "Báo cáo & Luận văn",
-    count: "6,789",
-    color: "from-teal-500 to-teal-600"
-  },
-  {
-    icon: Presentation,
-    name: "Slide & Presentation",
-    count: "4,321",
-    color: "from-red-500 to-red-600"
-  }
+const iconMap: Record<string, any> = {
+  BookOpen,
+  GraduationCap,
+  Palette,
+  Code,
+  Music,
+  Camera,
+  FileText,
+  Presentation
+};
+
+const colorMap = [
+  "from-blue-500 to-blue-600",
+  "from-green-500 to-green-600", 
+  "from-purple-500 to-purple-600",
+  "from-orange-500 to-orange-600",
+  "from-pink-500 to-pink-600",
+  "from-indigo-500 to-indigo-600",
+  "from-teal-500 to-teal-600",
+  "from-red-500 to-red-600"
 ];
 
+type Category = {
+  id: string;
+  name: string;
+  icon: string;
+  product_count: number;
+  color: string;
+};
+
 export const Categories = () => {
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [loading, setLoading] = useState(true);
+  const { toast } = useToast();
+
+  useEffect(() => {
+    fetchCategories();
+  }, []);
+
+  const fetchCategories = async () => {
+    try {
+      const { data: categoriesData, error } = await supabase
+        .from('categories')
+        .select(`
+          id,
+          name,
+          icon,
+          products!inner(id)
+        `)
+        .eq('is_active', true)
+        .order('sort_order');
+
+      if (error) throw error;
+
+      const categoriesWithCount = categoriesData?.map((category: any, index: number) => ({
+        id: category.id,
+        name: category.name,
+        icon: category.icon || 'BookOpen',
+        product_count: category.products?.length || 0,
+        color: colorMap[index % colorMap.length]
+      })) || [];
+
+      setCategories(categoriesWithCount);
+    } catch (error) {
+      console.error('Error fetching categories:', error);
+      toast({
+        title: "Lỗi",
+        description: "Không thể tải danh sách danh mục",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <section className="py-20 gradient-subtle">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl lg:text-5xl font-bold mb-6">
+              Danh mục 
+              <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                {" "}sản phẩm
+              </span>
+            </h2>
+          </div>
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {[...Array(8)].map((_, index) => (
+              <Card key={index} className="animate-pulse">
+                <CardContent className="p-6">
+                  <div className="w-16 h-16 bg-gray-200 rounded-full mx-auto mb-4"></div>
+                  <div className="h-4 bg-gray-200 rounded mb-2"></div>
+                  <div className="h-4 bg-gray-200 rounded w-2/3 mx-auto"></div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </section>
+    );
+  }
   return (
     <section className="py-20 gradient-subtle">
       <div className="container mx-auto px-4">
@@ -80,38 +133,41 @@ export const Categories = () => {
         </div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-          {categories.map((category, index) => (
-            <Card 
-              key={index}
-              className="group cursor-pointer hover:shadow-xl transition-all duration-300 hover:-translate-y-2 border-2 hover:border-primary/20"
-              style={{
-                animationDelay: `${index * 100}ms`
-              }}
-            >
-              <CardContent className="p-6 text-center">
-                <div className={`mx-auto w-16 h-16 rounded-full bg-gradient-to-br ${category.color} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform shadow-lg`}>
-                  <category.icon className="h-8 w-8 text-white" />
-                </div>
-                
-                <h3 className="font-semibold text-lg mb-2 group-hover:text-primary transition-colors">
-                  {category.name}
-                </h3>
-                
-                <p className="text-sm text-muted-foreground mb-4">
-                  {category.count} sản phẩm
-                </p>
-                
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  className="group-hover:bg-primary group-hover:text-primary-foreground transition-all"
-                >
-                  Xem tất cả
-                  <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
-                </Button>
-              </CardContent>
-            </Card>
-          ))}
+          {categories.map((category, index) => {
+            const IconComponent = iconMap[category.icon] || BookOpen;
+            return (
+              <Card 
+                key={category.id}
+                className="group cursor-pointer hover:shadow-xl transition-all duration-300 hover:-translate-y-2 border-2 hover:border-primary/20"
+                style={{
+                  animationDelay: `${index * 100}ms`
+                }}
+              >
+                <CardContent className="p-6 text-center">
+                  <div className={`mx-auto w-16 h-16 rounded-full bg-gradient-to-br ${category.color} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform shadow-lg`}>
+                    <IconComponent className="h-8 w-8 text-white" />
+                  </div>
+                  
+                  <h3 className="font-semibold text-lg mb-2 group-hover:text-primary transition-colors">
+                    {category.name}
+                  </h3>
+                  
+                  <p className="text-sm text-muted-foreground mb-4">
+                    {category.product_count} sản phẩm
+                  </p>
+                  
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="group-hover:bg-primary group-hover:text-primary-foreground transition-all"
+                  >
+                    Xem tất cả
+                    <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                  </Button>
+                </CardContent>
+              </Card>
+            );
+          })}
         </div>
 
         <div className="text-center">

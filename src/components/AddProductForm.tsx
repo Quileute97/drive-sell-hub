@@ -55,7 +55,7 @@ const AddProductForm = ({ onClose, onSuccess }: AddProductFormProps) => {
     meta_title: '',
     meta_description: '',
     // Product specifications
-    status: 'draft' as 'draft' | 'active'
+    status: 'active' as 'draft' | 'active'
   });
 
   // Fetch categories
@@ -435,6 +435,22 @@ const AddProductForm = ({ onClose, onSuccess }: AddProductFormProps) => {
                         placeholder="VD: PDF, ZIP, RAR, PSD"
                       />
                     </div>
+                  </div>
+
+                  <div>
+                    <Label htmlFor="status">Trạng thái sản phẩm</Label>
+                    <Select value={formData.status} onValueChange={(value) => handleInputChange('status', value)}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Chọn trạng thái" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="active">Công khai (hiển thị ngay)</SelectItem>
+                        <SelectItem value="draft">Bản nháp (ẩn)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      Chọn "Công khai" để sản phẩm hiển thị ngay trên trang chủ
+                    </p>
                   </div>
 
                   <div>

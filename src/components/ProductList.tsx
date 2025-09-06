@@ -1,5 +1,6 @@
 
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -32,6 +33,7 @@ interface Product {
 export const ProductList = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
   const { toast } = useToast();
 
   useEffect(() => {
@@ -135,7 +137,11 @@ export const ProductList = () => {
         ) : (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {products.map((product) => (
-              <Card key={product.id} className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+              <Card 
+                key={product.id} 
+                className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-1 cursor-pointer"
+                onClick={() => navigate(`/product/${product.id}`)}
+              >
                 <div className="relative overflow-hidden rounded-t-lg">
                   <img
                     src={product.thumbnail_url || "/placeholder.svg"}
@@ -203,7 +209,14 @@ export const ProductList = () => {
                 </CardContent>
 
                 <CardFooter className="p-4 pt-0">
-                  <Button className="w-full" size="sm">
+                  <Button 
+                    className="w-full" 
+                    size="sm"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      // Handle buy action here
+                    }}
+                  >
                     Mua ngay
                   </Button>
                 </CardFooter>

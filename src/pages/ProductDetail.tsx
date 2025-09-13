@@ -3,11 +3,12 @@ import { useParams, useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Star, Download, Eye, ArrowLeft, Share2 } from "lucide-react";
+import { Star, Download, Eye, ArrowLeft, Share2, ShoppingCart } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
+import { useCart } from "@/hooks/useCart";
 
 interface ProductDetail {
   id: string;
@@ -43,6 +44,7 @@ export default function ProductDetail() {
   const [loading, setLoading] = useState(true);
   const [selectedImage, setSelectedImage] = useState(0);
   const { toast } = useToast();
+  const { addToCart } = useCart();
 
   useEffect(() => {
     if (id) {
@@ -302,9 +304,19 @@ export default function ProductDetail() {
 
             {/* Action Buttons */}
             <div className="space-y-3">
-              <Button size="lg" className="w-full">
-                Mua ngay - {formatPrice(product.price)}
-              </Button>
+              <div className="grid grid-cols-2 gap-3">
+                <Button 
+                  size="lg" 
+                  variant="outline"
+                  onClick={() => addToCart(product.id)}
+                >
+                  <ShoppingCart className="h-4 w-4 mr-2" />
+                  Thêm vào giỏ
+                </Button>
+                <Button size="lg">
+                  Mua ngay - {formatPrice(product.price)}
+                </Button>
+              </div>
               <Button variant="outline" size="lg" className="w-full">
                 <Share2 className="h-4 w-4 mr-2" />
                 Chia sẻ

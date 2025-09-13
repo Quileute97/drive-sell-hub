@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { ShoppingCart, User, Search, LogOut } from "lucide-react";
 import { useAuth } from '@/contexts/AuthContext';
 import { Link } from 'react-router-dom';
+import { useCart } from '@/hooks/useCart';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,6 +14,7 @@ import {
 
 export const Header = () => {
   const { user, profile, signOut } = useAuth();
+  const { totalItems } = useCart();
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -43,9 +45,14 @@ export const Header = () => {
           {/* Right Navigation */}
           <div className="flex items-center space-x-4">
             <Link to="/cart">
-              <Button variant="ghost" size="sm" className="hidden sm:flex">
+              <Button variant="ghost" size="sm" className="hidden sm:flex relative">
                 <ShoppingCart className="h-4 w-4" />
                 <span className="ml-2">Giỏ hàng</span>
+                {totalItems > 0 && (
+                  <span className="absolute -top-2 -right-2 h-5 w-5 rounded-full bg-primary text-primary-foreground text-xs flex items-center justify-center">
+                    {totalItems}
+                  </span>
+                )}
               </Button>
             </Link>
             

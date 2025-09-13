@@ -1,70 +1,22 @@
-import { useState } from 'react';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { Trash2, Plus, Minus, ShoppingBag } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
-
-interface CartItem {
-  id: string;
-  name: string;
-  price: number;
-  quantity: number;
-  seller: string;
-  image?: string;
-  category: string;
-}
+import { Trash2, Plus, Minus, ShoppingBag, Loader2 } from 'lucide-react';
+import { useCart } from '@/hooks/useCart';
+import { Link } from 'react-router-dom';
 
 export const Cart = () => {
-  const { toast } = useToast();
-  
-  // Mock cart data - in real app, this would come from context/state management
-  const [cartItems, setCartItems] = useState<CartItem[]>([
-    {
-      id: '1',
-      name: 'Khóa học lập trình React',
-      price: 899000,
-      quantity: 1,
-      seller: 'TechMaster',
-      category: 'Khóa học',
-    },
-    {
-      id: '2', 
-      name: 'Template website bán hàng',
-      price: 1299000,
-      quantity: 2,
-      seller: 'WebDesign Pro',
-      category: 'Template',
-    },
-    {
-      id: '3',
-      name: 'Plugin WordPress SEO',
-      price: 599000,
-      quantity: 1,
-      seller: 'SEO Expert',
-      category: 'Plugin',
-    }
-  ]);
-
-  const updateQuantity = (id: string, newQuantity: number) => {
-    if (newQuantity < 1) return;
-    setCartItems(items => 
-      items.map(item => 
-        item.id === id ? { ...item, quantity: newQuantity } : item
-      )
-    );
-  };
-
-  const removeItem = (id: string) => {
-    setCartItems(items => items.filter(item => item.id !== id));
-    toast({
-      title: "Đã xóa sản phẩm",
-      description: "Sản phẩm đã được xóa khỏi giỏ hàng",
-    });
-  };
+  const { 
+    cartItems, 
+    loading, 
+    updateQuantity, 
+    removeItem, 
+    totalAmount, 
+    totalItems 
+  } = useCart();
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('vi-VN', {
@@ -73,14 +25,8 @@ export const Cart = () => {
     }).format(price);
   };
 
-  const totalAmount = cartItems.reduce((total, item) => total + (item.price * item.quantity), 0);
-  const totalItems = cartItems.reduce((total, item) => total + item.quantity, 0);
-
   const handleCheckout = () => {
-    toast({
-      title: "Thanh toán",
-      description: "Chức năng thanh toán sẽ được phát triển soon!",
-    });
+    console.log('Chức năng thanh toán sẽ được phát triển!');
   };
 
   return (
@@ -108,6 +54,11 @@ export const Cart = () => {
               </Button>
             </CardContent>
           </Card>
+        ) : loading ? (
+          <div className="flex items-center justify-center py-12">
+            <Loader2 className="h-8 w-8 animate-spin" />
+            <span className="ml-2">Đang tải giỏ hàng...</span>
+          </div>
         ) : (
           <div className="grid lg:grid-cols-3 gap-8">
             {/* Cart Items */}
@@ -116,17 +67,27 @@ export const Cart = () => {
                 <Card key={item.id}>
                   <CardContent className="p-6">
                     <div className="flex items-center space-x-4">
-                      <div className="w-20 h-20 bg-muted rounded-lg flex items-center justify-center">
-                        <ShoppingBag className="h-8 w-8 text-muted-foreground" />
+                      <div className="w-20 h-20 bg-muted rounded-lg flex items-center justify-center overflow-hidden">
+                        {item.product.thumbnail_url ? (
+                          <img 
+                            src={item.product.thumbnail_url} 
+                            alt={item.product.title}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <ShoppingBag className="h-8 w-8 text-muted-foreground" />
+                        )}
                       </div>
                       
                       <div className="flex-1">
                         <div className="flex items-start justify-between">
                           <div>
-                            <h3 className="font-semibold text-lg">{item.name}</h3>
-                            <p className="text-sm text-muted-foreground">Người bán: {item.seller}</p>
+                            <h3 className="font-semibold text-lg">{item.product.title}</h3>
+                            <p className="text-sm text-muted-foreground">
+                              Người bán: {item.product.profiles?.full_name || 'Không xác định'}
+                            </p>
                             <Badge variant="secondary" className="mt-1">
-                              {item.category}
+                              {item.product.category?.name || 'Không phân loại'}
                             </Badge>
                           </div>
                           <Button
@@ -163,10 +124,10 @@ export const Cart = () => {
                           
                           <div className="text-right">
                             <p className="text-lg font-semibold">
-                              {formatPrice(item.price * item.quantity)}
+                              {formatPrice(item.product.price * item.quantity)}
                             </p>
                             <p className="text-sm text-muted-foreground">
-                              {formatPrice(item.price)} x {item.quantity}
+                              {formatPrice(item.product.price)} x {item.quantity}
                             </p>
                           </div>
                         </div>

@@ -4,9 +4,10 @@ import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Star, Download, Eye } from "lucide-react";
+import { Star, Download, Eye, ShoppingCart } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useCart } from "@/hooks/useCart";
 
 interface Product {
   id: string;
@@ -37,6 +38,7 @@ export const ProductList = () => {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { addToCart } = useCart();
 
   useEffect(() => {
     fetchProducts();
@@ -226,10 +228,11 @@ export const ProductList = () => {
                     size="sm"
                     onClick={(e) => {
                       e.stopPropagation();
-                      // Handle buy action here
+                      addToCart(product.id);
                     }}
                   >
-                    Mua ngay
+                    <ShoppingCart className="h-4 w-4 mr-2" />
+                    Thêm vào giỏ
                   </Button>
                 </CardFooter>
               </Card>

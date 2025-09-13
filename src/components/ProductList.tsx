@@ -22,6 +22,8 @@ interface Product {
   rating_count: number;
   seller_id: string;
   category_id: string;
+  file_format: string;
+  file_size: string;
   profiles: {
     full_name: string;
   };
@@ -156,10 +158,15 @@ export const ProductList = () => {
                 </div>
 
                 <CardContent className="p-4">
-                  <div className="mb-2">
+                  <div className="mb-2 flex items-center gap-2">
                     <Badge variant="secondary" className="text-xs">
                       {product.categories?.name}
                     </Badge>
+                    {product.file_format && (
+                      <Badge variant="outline" className="text-xs font-medium bg-primary/10 text-primary border-primary/20">
+                        {product.file_format.toUpperCase()}
+                      </Badge>
+                    )}
                   </div>
                   
                   <h3 className="font-semibold text-lg mb-2 line-clamp-2">
@@ -188,6 +195,11 @@ export const ProductList = () => {
                       <Eye className="h-3 w-3 mr-1" />
                       {product.view_count}
                     </div>
+                    {product.file_size && (
+                      <div className="flex items-center">
+                        📄 {product.file_size}
+                      </div>
+                    )}
                   </div>
 
                   <div className="flex items-center justify-between mb-3">

@@ -182,17 +182,59 @@ export default function ProductDetail() {
         </Button>
 
         <div className="grid lg:grid-cols-2 gap-8">
-          {/* Product Images */}
+          {/* Product Images and Preview */}
           <div className="space-y-4">
+            {/* Tab Navigation */}
+            <div className="flex border-b">
+              <button
+                onClick={() => setSelectedImage(0)}
+                className={`px-4 py-2 font-medium ${
+                  selectedImage !== -1 
+                    ? 'border-b-2 border-primary text-primary' 
+                    : 'text-muted-foreground'
+                }`}
+              >
+                Hình ảnh
+              </button>
+              {product.google_drive_link && (
+                <button
+                  onClick={() => setSelectedImage(-1)}
+                  className={`px-4 py-2 font-medium ${
+                    selectedImage === -1 
+                      ? 'border-b-2 border-primary text-primary' 
+                      : 'text-muted-foreground'
+                  }`}
+                >
+                  Xem trước
+                </button>
+              )}
+            </div>
+
+            {/* Content Area */}
             <div className="aspect-square rounded-lg overflow-hidden">
-              <img
-                src={productImages[selectedImage] || "/placeholder.svg"}
-                alt={product.title}
-                className="w-full h-full object-cover"
-              />
+              {selectedImage === -1 && product.google_drive_link ? (
+                // Google Drive Preview
+                <div className="w-full h-full">
+                  <iframe
+                    src={getGoogleDrivePreviewUrl(product.google_drive_link)}
+                    className="w-full h-full"
+                    frameBorder="0"
+                    title="Document Preview"
+                    allowFullScreen
+                  />
+                </div>
+              ) : (
+                // Product Image
+                <img
+                  src={productImages[selectedImage >= 0 ? selectedImage : 0] || "/placeholder.svg"}
+                  alt={product.title}
+                  className="w-full h-full object-cover"
+                />
+              )}
             </div>
             
-            {productImages.length > 1 && (
+            {/* Thumbnail Navigation for Images */}
+            {selectedImage !== -1 && productImages.length > 1 && (
               <div className="grid grid-cols-4 gap-2">
                 {productImages.map((image, index) => (
                   <button
@@ -212,6 +254,13 @@ export default function ProductDetail() {
                   </button>
                 ))}
               </div>
+            )}
+
+            {/* Preview Note */}
+            {selectedImage === -1 && (
+              <p className="text-sm text-muted-foreground text-center">
+                Đây là bản xem trước tài liệu. Mua sản phẩm để tải về phiên bản đầy đủ.
+              </p>
             )}
           </div>
 
@@ -346,29 +395,6 @@ export default function ProductDetail() {
             </CardContent>
           </Card>
         </div>
-
-        {/* Google Drive Preview */}
-        {product.google_drive_link && (
-          <div className="mt-8">
-            <Card>
-              <CardContent className="p-6">
-                <h2 className="text-2xl font-bold mb-4">Xem trước tài liệu</h2>
-                <div className="w-full h-96 rounded-lg overflow-hidden border">
-                  <iframe
-                    src={getGoogleDrivePreviewUrl(product.google_drive_link)}
-                    className="w-full h-full"
-                    frameBorder="0"
-                    title="Document Preview"
-                    allowFullScreen
-                  />
-                </div>
-                <p className="text-sm text-muted-foreground mt-2">
-                  Đây là bản xem trước tài liệu. Mua sản phẩm để tải về phiên bản đầy đủ.
-                </p>
-              </CardContent>
-            </Card>
-          </div>
-        )}
       </div>
 
       <Footer />

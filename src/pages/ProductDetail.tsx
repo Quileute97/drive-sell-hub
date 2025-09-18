@@ -28,6 +28,7 @@ interface ProductDetail {
   tags: string[];
   seller_id: string;
   category_id: string;
+  google_drive_link: string;
   profiles: {
     full_name: string;
     avatar_url: string;
@@ -114,6 +115,15 @@ export default function ProductDetail() {
       );
     }
     return stars;
+  };
+
+  const getGoogleDrivePreviewUrl = (driveUrl: string) => {
+    // Convert Google Drive view URL to preview URL for embedding
+    const fileIdMatch = driveUrl.match(/\/file\/d\/([a-zA-Z0-9-_]+)/);
+    if (fileIdMatch) {
+      return `https://drive.google.com/file/d/${fileIdMatch[1]}/preview`;
+    }
+    return driveUrl;
   };
 
   if (loading) {
@@ -336,6 +346,29 @@ export default function ProductDetail() {
             </CardContent>
           </Card>
         </div>
+
+        {/* Google Drive Preview */}
+        {product.google_drive_link && (
+          <div className="mt-8">
+            <Card>
+              <CardContent className="p-6">
+                <h2 className="text-2xl font-bold mb-4">Xem trước tài liệu</h2>
+                <div className="w-full h-96 rounded-lg overflow-hidden border">
+                  <iframe
+                    src={getGoogleDrivePreviewUrl(product.google_drive_link)}
+                    className="w-full h-full"
+                    frameBorder="0"
+                    title="Document Preview"
+                    allowFullScreen
+                  />
+                </div>
+                <p className="text-sm text-muted-foreground mt-2">
+                  Đây là bản xem trước tài liệu. Mua sản phẩm để tải về phiên bản đầy đủ.
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+        )}
       </div>
 
       <Footer />

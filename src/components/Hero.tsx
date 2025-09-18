@@ -1,8 +1,52 @@
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Play, Download, Users } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 import heroImage from "@/assets/hero-digital-marketplace.jpg";
 
 export const Hero = () => {
+  const [stats, setStats] = useState({
+    sellers: 0,
+    products: 0,
+    downloads: 0
+  });
+
+  useEffect(() => {
+    fetchStats();
+  }, []);
+
+  const fetchStats = async () => {
+    try {
+      // Get sellers count
+      const { count: sellersCount } = await supabase
+        .from('profiles')
+        .select('*', { count: 'exact', head: true })
+        .eq('role', 'seller');
+
+      // Get products count
+      const { count: productsCount } = await supabase
+        .from('products')
+        .select('*', { count: 'exact', head: true })
+        .eq('status', 'active');
+
+      // Get total downloads from orders
+      const { data: downloadsData } = await supabase
+        .from('orders')
+        .select('download_count')
+        .eq('status', 'paid');
+
+      const totalDownloads = downloadsData?.reduce((sum, order) => sum + (order.download_count || 0), 0) || 0;
+
+      setStats({
+        sellers: sellersCount || 0,
+        products: productsCount || 0,
+        downloads: totalDownloads
+      });
+    } catch (error) {
+      console.error('Error fetching stats:', error);
+    }
+  };
+
   return (
     <section className="relative overflow-hidden gradient-subtle py-20 lg:py-32">
       <div className="container mx-auto px-4">
@@ -37,15 +81,15 @@ export const Hero = () => {
             {/* Stats */}
             <div className="grid grid-cols-3 gap-8 text-center lg:text-left">
               <div>
-                <div className="text-2xl font-bold text-primary">10K+</div>
+                <div className="text-2xl font-bold text-primary">{stats.sellers.toLocaleString()}+</div>
                 <div className="text-sm text-muted-foreground">Người bán</div>
               </div>
               <div>
-                <div className="text-2xl font-bold text-primary">50K+</div>
+                <div className="text-2xl font-bold text-primary">{stats.products.toLocaleString()}+</div>
                 <div className="text-sm text-muted-foreground">Sản phẩm</div>
               </div>
               <div>
-                <div className="text-2xl font-bold text-primary">1M+</div>
+                <div className="text-2xl font-bold text-primary">{stats.downloads.toLocaleString()}+</div>
                 <div className="text-sm text-muted-foreground">Lượt tải</div>
               </div>
             </div>

@@ -1,7 +1,30 @@
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Facebook, Twitter, Instagram, Youtube, Mail, Phone, MapPin } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Footer = () => {
+  const [categories, setCategories] = useState<{id: string, name: string}[]>([]);
+
+  useEffect(() => {
+    fetchCategories();
+  }, []);
+
+  const fetchCategories = async () => {
+    try {
+      const { data } = await supabase
+        .from('categories')
+        .select('id, name')
+        .eq('is_active', true)
+        .order('sort_order')
+        .limit(5);
+      
+      setCategories(data || []);
+    } catch (error) {
+      console.error('Error fetching categories:', error);
+    }
+  };
+
   return (
     <footer className="bg-card border-t">
       <div className="container mx-auto px-4 py-16">
@@ -52,11 +75,20 @@ export const Footer = () => {
           <div className="space-y-4">
             <h3 className="text-lg font-semibold">Danh mục</h3>
             <ul className="space-y-2">
-              <li><a href="#" className="text-muted-foreground hover:text-primary transition-colors">Ebook & Tài liệu</a></li>
-              <li><a href="#" className="text-muted-foreground hover:text-primary transition-colors">Khóa học Online</a></li>
-              <li><a href="#" className="text-muted-foreground hover:text-primary transition-colors">Template & Design</a></li>
-              <li><a href="#" className="text-muted-foreground hover:text-primary transition-colors">Source Code</a></li>
-              <li><a href="#" className="text-muted-foreground hover:text-primary transition-colors">Audio & Video</a></li>
+              {categories.map((category) => (
+                <li key={category.id}>
+                  <a href="#" className="text-muted-foreground hover:text-primary transition-colors">
+                    {category.name}
+                  </a>
+                </li>
+              ))}
+              {categories.length === 0 && (
+                <>
+                  <li><a href="#" className="text-muted-foreground hover:text-primary transition-colors">Ebook & Tài liệu</a></li>
+                  <li><a href="#" className="text-muted-foreground hover:text-primary transition-colors">Khóa học Online</a></li>
+                  <li><a href="#" className="text-muted-foreground hover:text-primary transition-colors">Template & Design</a></li>
+                </>
+              )}
             </ul>
           </div>
 

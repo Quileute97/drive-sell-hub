@@ -45,11 +45,17 @@ function generatePayOSSignature(data: any): string {
 }
 
 serve(async (req) => {
+  console.log("=== PayOS Create Payment Function Called ===");
+  console.log("Request method:", req.method);
+  console.log("Request headers:", req.headers);
+  
   if (req.method === "OPTIONS") {
+    console.log("Handling CORS preflight");
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
+    console.log("Creating Supabase client...");
     const supabaseClient = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
@@ -58,19 +64,33 @@ serve(async (req) => {
 
     // Authenticate user
     const authHeader = req.headers.get("Authorization")!;
+    console.log("Auth header present:", !!authHeader);
+    
+    if (!authHeader) {
+      throw new Error("No authorization header provided");
+    }
+    
     const token = authHeader.replace("Bearer ", "");
+    console.log("Token extracted, length:", token.length);
+    
     const { data: userData } = await supabaseClient.auth.getUser(token);
     const user = userData.user;
+    console.log("User authenticated:", !!user, user?.email);
 
     if (!user) {
       throw new Error("User not authenticated");
     }
 
-    const { cartItems } = await req.json();
+    const requestBody = await req.json();
+    console.log("Request body received:", requestBody);
+    
+    const { cartItems } = requestBody;
 
     if (!cartItems || cartItems.length === 0) {
       throw new Error("Cart is empty");
     }
+
+    console.log("Cart items count:", cartItems.length);
 
     // Get user profile
     const { data: profile } = await supabaseClient

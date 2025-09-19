@@ -32,7 +32,11 @@ export const Cart = () => {
   };
 
   const handleCheckout = async () => {
+    console.log('=== Checkout button clicked ===');
+    console.log('Cart items:', cartItems);
+    
     if (cartItems.length === 0) {
+      console.log('Cart is empty');
       toast({
         title: "Giỏ hàng trống",
         description: "Vui lòng thêm sản phẩm vào giỏ hàng trước khi thanh toán.",
@@ -41,33 +45,57 @@ export const Cart = () => {
       return;
     }
 
+    // Check if user is authenticated
+    const { data: { session }, error: authError } = await supabase.auth.getSession();
+    console.log('User session:', session);
+    console.log('Auth error:', authError);
+
+    if (!session?.user) {
+      console.log('User not authenticated');
+      toast({
+        title: "Vui lòng đăng nhập",
+        description: "Bạn cần đăng nhập để thực hiện thanh toán.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsProcessingPayment(true);
     
     try {
+      console.log('Calling payos-create-payment function...');
+      
       const { data, error } = await supabase.functions.invoke('payos-create-payment', {
         body: {
           cartItems: cartItems
         }
       });
 
+      console.log('Function response data:', data);
+      console.log('Function response error:', error);
+
       if (error) {
+        console.error('Supabase function error:', error);
         throw error;
       }
 
-      if (data.success && data.paymentUrl) {
+      if (data?.success && data?.paymentUrl) {
+        console.log('Payment URL received:', data.paymentUrl);
+        
         // Clear cart locally since it's cleared on server
         refetch();
         
         // Redirect to PayOS payment page
         window.location.href = data.paymentUrl;
       } else {
+        console.error('Invalid response from payment function:', data);
         throw new Error('Failed to create payment');
       }
     } catch (error) {
       console.error('Payment error:', error);
       toast({
         title: "Lỗi thanh toán",
-        description: "Không thể tạo thanh toán. Vui lòng thử lại sau.",
+        description: `Không thể tạo thanh toán: ${error.message || 'Vui lòng thử lại sau.'}`,
         variant: "destructive",
       });
     } finally {

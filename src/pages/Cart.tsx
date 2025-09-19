@@ -7,6 +7,9 @@ import { Separator } from '@/components/ui/separator';
 import { Trash2, Plus, Minus, ShoppingBag, Loader2 } from 'lucide-react';
 import { useCart } from '@/hooks/useCart';
 import { Link } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
+import { useState } from 'react';
 
 export const Cart = () => {
   const { 
@@ -15,8 +18,11 @@ export const Cart = () => {
     updateQuantity, 
     removeItem, 
     totalAmount, 
-    totalItems 
+    totalItems,
+    refetch
   } = useCart();
+  const { toast } = useToast();
+  const [isProcessingPayment, setIsProcessingPayment] = useState(false);
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('vi-VN', {
@@ -25,8 +31,48 @@ export const Cart = () => {
     }).format(price);
   };
 
-  const handleCheckout = () => {
-    console.log('Chức năng thanh toán sẽ được phát triển!');
+  const handleCheckout = async () => {
+    if (cartItems.length === 0) {
+      toast({
+        title: "Giỏ hàng trống",
+        description: "Vui lòng thêm sản phẩm vào giỏ hàng trước khi thanh toán.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsProcessingPayment(true);
+    
+    try {
+      const { data, error } = await supabase.functions.invoke('payos-create-payment', {
+        body: {
+          cartItems: cartItems
+        }
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      if (data.success && data.paymentUrl) {
+        // Clear cart locally since it's cleared on server
+        refetch();
+        
+        // Redirect to PayOS payment page
+        window.location.href = data.paymentUrl;
+      } else {
+        throw new Error('Failed to create payment');
+      }
+    } catch (error) {
+      console.error('Payment error:', error);
+      toast({
+        title: "Lỗi thanh toán",
+        description: "Không thể tạo thanh toán. Vui lòng thử lại sau.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsProcessingPayment(false);
+    }
   };
 
   return (
@@ -164,8 +210,16 @@ export const Cart = () => {
                     className="w-full" 
                     size="lg"
                     onClick={handleCheckout}
+                    disabled={isProcessingPayment || cartItems.length === 0}
                   >
-                    Thanh toán ngay
+                    {isProcessingPayment ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Đang xử lý...
+                      </>
+                    ) : (
+                      'Thanh toán với PayOS'
+                    )}
                   </Button>
                 </CardFooter>
               </Card>

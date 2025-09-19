@@ -10,6 +10,8 @@ import SellerAuth from "./pages/SellerAuth";
 import SellerDashboard from "./pages/SellerDashboard";
 import ProductDetail from "./pages/ProductDetail";
 import { Cart } from "./pages/Cart";
+import { PaymentSuccess } from "./pages/PaymentSuccess";
+import { PaymentCancel } from "./pages/PaymentCancel";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -28,6 +30,8 @@ const App = () => (
             <Route path="/seller-dashboard" element={<SellerDashboard />} />
             <Route path="/product/:id" element={<ProductDetail />} />
             <Route path="/cart" element={<Cart />} />
+            <Route path="/payment/success" element={<PaymentSuccess />} />
+            <Route path="/payment/cancel" element={<PaymentCancel />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

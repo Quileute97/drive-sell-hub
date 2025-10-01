@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
+import { RelatedProducts } from "@/components/RelatedProducts";
 import { useCart } from "@/hooks/useCart";
 
 interface ProductDetail {
@@ -348,6 +349,12 @@ export default function ProductDetail() {
             </CardContent>
           </Card>
         </div>
+
+        {/* Related Products */}
+        <RelatedProducts 
+          categoryId={product.category_id} 
+          currentProductId={product.id} 
+        />
       </div>
 
       <Footer />

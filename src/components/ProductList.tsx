@@ -8,6 +8,7 @@ import { Star, Download, Eye, ShoppingCart } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useCart } from "@/hooks/useCart";
+import { getGoogleDriveThumbnail } from "@/lib/utils";
 
 interface Product {
   id: string;
@@ -17,6 +18,7 @@ interface Product {
   price: number;
   original_price: number;
   thumbnail_url: string;
+  google_drive_link: string;
   download_count: number;
   view_count: number;
   rating_average: number;
@@ -148,7 +150,7 @@ export const ProductList = () => {
               >
                 <div className="relative overflow-hidden rounded-t-lg">
                   <img
-                    src="/placeholder.svg"
+                    src={getGoogleDriveThumbnail(product.google_drive_link, 400)}
                     alt={product.title}
                     className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
                   />

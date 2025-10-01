@@ -43,7 +43,6 @@ export default function ProductDetail() {
   const navigate = useNavigate();
   const [product, setProduct] = useState<ProductDetail | null>(null);
   const [loading, setLoading] = useState(true);
-  const [selectedImage, setSelectedImage] = useState(0);
   const { toast } = useToast();
   const { addToCart } = useCart();
 
@@ -163,10 +162,6 @@ export default function ProductDetail() {
     );
   }
 
-  const productImages = product.images && product.images.length > 0 
-    ? product.images 
-    : [product.thumbnail_url];
-
   return (
     <div className="min-h-screen">
       <Header />
@@ -182,37 +177,18 @@ export default function ProductDetail() {
         </Button>
 
         <div className="grid lg:grid-cols-2 gap-8">
-          {/* Product Images and Preview */}
+          {/* Product Preview */}
           <div className="space-y-4">
-            {/* Tab Navigation */}
+            {/* Preview Header */}
             <div className="flex border-b">
-              <button
-                onClick={() => setSelectedImage(0)}
-                className={`px-4 py-2 font-medium ${
-                  selectedImage !== -1 
-                    ? 'border-b-2 border-primary text-primary' 
-                    : 'text-muted-foreground'
-                }`}
-              >
-                Hình ảnh
-              </button>
-              {product.google_drive_link && (
-                <button
-                  onClick={() => setSelectedImage(-1)}
-                  className={`px-4 py-2 font-medium ${
-                    selectedImage === -1 
-                      ? 'border-b-2 border-primary text-primary' 
-                      : 'text-muted-foreground'
-                  }`}
-                >
-                  Xem trước
-                </button>
-              )}
+              <div className="px-4 py-2 font-medium border-b-2 border-primary text-primary">
+                Xem trước
+              </div>
             </div>
 
-            {/* Content Area */}
+            {/* Preview Content */}
             <div className="aspect-square rounded-lg overflow-hidden">
-              {selectedImage === -1 && product.google_drive_link ? (
+              {product.google_drive_link ? (
                 // Google Drive Preview
                 <div className="w-full h-full">
                   <iframe
@@ -224,40 +200,17 @@ export default function ProductDetail() {
                   />
                 </div>
               ) : (
-                // Product Image
+                // Fallback to thumbnail if no preview
                 <img
-                  src={productImages[selectedImage >= 0 ? selectedImage : 0] || "/placeholder.svg"}
+                  src={product.thumbnail_url || "/placeholder.svg"}
                   alt={product.title}
                   className="w-full h-full object-cover"
                 />
               )}
             </div>
-            
-            {/* Thumbnail Navigation for Images */}
-            {selectedImage !== -1 && productImages.length > 1 && (
-              <div className="grid grid-cols-4 gap-2">
-                {productImages.map((image, index) => (
-                  <button
-                    key={index}
-                    onClick={() => setSelectedImage(index)}
-                    className={`aspect-square rounded-lg overflow-hidden border-2 ${
-                      selectedImage === index 
-                        ? 'border-primary' 
-                        : 'border-transparent'
-                    }`}
-                  >
-                    <img
-                      src={image || "/placeholder.svg"}
-                      alt={`${product.title} ${index + 1}`}
-                      className="w-full h-full object-cover"
-                    />
-                  </button>
-                ))}
-              </div>
-            )}
 
             {/* Preview Note */}
-            {selectedImage === -1 && (
+            {product.google_drive_link && (
               <p className="text-sm text-muted-foreground text-center">
                 Đây là bản xem trước tài liệu. Mua sản phẩm để tải về phiên bản đầy đủ.
               </p>

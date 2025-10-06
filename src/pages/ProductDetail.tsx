@@ -167,7 +167,7 @@ export default function ProductDetail() {
     <div className="min-h-screen">
       <Header />
       
-      <div className="container mx-auto px-4 py-8">
+      <main className="container mx-auto px-4 py-8">
         <Button
           variant="ghost"
           onClick={() => navigate('/')}
@@ -193,19 +193,20 @@ export default function ProductDetail() {
                 // Google Drive Preview
                 <div className="w-full h-full">
                   <iframe
-                    src={getGoogleDrivePreviewUrl(product.google_drive_link)}
-                    className="w-full h-full"
-                    frameBorder="0"
-                    title="Document Preview"
-                    allowFullScreen
-                  />
+                src={getGoogleDrivePreviewUrl(product.google_drive_link)}
+                className="w-full h-full"
+                frameBorder="0"
+                title={`Xem trước ${product.title}`}
+                allowFullScreen
+              />
                 </div>
               ) : (
                 // Fallback to thumbnail if no preview
                 <img
                   src={product.thumbnail_url || "/placeholder.svg"}
-                  alt={product.title}
+                  alt={`${product.title} - ${product.categories?.name} - Sản phẩm digital`}
                   className="w-full h-full object-cover"
+                  loading="lazy"
                 />
               )}
             </div>
@@ -339,7 +340,7 @@ export default function ProductDetail() {
         </div>
 
         {/* Description */}
-        <div className="mt-12">
+        <article className="mt-12">
           <Card>
             <CardContent className="p-6">
               <h2 className="text-2xl font-bold mb-4">Mô tả sản phẩm</h2>
@@ -348,16 +349,43 @@ export default function ProductDetail() {
               </div>
             </CardContent>
           </Card>
-        </div>
+        </article>
 
         {/* Related Products */}
         <RelatedProducts 
           categoryId={product.category_id} 
           currentProductId={product.id} 
         />
-      </div>
+      </main>
 
       <Footer />
+      
+      {/* Product Structured Data */}
+      <script type="application/ld+json" dangerouslySetInnerHTML={{
+        __html: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "Product",
+          "name": product.title,
+          "description": product.description,
+          "image": product.thumbnail_url,
+          "offers": {
+            "@type": "Offer",
+            "price": product.price,
+            "priceCurrency": "VND",
+            "availability": "https://schema.org/InStock",
+            "seller": {
+              "@type": "Organization",
+              "name": product.profiles?.full_name || "Salemylink.com"
+            }
+          },
+          "aggregateRating": product.rating_count > 0 ? {
+            "@type": "AggregateRating",
+            "ratingValue": product.rating_average,
+            "reviewCount": product.rating_count
+          } : undefined,
+          "category": product.categories?.name
+        })
+      }} />
     </div>
   );
 }

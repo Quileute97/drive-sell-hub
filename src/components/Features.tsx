@@ -63,10 +63,10 @@ const features = [
 
 export const Features = () => {
   return (
-    <section className="py-20 bg-background">
+    <section className="py-20 bg-background" aria-labelledby="features-heading">
       <div className="container mx-auto px-4">
-        <div className="text-center mb-16 animate-fade-in-up">
-          <h2 className="text-3xl lg:text-5xl font-bold mb-6">
+        <header className="text-center mb-16 animate-fade-in-up">
+          <h2 id="features-heading" className="text-3xl lg:text-5xl font-bold mb-6">
             Tại sao chọn 
             <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
               {" "}Salemylink?
@@ -75,7 +75,7 @@ export const Features = () => {
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
             Nền tảng toàn diện giúp bạn kinh doanh sản phẩm digital hiệu quả nhất
           </p>
-        </div>
+        </header>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
           {features.map((feature, index) => (

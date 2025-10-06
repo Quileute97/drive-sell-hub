@@ -48,7 +48,7 @@ export const Hero = () => {
   };
 
   return (
-    <section className="relative overflow-hidden gradient-subtle py-20 lg:py-32">
+    <section className="relative overflow-hidden gradient-subtle py-20 lg:py-32" aria-label="Hero section">
       <div className="container mx-auto px-4">
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           {/* Left Content */}
@@ -100,8 +100,11 @@ export const Hero = () => {
             <div className="relative rounded-2xl overflow-hidden shadow-elegant">
               <img 
                 src={heroImage} 
-                alt="Digital marketplace illustration"
+                alt="Nền tảng thương mại điện tử bán sản phẩm digital - Kết nối người mua và người bán tài liệu, ebook, khóa học online qua Google Drive"
                 className="w-full h-auto"
+                loading="eager"
+                width="800"
+                height="600"
               />
               <div className="absolute inset-0 bg-gradient-to-tr from-primary/20 to-transparent"></div>
             </div>

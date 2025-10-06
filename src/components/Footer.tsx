@@ -26,7 +26,7 @@ export const Footer = () => {
   };
 
   return (
-    <footer className="bg-card border-t">
+    <footer className="bg-card border-t" role="contentinfo">
       <div className="container mx-auto px-4 py-16">
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
           {/* Company Info */}
@@ -43,25 +43,25 @@ export const Footer = () => {
               Nền tảng thương mại điện tử hàng đầu cho sản phẩm digital tại Việt Nam.
               Kết nối người mua và người bán một cách an toàn, nhanh chóng.
             </p>
-            <div className="flex space-x-4">
-              <Button variant="ghost" size="icon">
+            <nav className="flex space-x-4" aria-label="Social media links">
+              <Button variant="ghost" size="icon" aria-label="Facebook">
                 <Facebook className="h-5 w-5" />
               </Button>
-              <Button variant="ghost" size="icon">
+              <Button variant="ghost" size="icon" aria-label="Twitter">
                 <Twitter className="h-5 w-5" />
               </Button>
-              <Button variant="ghost" size="icon">
+              <Button variant="ghost" size="icon" aria-label="Instagram">
                 <Instagram className="h-5 w-5" />
               </Button>
-              <Button variant="ghost" size="icon">
+              <Button variant="ghost" size="icon" aria-label="Youtube">
                 <Youtube className="h-5 w-5" />
               </Button>
-            </div>
+            </nav>
           </div>
 
           {/* Quick Links */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold">Liên kết nhanh</h3>
+          <nav className="space-y-4" aria-labelledby="footer-links-heading">
+            <h3 id="footer-links-heading" className="text-lg font-semibold">Liên kết nhanh</h3>
             <ul className="space-y-2">
               <li><a href="#" className="text-muted-foreground hover:text-primary transition-colors">Về chúng tôi</a></li>
               <li><a href="#" className="text-muted-foreground hover:text-primary transition-colors">Cách thức hoạt động</a></li>
@@ -69,11 +69,11 @@ export const Footer = () => {
               <li><a href="#" className="text-muted-foreground hover:text-primary transition-colors">Chính sách bảo mật</a></li>
               <li><a href="#" className="text-muted-foreground hover:text-primary transition-colors">Điều khoản sử dụng</a></li>
             </ul>
-          </div>
+          </nav>
 
           {/* Categories */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold">Danh mục</h3>
+          <nav className="space-y-4" aria-labelledby="footer-categories-heading">
+            <h3 id="footer-categories-heading" className="text-lg font-semibold">Danh mục</h3>
             <ul className="space-y-2">
               {categories.map((category) => (
                 <li key={category.id}>
@@ -90,10 +90,10 @@ export const Footer = () => {
                 </>
               )}
             </ul>
-          </div>
+          </nav>
 
           {/* Contact */}
-          <div className="space-y-4">
+          <address className="space-y-4 not-italic">
             <h3 className="text-lg font-semibold">Liên hệ</h3>
             <div className="space-y-3">
               <div className="flex items-center space-x-3">
@@ -109,7 +109,7 @@ export const Footer = () => {
                 <span className="text-muted-foreground">Hà Nội, Việt Nam</span>
               </div>
             </div>
-          </div>
+          </address>
         </div>
 
         <div className="border-t mt-12 pt-8 text-center text-muted-foreground">

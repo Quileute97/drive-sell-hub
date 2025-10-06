@@ -118,10 +118,10 @@ export const Categories = () => {
     );
   }
   return (
-    <section className="py-20 gradient-subtle">
+    <section className="py-20 gradient-subtle" aria-labelledby="categories-heading">
       <div className="container mx-auto px-4">
-        <div className="text-center mb-16 animate-fade-in-up">
-          <h2 className="text-3xl lg:text-5xl font-bold mb-6">
+        <header className="text-center mb-16 animate-fade-in-up">
+          <h2 id="categories-heading" className="text-3xl lg:text-5xl font-bold mb-6">
             Danh mục 
             <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
               {" "}sản phẩm
@@ -130,7 +130,7 @@ export const Categories = () => {
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
             Khám phá hàng nghìn sản phẩm digital chất lượng cao trong mọi lĩnh vực
           </p>
-        </div>
+        </header>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
           {categories.map((category, index) => {

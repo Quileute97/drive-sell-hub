@@ -63,11 +63,11 @@ export const Footer = () => {
           <nav className="space-y-4" aria-labelledby="footer-links-heading">
             <h3 id="footer-links-heading" className="text-lg font-semibold">Liên kết nhanh</h3>
             <ul className="space-y-2">
-              <li><a href="#" className="text-muted-foreground hover:text-primary transition-colors">Về chúng tôi</a></li>
-              <li><a href="#" className="text-muted-foreground hover:text-primary transition-colors">Cách thức hoạt động</a></li>
-              <li><a href="#" className="text-muted-foreground hover:text-primary transition-colors">Hướng dẫn bán hàng</a></li>
-              <li><a href="#" className="text-muted-foreground hover:text-primary transition-colors">Chính sách bảo mật</a></li>
-              <li><a href="#" className="text-muted-foreground hover:text-primary transition-colors">Điều khoản sử dụng</a></li>
+              <li><a href="/about" className="text-muted-foreground hover:text-primary transition-colors">Về chúng tôi</a></li>
+              <li><a href="/how-it-works" className="text-muted-foreground hover:text-primary transition-colors">Cách thức hoạt động</a></li>
+              <li><a href="/seller-guide" className="text-muted-foreground hover:text-primary transition-colors">Hướng dẫn bán hàng</a></li>
+              <li><a href="/privacy-policy" className="text-muted-foreground hover:text-primary transition-colors">Chính sách bảo mật</a></li>
+              <li><a href="/terms-of-service" className="text-muted-foreground hover:text-primary transition-colors">Điều khoản sử dụng</a></li>
             </ul>
           </nav>
 
@@ -77,7 +77,7 @@ export const Footer = () => {
             <ul className="space-y-2">
               {categories.map((category) => (
                 <li key={category.id}>
-                  <a href="#" className="text-muted-foreground hover:text-primary transition-colors">
+                  <a href={`/category/${category.id}`} className="text-muted-foreground hover:text-primary transition-colors">
                     {category.name}
                   </a>
                 </li>

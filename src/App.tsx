@@ -9,6 +9,12 @@ import Auth from "./pages/Auth";
 import SellerAuth from "./pages/SellerAuth";
 import SellerDashboard from "./pages/SellerDashboard";
 import ProductDetail from "./pages/ProductDetail";
+import Category from "./pages/Category";
+import About from "./pages/About";
+import HowItWorks from "./pages/HowItWorks";
+import SellerGuide from "./pages/SellerGuide";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import TermsOfService from "./pages/TermsOfService";
 import { Cart } from "./pages/Cart";
 import { PaymentSuccess } from "./pages/PaymentSuccess";
 import { PaymentCancel } from "./pages/PaymentCancel";
@@ -29,6 +35,12 @@ const App = () => (
             <Route path="/seller-signup" element={<SellerAuth />} />
             <Route path="/seller-dashboard" element={<SellerDashboard />} />
             <Route path="/product/:id" element={<ProductDetail />} />
+            <Route path="/category/:slug" element={<Category />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/how-it-works" element={<HowItWorks />} />
+            <Route path="/seller-guide" element={<SellerGuide />} />
+            <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+            <Route path="/terms-of-service" element={<TermsOfService />} />
             <Route path="/cart" element={<Cart />} />
             <Route path="/payment/success" element={<PaymentSuccess />} />
             <Route path="/payment/cancel" element={<PaymentCancel />} />

@@ -106,12 +106,14 @@ export const ProductList = () => {
           </div>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {Array.from({ length: 8 }).map((_, index) => (
-              <Card key={index} className="animate-pulse">
-                <div className="h-48 bg-gray-200 rounded-t-lg"></div>
-                <CardContent className="p-4">
-                  <div className="h-4 bg-gray-200 rounded mb-2"></div>
-                  <div className="h-3 bg-gray-200 rounded mb-4"></div>
-                  <div className="h-6 bg-gray-200 rounded mb-2"></div>
+              <Card key={index} className="animate-pulse flex flex-col h-full">
+                <div className="aspect-[4/3] bg-muted rounded-t-lg"></div>
+                <CardContent className="p-4 flex-grow">
+                  <div className="h-4 bg-muted rounded mb-2 w-1/2"></div>
+                  <div className="h-5 bg-muted rounded mb-2"></div>
+                  <div className="h-4 bg-muted rounded mb-4 w-3/4"></div>
+                  <div className="h-4 bg-muted rounded mb-2 w-1/3"></div>
+                  <div className="h-6 bg-muted rounded w-1/2"></div>
                 </CardContent>
               </Card>
             ))}
@@ -145,24 +147,25 @@ export const ProductList = () => {
             {products.map((product) => (
               <Card 
                 key={product.id} 
-                className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-1 cursor-pointer"
+                className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-1 cursor-pointer flex flex-col h-full"
                 onClick={() => navigate(`/product/${product.id}`)}
               >
-                <div className="relative overflow-hidden rounded-t-lg">
+                <div className="relative overflow-hidden rounded-t-lg aspect-[4/3] bg-muted">
                   <img
-                    src={getGoogleDriveThumbnail(product.google_drive_link, 400)}
-                    alt={product.title}
-                    className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
+                    src={getGoogleDriveThumbnail(product.google_drive_link, 600)}
+                    alt={`Hình ảnh sản phẩm ${product.title}`}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    loading="lazy"
                   />
                   {product.original_price > product.price && (
-                    <Badge className="absolute top-2 left-2 bg-red-500">
-                      Giảm {Math.round(((product.original_price - product.price) / product.original_price) * 100)}%
+                    <Badge className="absolute top-3 left-3 bg-destructive text-destructive-foreground shadow-md">
+                      -{Math.round(((product.original_price - product.price) / product.original_price) * 100)}%
                     </Badge>
                   )}
                 </div>
 
-                <CardContent className="p-4">
-                  <div className="mb-2 flex items-center gap-2">
+                <CardContent className="p-4 flex-grow flex flex-col">
+                  <div className="mb-2 flex items-center gap-2 flex-wrap">
                     <Badge variant="secondary" className="text-xs">
                       {product.categories?.name}
                     </Badge>
@@ -173,15 +176,15 @@ export const ProductList = () => {
                     )}
                   </div>
                   
-                  <h3 className="font-semibold text-lg mb-2 line-clamp-2">
+                  <h3 className="font-semibold text-lg mb-2 line-clamp-2 min-h-[3.5rem]">
                     {product.title}
                   </h3>
                   
-                  <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
+                  <p className="text-sm text-muted-foreground mb-3 line-clamp-2 min-h-[2.5rem]">
                     {product.short_description || product.description}
                   </p>
 
-                  <div className="flex items-center mb-2">
+                  <div className="flex items-center mb-3">
                     <div className="flex items-center mr-2">
                       {renderStars(product.rating_average || 0)}
                     </div>
@@ -190,25 +193,25 @@ export const ProductList = () => {
                     </span>
                   </div>
 
-                  <div className="flex items-center text-xs text-muted-foreground mb-3 space-x-4">
+                  <div className="flex items-center text-xs text-muted-foreground mb-3 gap-3 flex-wrap">
                     <div className="flex items-center">
-                      <Download className="h-3 w-3 mr-1" />
-                      {product.download_count}
+                      <Download className="h-3.5 w-3.5 mr-1" />
+                      <span>{product.download_count}</span>
                     </div>
                     <div className="flex items-center">
-                      <Eye className="h-3 w-3 mr-1" />
-                      {product.view_count}
+                      <Eye className="h-3.5 w-3.5 mr-1" />
+                      <span>{product.view_count}</span>
                     </div>
                     {product.file_size && (
                       <div className="flex items-center">
-                        📄 {product.file_size}
+                        <span>📄 {product.file_size}</span>
                       </div>
                     )}
                   </div>
 
-                  <div className="flex items-center justify-between mb-3">
-                    <div>
-                      <div className="text-lg font-bold text-primary">
+                  <div className="mt-auto">
+                    <div className="flex items-baseline gap-2 mb-2">
+                      <div className="text-xl font-bold text-primary">
                         {formatPrice(product.price)}
                       </div>
                       {product.original_price > product.price && (
@@ -217,10 +220,10 @@ export const ProductList = () => {
                         </div>
                       )}
                     </div>
-                  </div>
 
-                  <div className="text-xs text-muted-foreground mb-3">
-                    Bởi: {product.profiles?.full_name || 'Ẩn danh'}
+                    <div className="text-xs text-muted-foreground">
+                      Bởi: {product.profiles?.full_name || 'Ẩn danh'}
+                    </div>
                   </div>
                 </CardContent>
 

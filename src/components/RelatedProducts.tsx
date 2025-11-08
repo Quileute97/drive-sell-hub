@@ -111,24 +111,25 @@ export const RelatedProducts = ({ categoryId, currentProductId }: RelatedProduct
         {products.map((product) => (
           <Card 
             key={product.id} 
-            className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-1 cursor-pointer"
+            className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-1 cursor-pointer flex flex-col h-full"
             onClick={() => navigate(`/product/${product.id}`)}
           >
-            <div className="relative overflow-hidden rounded-t-lg">
+            <div className="relative overflow-hidden rounded-t-lg aspect-[4/3] bg-muted">
               <img
-                src={getGoogleDriveThumbnail(product.google_drive_link, 400)}
-                alt={product.title}
-                className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
+                src={getGoogleDriveThumbnail(product.google_drive_link, 600)}
+                alt={`Hình ảnh sản phẩm ${product.title}`}
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                loading="lazy"
               />
               {product.original_price > product.price && (
-                <Badge className="absolute top-2 left-2 bg-red-500">
-                  Giảm {Math.round(((product.original_price - product.price) / product.original_price) * 100)}%
+                <Badge className="absolute top-3 left-3 bg-destructive text-destructive-foreground shadow-md">
+                  -{Math.round(((product.original_price - product.price) / product.original_price) * 100)}%
                 </Badge>
               )}
             </div>
 
-            <CardContent className="p-4">
-              <div className="mb-2 flex items-center gap-2">
+            <CardContent className="p-4 flex-grow flex flex-col">
+              <div className="mb-2 flex items-center gap-2 flex-wrap">
                 <Badge variant="secondary" className="text-xs">
                   {product.categories?.name}
                 </Badge>
@@ -139,15 +140,15 @@ export const RelatedProducts = ({ categoryId, currentProductId }: RelatedProduct
                 )}
               </div>
               
-              <h3 className="font-semibold text-base mb-2 line-clamp-2">
+              <h3 className="font-semibold text-base mb-2 line-clamp-2 min-h-[3rem]">
                 {product.title}
               </h3>
               
-              <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
+              <p className="text-sm text-muted-foreground mb-3 line-clamp-2 min-h-[2.5rem]">
                 {product.short_description}
               </p>
 
-              <div className="flex items-center mb-2">
+              <div className="flex items-center mb-3">
                 <div className="flex items-center mr-2">
                   {renderStars(product.rating_average || 0)}
                 </div>
@@ -156,20 +157,25 @@ export const RelatedProducts = ({ categoryId, currentProductId }: RelatedProduct
                 </span>
               </div>
 
-              <div className="flex items-center text-xs text-muted-foreground mb-3 space-x-3">
+              <div className="flex items-center text-xs text-muted-foreground mb-3 gap-3 flex-wrap">
                 <div className="flex items-center">
-                  <Download className="h-3 w-3 mr-1" />
-                  {product.download_count}
+                  <Download className="h-3.5 w-3.5 mr-1" />
+                  <span>{product.download_count}</span>
                 </div>
                 <div className="flex items-center">
-                  <Eye className="h-3 w-3 mr-1" />
-                  {product.view_count}
+                  <Eye className="h-3.5 w-3.5 mr-1" />
+                  <span>{product.view_count}</span>
                 </div>
+                {product.file_size && (
+                  <div className="flex items-center">
+                    <span>📄 {product.file_size}</span>
+                  </div>
+                )}
               </div>
 
-              <div className="flex items-center justify-between mb-2">
-                <div>
-                  <div className="text-base font-bold text-primary">
+              <div className="mt-auto">
+                <div className="flex items-baseline gap-2 mb-2">
+                  <div className="text-lg font-bold text-primary">
                     {formatPrice(product.price)}
                   </div>
                   {product.original_price > product.price && (

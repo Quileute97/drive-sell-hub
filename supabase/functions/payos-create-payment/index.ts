@@ -103,29 +103,50 @@ serve(async (req) => {
       throw new Error("User profile not found");
     }
 
+    // Fetch full product details including seller_id
+    const productIds = cartItems.map((item: any) => item.product_id);
+    const { data: products, error: productsError } = await supabaseClient
+      .from("products")
+      .select("id, seller_id, title, price")
+      .in("id", productIds);
+
+    if (productsError || !products) {
+      console.error("Error fetching products:", productsError);
+      throw new Error("Failed to fetch product details");
+    }
+
+    // Create a map for quick product lookup
+    const productMap = new Map(products.map((p: any) => [p.id, p]));
+
     // Calculate totals
     let totalAmount = 0;
     const orderItems = [];
     
     for (const item of cartItems) {
-      const productTotal = item.product.price * item.quantity;
+      const product = productMap.get(item.product_id);
+      if (!product) {
+        throw new Error(`Product not found: ${item.product_id}`);
+      }
+      
+      const productTotal = product.price * item.quantity;
       totalAmount += productTotal;
       
       orderItems.push({
-        name: item.product.title,
+        name: product.title.substring(0, 50), // Limit name length
         quantity: item.quantity,
-        price: item.product.price
+        price: product.price
       });
     }
 
     // Generate unique order code
     const orderCode = Date.now();
+    const shortOrderCode = orderCode.toString().slice(-8); // Last 8 digits
     
-    // Create PayOS payment request
+    // Create PayOS payment request with short description (max 25 chars)
     const paymentData: PayOSPaymentRequest = {
       orderCode,
       amount: totalAmount,
-      description: `Thanh toán đơn hàng #${orderCode}`,
+      description: `DH${shortOrderCode}`, // "DH" + 8 digits = 10 chars
       buyerName: profile.full_name || user.email || "",
       buyerEmail: user.email || "",
       items: orderItems,
@@ -169,13 +190,19 @@ serve(async (req) => {
     
     console.log("PayOS Response:", payosResult);
 
+    // Get first product's seller_id (assuming single seller per order for now)
+    const firstProduct = productMap.get(cartItems[0].product_id);
+    if (!firstProduct || !firstProduct.seller_id) {
+      throw new Error("Product seller information not found");
+    }
+
     // Create order in database
     const { data: order, error: orderError } = await supabaseClient
       .from("orders")
       .insert({
         buyer_id: user.id,
-        seller_id: cartItems[0].product.seller_id, // Assuming single seller for now
-        product_id: cartItems[0].product.id, // For now, single product
+        seller_id: firstProduct.seller_id,
+        product_id: cartItems[0].product_id, // For now, single product
         quantity: cartItems.reduce((sum: number, item: any) => sum + item.quantity, 0),
         unit_price: totalAmount / cartItems.reduce((sum: number, item: any) => sum + item.quantity, 0),
         total_amount: totalAmount,

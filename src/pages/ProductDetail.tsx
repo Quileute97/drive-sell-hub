@@ -9,6 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { RelatedProducts } from "@/components/RelatedProducts";
+import { ProductReviews } from "@/components/ProductReviews";
 import { useCart } from "@/hooks/useCart";
 
 interface ProductDetail {
@@ -402,6 +403,9 @@ export default function ProductDetail() {
             </CardContent>
           </Card>
         </article>
+
+        {/* Product Reviews */}
+        <ProductReviews productId={product.id} />
 
         {/* Related Products */}
         <RelatedProducts 

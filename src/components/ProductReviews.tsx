@@ -1,0 +1,334 @@
+import { useState, useEffect } from "react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { Star } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+
+interface Review {
+  id: string;
+  rating: number;
+  comment: string;
+  is_verified_purchase: boolean;
+  created_at: string;
+  profiles: {
+    full_name: string;
+    avatar_url: string;
+  };
+}
+
+interface ProductReviewsProps {
+  productId: string;
+}
+
+export const ProductReviews = ({ productId }: ProductReviewsProps) => {
+  const [reviews, setReviews] = useState<Review[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [userHasPurchased, setUserHasPurchased] = useState(false);
+  const [userReview, setUserReview] = useState<Review | null>(null);
+  const [showReviewForm, setShowReviewForm] = useState(false);
+  const [rating, setRating] = useState(5);
+  const [comment, setComment] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const { toast } = useToast();
+
+  useEffect(() => {
+    fetchReviews();
+    checkUserPurchase();
+  }, [productId]);
+
+  const fetchReviews = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('reviews')
+        .select(`
+          id,
+          rating,
+          comment,
+          is_verified_purchase,
+          created_at,
+          profiles!reviews_buyer_id_fkey(full_name, avatar_url)
+        `)
+        .eq('product_id', productId)
+        .eq('is_approved', true)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setReviews(data || []);
+    } catch (error) {
+      console.error('Error fetching reviews:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const checkUserPurchase = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      // Check if user has purchased this product
+      const { data: orders } = await supabase
+        .from('orders')
+        .select('id')
+        .eq('product_id', productId)
+        .eq('buyer_id', user.id)
+        .eq('status', 'paid')
+        .limit(1);
+
+      setUserHasPurchased((orders && orders.length > 0) || false);
+
+      // Check if user already has a review
+      const { data: existingReview } = await supabase
+        .from('reviews')
+        .select(`
+          id,
+          rating,
+          comment,
+          is_verified_purchase,
+          created_at,
+          profiles!reviews_buyer_id_fkey(full_name, avatar_url)
+        `)
+        .eq('product_id', productId)
+        .eq('buyer_id', user.id)
+        .maybeSingle();
+
+      if (existingReview) {
+        setUserReview(existingReview);
+      }
+    } catch (error) {
+      console.error('Error checking purchase:', error);
+    }
+  };
+
+  const handleSubmitReview = async () => {
+    try {
+      setSubmitting(true);
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        toast({
+          title: "Lỗi",
+          description: "Bạn cần đăng nhập để đánh giá",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (!userHasPurchased) {
+        toast({
+          title: "Lỗi",
+          description: "Bạn cần mua sản phẩm này để đánh giá",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const reviewData = {
+        product_id: productId,
+        buyer_id: user.id,
+        rating,
+        comment,
+        is_verified_purchase: true,
+      };
+
+      if (userReview) {
+        // Update existing review
+        const { error } = await supabase
+          .from('reviews')
+          .update(reviewData)
+          .eq('id', userReview.id);
+
+        if (error) throw error;
+
+        toast({
+          title: "Thành công",
+          description: "Đã cập nhật đánh giá của bạn",
+        });
+      } else {
+        // Create new review
+        const { error } = await supabase
+          .from('reviews')
+          .insert(reviewData);
+
+        if (error) throw error;
+
+        toast({
+          title: "Thành công",
+          description: "Đánh giá của bạn đang chờ duyệt",
+        });
+      }
+
+      setShowReviewForm(false);
+      setComment("");
+      setRating(5);
+      fetchReviews();
+      checkUserPurchase();
+    } catch (error) {
+      console.error('Error submitting review:', error);
+      toast({
+        title: "Lỗi",
+        description: "Không thể gửi đánh giá",
+        variant: "destructive",
+      });
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const renderStars = (currentRating: number, interactive: boolean = false) => {
+    return (
+      <div className="flex gap-1">
+        {[1, 2, 3, 4, 5].map((star) => (
+          <Star
+            key={star}
+            className={`h-5 w-5 ${
+              star <= currentRating
+                ? 'fill-yellow-400 text-yellow-400'
+                : 'text-gray-300'
+            } ${interactive ? 'cursor-pointer hover:scale-110 transition-transform' : ''}`}
+            onClick={() => interactive && setRating(star)}
+          />
+        ))}
+      </div>
+    );
+  };
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('vi-VN', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+  };
+
+  if (loading) {
+    return (
+      <Card className="mt-8">
+        <CardContent className="p-6">
+          <div className="animate-pulse space-y-4">
+            <div className="h-6 bg-muted rounded w-1/4"></div>
+            <div className="space-y-3">
+              <div className="h-20 bg-muted rounded"></div>
+              <div className="h-20 bg-muted rounded"></div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <Card className="mt-8">
+      <CardContent className="p-6">
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-2xl font-bold">
+            Đánh giá sản phẩm ({reviews.length})
+          </h2>
+          {userHasPurchased && !showReviewForm && (
+            <Button onClick={() => setShowReviewForm(true)}>
+              {userReview ? 'Chỉnh sửa đánh giá' : 'Viết đánh giá'}
+            </Button>
+          )}
+        </div>
+
+        {/* Review Form */}
+        {showReviewForm && (
+          <Card className="mb-6 border-primary">
+            <CardContent className="p-4">
+              <h3 className="font-semibold mb-3">
+                {userReview ? 'Chỉnh sửa đánh giá của bạn' : 'Viết đánh giá'}
+              </h3>
+              
+              <div className="space-y-4">
+                <div>
+                  <label className="text-sm font-medium mb-2 block">
+                    Đánh giá của bạn
+                  </label>
+                  {renderStars(rating, true)}
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium mb-2 block">
+                    Nhận xét
+                  </label>
+                  <Textarea
+                    value={comment}
+                    onChange={(e) => setComment(e.target.value)}
+                    placeholder="Chia sẻ trải nghiệm của bạn về sản phẩm này..."
+                    rows={4}
+                  />
+                </div>
+
+                <div className="flex gap-2">
+                  <Button
+                    onClick={handleSubmitReview}
+                    disabled={submitting || !comment.trim()}
+                  >
+                    {submitting ? 'Đang gửi...' : 'Gửi đánh giá'}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setShowReviewForm(false);
+                      setComment(userReview?.comment || "");
+                      setRating(userReview?.rating || 5);
+                    }}
+                  >
+                    Hủy
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Reviews List */}
+        <div className="space-y-4">
+          {reviews.length === 0 ? (
+            <div className="text-center py-8 text-muted-foreground">
+              <p>Chưa có đánh giá nào cho sản phẩm này</p>
+              {userHasPurchased && (
+                <p className="mt-2">Hãy là người đầu tiên đánh giá!</p>
+              )}
+            </div>
+          ) : (
+            reviews.map((review) => (
+              <Card key={review.id} className="border">
+                <CardContent className="p-4">
+                  <div className="flex items-start gap-4">
+                    <img
+                      src={review.profiles?.avatar_url || "/placeholder.svg"}
+                      alt={review.profiles?.full_name}
+                      className="w-12 h-12 rounded-full object-cover"
+                    />
+                    <div className="flex-1">
+                      <div className="flex items-center justify-between mb-2">
+                        <div>
+                          <div className="font-medium">
+                            {review.profiles?.full_name || 'Người dùng'}
+                            {review.is_verified_purchase && (
+                              <span className="ml-2 text-xs text-green-600 bg-green-50 px-2 py-0.5 rounded">
+                                ✓ Đã mua hàng
+                              </span>
+                            )}
+                          </div>
+                          <div className="text-sm text-muted-foreground">
+                            {formatDate(review.created_at)}
+                          </div>
+                        </div>
+                        {renderStars(review.rating)}
+                      </div>
+                      <p className="text-sm whitespace-pre-wrap">{review.comment}</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))
+          )}
+        </div>
+      </CardContent>
+    </Card>
+  );
+};

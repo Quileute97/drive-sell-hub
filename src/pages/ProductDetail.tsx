@@ -126,6 +126,50 @@ export default function ProductDetail() {
     return driveUrl;
   };
 
+  const handleBuyNow = () => {
+    if (product) {
+      addToCart(product.id);
+      navigate('/cart');
+    }
+  };
+
+  const handleShare = async () => {
+    const url = window.location.href;
+    
+    // Try using Web Share API first (mobile friendly)
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: product?.title,
+          text: product?.short_description || product?.description,
+          url: url,
+        });
+        toast({
+          title: "Thành công",
+          description: "Đã chia sẻ sản phẩm",
+        });
+      } catch (error) {
+        // User cancelled or error occurred
+        console.log('Share cancelled or error:', error);
+      }
+    } else {
+      // Fallback to copying link
+      try {
+        await navigator.clipboard.writeText(url);
+        toast({
+          title: "Đã sao chép",
+          description: "Link sản phẩm đã được sao chép vào clipboard",
+        });
+      } catch (error) {
+        toast({
+          title: "Lỗi",
+          description: "Không thể sao chép link",
+          variant: "destructive",
+        });
+      }
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen">
@@ -327,11 +371,19 @@ export default function ProductDetail() {
                   <ShoppingCart className="h-4 w-4 mr-2" />
                   Thêm vào giỏ
                 </Button>
-                <Button size="lg">
+                <Button 
+                  size="lg"
+                  onClick={handleBuyNow}
+                >
                   Mua ngay - {formatPrice(product.price)}
                 </Button>
               </div>
-              <Button variant="outline" size="lg" className="w-full">
+              <Button 
+                variant="outline" 
+                size="lg" 
+                className="w-full"
+                onClick={handleShare}
+              >
                 <Share2 className="h-4 w-4 mr-2" />
                 Chia sẻ
               </Button>

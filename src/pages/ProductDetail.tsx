@@ -233,17 +233,27 @@ export default function ProductDetail() {
             </div>
 
             {/* Preview Content */}
-            <div className="aspect-square rounded-lg overflow-hidden">
+            <div className="aspect-square rounded-lg overflow-hidden relative">
               {product.google_drive_link ? (
-                // Google Drive Preview
-                <div className="w-full h-full">
+                // Google Drive Preview with overlay to prevent opening in new tab
+                <div className="w-full h-full relative">
                   <iframe
-                src={getGoogleDrivePreviewUrl(product.google_drive_link)}
-                className="w-full h-full"
-                frameBorder="0"
-                title={`Xem trước ${product.title}`}
-                allowFullScreen
-              />
+                    src={getGoogleDrivePreviewUrl(product.google_drive_link)}
+                    className="w-full h-full"
+                    frameBorder="0"
+                    title={`Xem trước ${product.title}`}
+                    sandbox="allow-same-origin allow-scripts"
+                    allowFullScreen
+                  />
+                  {/* Invisible overlay to prevent clicks on iframe links */}
+                  <div 
+                    className="absolute inset-0 pointer-events-auto"
+                    style={{ 
+                      background: 'transparent',
+                      zIndex: 1
+                    }}
+                    onContextMenu={(e) => e.preventDefault()}
+                  />
                 </div>
               ) : (
                 // Fallback to thumbnail if no preview

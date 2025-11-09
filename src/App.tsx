@@ -9,6 +9,7 @@ import Auth from "./pages/Auth";
 import SellerAuth from "./pages/SellerAuth";
 import SellerDashboard from "./pages/SellerDashboard";
 import ProductDetail from "./pages/ProductDetail";
+import SearchProducts from "./pages/SearchProducts";
 import Category from "./pages/Category";
 import About from "./pages/About";
 import HowItWorks from "./pages/HowItWorks";
@@ -35,6 +36,7 @@ const App = () => (
             <Route path="/seller-signup" element={<SellerAuth />} />
             <Route path="/seller-dashboard" element={<SellerDashboard />} />
             <Route path="/product/:id" element={<ProductDetail />} />
+            <Route path="/search" element={<SearchProducts />} />
             <Route path="/category/:slug" element={<Category />} />
             <Route path="/about" element={<About />} />
             <Route path="/how-it-works" element={<HowItWorks />} />

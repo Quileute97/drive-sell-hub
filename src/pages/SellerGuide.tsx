@@ -12,10 +12,27 @@ import {
   Lightbulb,
   AlertCircle
 } from "lucide-react";
+import { SEO } from "@/components/SEO";
 
 export default function SellerGuide() {
   return (
     <div className="min-h-screen">
+      <SEO 
+        title="Hướng dẫn bán hàng - Bí quyết thành công với sản phẩm digital"
+        description="Hướng dẫn chi tiết cách bán sản phẩm digital trên Salemylink.com. Từ chuẩn bị sản phẩm, upload lên Drive, tạo listing đến tăng doanh số hiệu quả."
+        keywords="hướng dẫn seller, bán hàng online, kiếm tiền digital, bán ebook, bán tài liệu, google drive, tăng doanh số"
+        url="https://salemylink.com/seller-guide"
+        structuredData={{
+          "@context": "https://schema.org",
+          "@type": "Guide",
+          "name": "Hướng dẫn bán hàng trên Salemylink",
+          "description": "Hướng dẫn đầy đủ cho người bán sản phẩm digital",
+          "about": {
+            "@type": "Thing",
+            "name": "Bán sản phẩm digital online"
+          }
+        }}
+      />
       <Header />
       
       <main className="container mx-auto px-4 py-12">

@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Star, Eye, Download } from "lucide-react";
 import { getGoogleDriveThumbnail } from "@/lib/utils";
+import { SEO } from "@/components/SEO";
 
 interface Product {
   id: string;
@@ -123,6 +124,19 @@ export default function Category() {
 
   return (
     <div className="min-h-screen">
+      <SEO 
+        title={`${category.name} - Danh mục sản phẩm`}
+        description={category.description || `Khám phá ${products.length} sản phẩm digital trong danh mục ${category.name} tại Salemylink.com`}
+        keywords={`${category.name}, sản phẩm digital, ebook, tài liệu, khóa học, ${category.name} việt nam`}
+        url={`https://salemylink.com/category/${category.slug}`}
+        structuredData={{
+          "@context": "https://schema.org",
+          "@type": "CollectionPage",
+          "name": category.name,
+          "description": category.description,
+          "url": `https://salemylink.com/category/${category.slug}`
+        }}
+      />
       <Header />
       
       <main className="container mx-auto px-4 py-12">

@@ -12,6 +12,7 @@ import { useCart } from "@/hooks/useCart";
 import { getGoogleDriveThumbnail } from "@/lib/utils";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
+import { SEO } from "@/components/SEO";
 
 interface Product {
   id: string;
@@ -173,8 +174,20 @@ export default function SearchProducts() {
     return stars;
   };
 
+  const pageTitle = searchQuery 
+    ? `Tìm kiếm: ${searchQuery}` 
+    : selectedCategory 
+    ? `Danh mục: ${categories.find(c => c.id === selectedCategory)?.name}` 
+    : "Tìm kiếm sản phẩm";
+
   return (
     <div className="min-h-screen">
+      <SEO 
+        title={pageTitle}
+        description={`Tìm kiếm sản phẩm digital tại Salemylink.com. ${products.length} kết quả phù hợp với tìm kiếm của bạn.`}
+        keywords={`tìm kiếm sản phẩm, ${searchQuery}, digital products, ebook, tài liệu online`}
+        url={`https://salemylink.com/search${searchQuery ? `?q=${searchQuery}` : ''}`}
+      />
       <Header />
       
       <main className="container mx-auto px-4 py-8">

@@ -2,10 +2,24 @@ import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { Card, CardContent } from "@/components/ui/card";
 import { Users, Target, Heart, TrendingUp } from "lucide-react";
+import { SEO } from "@/components/SEO";
 
 export default function About() {
   return (
     <div className="min-h-screen">
+      <SEO 
+        title="Về Salemylink.com - Nền tảng bán sản phẩm digital hàng đầu"
+        description="Tìm hiểu về Salemylink.com - nền tảng thương mại điện tử hàng đầu cho sản phẩm digital tại Việt Nam. Sứ mệnh, tầm nhìn và giá trị cốt lõi của chúng tôi."
+        keywords="về salemylink, giới thiệu, sứ mệnh, tầm nhìn, nền tảng digital, thương mại điện tử việt nam"
+        url="https://salemylink.com/about"
+        structuredData={{
+          "@context": "https://schema.org",
+          "@type": "AboutPage",
+          "name": "Về Salemylink.com",
+          "description": "Nền tảng thương mại điện tử hàng đầu cho sản phẩm digital tại Việt Nam",
+          "url": "https://salemylink.com/about"
+        }}
+      />
       <Header />
       
       <main className="container mx-auto px-4 py-12">

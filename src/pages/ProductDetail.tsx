@@ -11,6 +11,7 @@ import { Footer } from "@/components/Footer";
 import { RelatedProducts } from "@/components/RelatedProducts";
 import { ProductReviews } from "@/components/ProductReviews";
 import { useCart } from "@/hooks/useCart";
+import { SEO } from "@/components/SEO";
 
 interface ProductDetail {
   id: string;
@@ -210,6 +211,37 @@ export default function ProductDetail() {
 
   return (
     <div className="min-h-screen">
+      <SEO 
+        title={`${product.title} - ${product.categories?.name}`}
+        description={product.short_description || product.description}
+        keywords={`${product.title}, ${product.categories?.name}, ${product.tags?.join(', ')}, sản phẩm digital, mua bán online`}
+        image={product.thumbnail_url}
+        url={`https://salemylink.com/product/${product.id}`}
+        type="product"
+        structuredData={{
+          "@context": "https://schema.org",
+          "@type": "Product",
+          "name": product.title,
+          "description": product.description,
+          "image": product.thumbnail_url,
+          "offers": {
+            "@type": "Offer",
+            "price": product.price,
+            "priceCurrency": "VND",
+            "availability": "https://schema.org/InStock",
+            "seller": {
+              "@type": "Organization",
+              "name": product.profiles?.full_name || "Salemylink.com"
+            }
+          },
+          "aggregateRating": product.rating_count > 0 ? {
+            "@type": "AggregateRating",
+            "ratingValue": product.rating_average,
+            "reviewCount": product.rating_count
+          } : undefined,
+          "category": product.categories?.name
+        }}
+      />
       <Header />
       
       <main className="container mx-auto px-4 py-8">
@@ -425,33 +457,6 @@ export default function ProductDetail() {
       </main>
 
       <Footer />
-      
-      {/* Product Structured Data */}
-      <script type="application/ld+json" dangerouslySetInnerHTML={{
-        __html: JSON.stringify({
-          "@context": "https://schema.org",
-          "@type": "Product",
-          "name": product.title,
-          "description": product.description,
-          "image": product.thumbnail_url,
-          "offers": {
-            "@type": "Offer",
-            "price": product.price,
-            "priceCurrency": "VND",
-            "availability": "https://schema.org/InStock",
-            "seller": {
-              "@type": "Organization",
-              "name": product.profiles?.full_name || "Salemylink.com"
-            }
-          },
-          "aggregateRating": product.rating_count > 0 ? {
-            "@type": "AggregateRating",
-            "ratingValue": product.rating_average,
-            "reviewCount": product.rating_count
-          } : undefined,
-          "category": product.categories?.name
-        })
-      }} />
     </div>
   );
 }

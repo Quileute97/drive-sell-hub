@@ -12,6 +12,7 @@ import { RelatedProducts } from "@/components/RelatedProducts";
 import { ProductReviews } from "@/components/ProductReviews";
 import { useCart } from "@/hooks/useCart";
 import { SEO } from "@/components/SEO";
+import { Breadcrumb } from "@/components/Breadcrumb";
 
 interface ProductDetail {
   id: string;
@@ -32,6 +33,8 @@ interface ProductDetail {
   seller_id: string;
   category_id: string;
   google_drive_link: string;
+  meta_title: string | null;
+  meta_description: string | null;
   profiles: {
     full_name: string;
     avatar_url: string;
@@ -209,26 +212,39 @@ export default function ProductDetail() {
     );
   }
 
+  const productUrl = `https://salemylink.com/product/${product.id}`;
+  const metaTitle = product.meta_title || `${product.title} - ${product.categories?.name} | Salemylink.com`;
+  const metaDescription = product.meta_description || product.short_description || product.description?.substring(0, 160);
+  
   return (
     <div className="min-h-screen">
       <SEO 
-        title={`${product.title} - ${product.categories?.name}`}
-        description={product.short_description || product.description}
-        keywords={`${product.title}, ${product.categories?.name}, ${product.tags?.join(', ')}, sản phẩm digital, mua bán online`}
+        title={metaTitle}
+        description={metaDescription}
+        keywords={`${product.title}, ${product.categories?.name}, ${product.tags?.join(', ')}, sản phẩm digital, mua bán online, ${product.file_format}`}
         image={product.thumbnail_url}
-        url={`https://salemylink.com/product/${product.id}`}
+        url={productUrl}
         type="product"
         structuredData={{
           "@context": "https://schema.org",
           "@type": "Product",
           "name": product.title,
           "description": product.description,
-          "image": product.thumbnail_url,
+          "image": [product.thumbnail_url, ...(product.images || [])],
+          "brand": {
+            "@type": "Brand",
+            "name": "Salemylink.com"
+          },
+          "sku": product.id,
+          "category": product.categories?.name,
           "offers": {
             "@type": "Offer",
+            "url": productUrl,
             "price": product.price,
             "priceCurrency": "VND",
+            "priceValidUntil": new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
             "availability": "https://schema.org/InStock",
+            "itemCondition": "https://schema.org/NewCondition",
             "seller": {
               "@type": "Organization",
               "name": product.profiles?.full_name || "Salemylink.com"
@@ -237,22 +253,36 @@ export default function ProductDetail() {
           "aggregateRating": product.rating_count > 0 ? {
             "@type": "AggregateRating",
             "ratingValue": product.rating_average,
-            "reviewCount": product.rating_count
+            "reviewCount": product.rating_count,
+            "bestRating": "5",
+            "worstRating": "1"
           } : undefined,
-          "category": product.categories?.name
+          "review": product.rating_count > 0 ? {
+            "@type": "Review",
+            "reviewRating": {
+              "@type": "Rating",
+              "ratingValue": product.rating_average,
+              "bestRating": "5"
+            },
+            "author": {
+              "@type": "Person",
+              "name": "Khách hàng đã mua"
+            }
+          } : undefined
         }}
       />
       <Header />
       
       <main className="container mx-auto px-4 py-8">
-        <Button
-          variant="ghost"
-          onClick={() => navigate('/')}
-          className="mb-6"
-        >
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          Quay lại
-        </Button>
+        <Breadcrumb 
+          items={[
+            { 
+              label: product.categories?.name || 'Danh mục', 
+              href: product.category_id ? `/category/${product.categories?.name.toLowerCase().replace(/\s+/g, '-')}` : undefined 
+            },
+            { label: product.title }
+          ]}
+        />
 
         <div className="grid lg:grid-cols-2 gap-8">
           {/* Product Preview */}
@@ -289,12 +319,14 @@ export default function ProductDetail() {
                 </div>
               ) : (
                 // Fallback to thumbnail if no preview
-                <img
-                  src={product.thumbnail_url || "/placeholder.svg"}
-                  alt={`${product.title} - ${product.categories?.name} - Sản phẩm digital`}
-                  className="w-full h-full object-cover"
-                  loading="lazy"
-                />
+                  <img
+                    src={product.thumbnail_url || "/placeholder.svg"}
+                    alt={`${product.title} - ${product.categories?.name} - Sản phẩm digital chất lượng cao trên Salemylink`}
+                    className="w-full h-full object-cover"
+                    loading="lazy"
+                    width="800"
+                    height="800"
+                  />
               )}
             </div>
 
@@ -308,13 +340,13 @@ export default function ProductDetail() {
 
           {/* Product Info */}
           <div className="space-y-6">
-            <div>
+            <header>
               <Badge variant="secondary" className="mb-2">
                 {product.categories?.name}
               </Badge>
               <h1 className="text-3xl font-bold mb-2">{product.title}</h1>
-              <p className="text-muted-foreground">{product.short_description}</p>
-            </div>
+              <p className="text-lg text-muted-foreground">{product.short_description}</p>
+            </header>
 
             {/* Rating and Stats */}
             <div className="flex items-center space-x-6">
@@ -379,8 +411,11 @@ export default function ProductDetail() {
                 <div className="flex items-center space-x-3">
                   <img
                     src={product.profiles?.avatar_url || "/placeholder.svg"}
-                    alt={product.profiles?.full_name}
+                    alt={`${product.profiles?.full_name} - Người bán trên Salemylink`}
                     className="w-10 h-10 rounded-full object-cover"
+                    loading="lazy"
+                    width="40"
+                    height="40"
                   />
                   <div>
                     <div className="font-medium">{product.profiles?.full_name || 'Ẩn danh'}</div>

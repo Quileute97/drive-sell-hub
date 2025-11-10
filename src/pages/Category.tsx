@@ -125,29 +125,36 @@ export default function Category() {
   return (
     <div className="min-h-screen">
       <SEO 
-        title={`${category.name} - Danh mục sản phẩm`}
-        description={category.description || `Khám phá ${products.length} sản phẩm digital trong danh mục ${category.name} tại Salemylink.com`}
-        keywords={`${category.name}, sản phẩm digital, ebook, tài liệu, khóa học, ${category.name} việt nam`}
+        title={`${category.name} - Danh mục sản phẩm digital`}
+        description={category.description || `Khám phá ${products.length} sản phẩm digital chất lượng cao trong danh mục ${category.name}. Mua bán ebook, tài liệu, khóa học online tại Salemylink.com`}
+        keywords={`${category.name}, sản phẩm digital, ebook, tài liệu, khóa học, ${category.name} việt nam, mua ${category.name} online`}
         url={`https://salemylink.com/category/${category.slug}`}
         structuredData={{
           "@context": "https://schema.org",
           "@type": "CollectionPage",
           "name": category.name,
           "description": category.description,
-          "url": `https://salemylink.com/category/${category.slug}`
+          "url": `https://salemylink.com/category/${category.slug}`,
+          "numberOfItems": products.length,
+          "about": {
+            "@type": "Thing",
+            "name": category.name
+          }
         }}
       />
       <Header />
       
       <main className="container mx-auto px-4 py-12">
         {/* Category Header */}
-        <section className="mb-12">
+        <header className="mb-12">
           <h1 className="text-4xl font-bold mb-4">{category.name}</h1>
           {category.description && (
             <p className="text-xl text-muted-foreground max-w-3xl">{category.description}</p>
           )}
-          <p className="text-muted-foreground mt-4">{products.length} sản phẩm</p>
-        </section>
+          <p className="text-muted-foreground mt-4">
+            <strong>{products.length}</strong> sản phẩm digital có sẵn
+          </p>
+        </header>
 
         {/* Products Grid */}
         {products.length > 0 ? (
@@ -161,9 +168,11 @@ export default function Category() {
                 <div className="aspect-square overflow-hidden rounded-t-lg">
                   <img
                     src={getGoogleDriveThumbnail(product.google_drive_link) || product.thumbnail_url || "/placeholder.svg"}
-                    alt={product.title}
+                    alt={`${product.title} - ${category.name} - Sản phẩm digital giá ${new Intl.NumberFormat('vi-VN').format(product.price)}đ`}
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                     loading="lazy"
+                    width="400"
+                    height="400"
                   />
                 </div>
                 <CardContent className="p-4">

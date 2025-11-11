@@ -150,24 +150,42 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const signInWithGoogle = async () => {
-    const redirectUrl = `${window.location.origin}/`;
-    
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo: redirectUrl
+    try {
+      const redirectUrl = `${window.location.origin}/`;
+      console.log('Initiating Google OAuth with redirect:', redirectUrl);
+      
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: redirectUrl,
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'consent',
+          }
+        }
+      });
+      
+      if (error) {
+        console.error('Google OAuth error:', error);
+        toast({
+          variant: "destructive",
+          title: "Lỗi đăng nhập Google",
+          description: error.message || "Không thể kết nối với Google. Vui lòng thử lại."
+        });
+        return { error };
       }
-    });
-    
-    if (error) {
+      
+      console.log('Google OAuth initiated successfully:', data);
+      return { error: null };
+    } catch (err) {
+      console.error('Unexpected error during Google OAuth:', err);
       toast({
         variant: "destructive",
         title: "Lỗi đăng nhập Google",
-        description: error.message
+        description: "Đã xảy ra lỗi không mong đợi. Vui lòng thử lại."
       });
+      return { error: err };
     }
-    
-    return { error };
   };
 
   const signOut = async () => {

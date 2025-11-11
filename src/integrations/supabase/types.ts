@@ -55,6 +55,45 @@ export type Database = {
           },
         ]
       }
+      bank_accounts: {
+        Row: {
+          account_holder_name: string
+          account_number: string
+          bank_name: string
+          branch: string | null
+          created_at: string
+          id: string
+          is_primary: boolean | null
+          is_verified: boolean | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          account_holder_name: string
+          account_number: string
+          bank_name: string
+          branch?: string | null
+          created_at?: string
+          id?: string
+          is_primary?: boolean | null
+          is_verified?: boolean | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          account_holder_name?: string
+          account_number?: string
+          bank_name?: string
+          branch?: string | null
+          created_at?: string
+          id?: string
+          is_primary?: boolean | null
+          is_verified?: boolean | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       cart_items: {
         Row: {
           created_at: string
@@ -487,6 +526,62 @@ export type Database = {
           },
         ]
       }
+      withdrawal_requests: {
+        Row: {
+          admin_notes: string | null
+          amount: number
+          bank_account_id: string
+          created_at: string
+          fee: number | null
+          id: string
+          net_amount: number
+          processed_at: string | null
+          rejected_reason: string | null
+          requested_at: string
+          status: Database["public"]["Enums"]["withdrawal_status"] | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          amount: number
+          bank_account_id: string
+          created_at?: string
+          fee?: number | null
+          id?: string
+          net_amount: number
+          processed_at?: string | null
+          rejected_reason?: string | null
+          requested_at?: string
+          status?: Database["public"]["Enums"]["withdrawal_status"] | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          admin_notes?: string | null
+          amount?: number
+          bank_account_id?: string
+          created_at?: string
+          fee?: number | null
+          id?: string
+          net_amount?: number
+          processed_at?: string | null
+          rejected_reason?: string | null
+          requested_at?: string
+          status?: Database["public"]["Enums"]["withdrawal_status"] | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "withdrawal_requests_bank_account_id_fkey"
+            columns: ["bank_account_id"]
+            isOneToOne: false
+            referencedRelation: "bank_accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -499,6 +594,7 @@ export type Database = {
       payment_status: "pending" | "completed" | "failed" | "refunded"
       product_status: "draft" | "active" | "inactive" | "suspended"
       user_role: "admin" | "seller" | "buyer"
+      withdrawal_status: "pending" | "processing" | "completed" | "rejected"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -630,6 +726,7 @@ export const Constants = {
       payment_status: ["pending", "completed", "failed", "refunded"],
       product_status: ["draft", "active", "inactive", "suspended"],
       user_role: ["admin", "seller", "buyer"],
+      withdrawal_status: ["pending", "processing", "completed", "rejected"],
     },
   },
 } as const

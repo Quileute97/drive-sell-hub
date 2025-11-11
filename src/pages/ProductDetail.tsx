@@ -13,6 +13,7 @@ import { ProductReviews } from "@/components/ProductReviews";
 import { useCart } from "@/hooks/useCart";
 import { SEO } from "@/components/SEO";
 import { Breadcrumb } from "@/components/Breadcrumb";
+import { ProductFAQ } from "@/components/ProductFAQ";
 
 interface ProductDetail {
   id: string;
@@ -480,6 +481,19 @@ export default function ProductDetail() {
             </CardContent>
           </Card>
         </article>
+
+        {/* Product FAQ */}
+        <div className="mt-12">
+          <Card>
+            <CardContent className="p-6">
+              <ProductFAQ 
+                productName={product.title}
+                category={product.categories?.name || 'Digital'}
+                fileFormat={product.file_format}
+              />
+            </CardContent>
+          </Card>
+        </div>
 
         {/* Product Reviews */}
         <ProductReviews productId={product.id} />

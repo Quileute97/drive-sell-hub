@@ -526,6 +526,27 @@ export type Database = {
           },
         ]
       }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
       withdrawal_requests: {
         Row: {
           admin_notes: string | null
@@ -588,8 +609,16 @@ export type Database = {
     }
     Functions: {
       generate_order_number: { Args: never; Returns: string }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
+      app_role: "admin" | "seller" | "buyer"
       order_status: "pending" | "paid" | "delivered" | "cancelled" | "refunded"
       payment_status: "pending" | "completed" | "failed" | "refunded"
       product_status: "draft" | "active" | "inactive" | "suspended"
@@ -722,6 +751,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      app_role: ["admin", "seller", "buyer"],
       order_status: ["pending", "paid", "delivered", "cancelled", "refunded"],
       payment_status: ["pending", "completed", "failed", "refunded"],
       product_status: ["draft", "active", "inactive", "suspended"],

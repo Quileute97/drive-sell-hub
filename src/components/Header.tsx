@@ -104,9 +104,11 @@ export const Header = () => {
                     </Link>
                   )}
                   {profile?.role === 'admin' && (
-                    <DropdownMenuItem>
-                      Quản trị hệ thống
-                    </DropdownMenuItem>
+                    <Link to="/admin">
+                      <DropdownMenuItem>
+                        Quản trị hệ thống
+                      </DropdownMenuItem>
+                    </Link>
                   )}
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={signOut} className="text-red-600">

@@ -8,9 +8,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { toast } from "sonner";
-import { Loader2, Store, ShoppingCart, DollarSign, Users, CheckCircle, XCircle } from "lucide-react";
+import { Loader2, Store, ShoppingCart, DollarSign, Users, CheckCircle, XCircle, Package, TrendingUp, Calendar } from "lucide-react";
+import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
@@ -20,10 +21,15 @@ export default function AdminDashboard() {
     totalOrders: 0,
     totalRevenue: 0,
     pendingWithdrawals: 0,
+    totalProducts: 0,
+    activeProducts: 0,
   });
   const [sellers, setSellers] = useState<any[]>([]);
   const [orders, setOrders] = useState<any[]>([]);
   const [withdrawals, setWithdrawals] = useState<any[]>([]);
+  const [products, setProducts] = useState<any[]>([]);
+  const [revenueData, setRevenueData] = useState<any[]>([]);
+  const [categoryData, setCategoryData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -57,7 +63,7 @@ export default function AdminDashboard() {
           *,
           buyer:profiles!orders_buyer_id_fkey(full_name, email),
           seller:profiles!orders_seller_id_fkey(full_name, email),
-          product:products(title)
+          product:products(title, category_id)
         `)
         .order('created_at', { ascending: false });
 
@@ -71,23 +77,75 @@ export default function AdminDashboard() {
         `)
         .order('requested_at', { ascending: false });
 
+      // Fetch products
+      const { data: productsData } = await supabase
+        .from('products')
+        .select(`
+          *,
+          seller:profiles!products_seller_id_fkey(full_name, email),
+          category:categories(name)
+        `)
+        .order('created_at', { ascending: false });
+
+      // Fetch categories
+      const { data: categoriesData } = await supabase
+        .from('categories')
+        .select('*');
+
       // Calculate stats
       const totalRevenue = ordersData?.reduce((sum, order) => 
         sum + parseFloat(String(order.commission_amount || 0)), 0
       ) || 0;
 
       const pendingWithdrawals = withdrawalsData?.filter(w => w.status === 'pending').length || 0;
+      const activeProducts = productsData?.filter(p => p.status === 'active').length || 0;
 
       setStats({
         totalSellers: sellersData?.length || 0,
         totalOrders: ordersData?.length || 0,
         totalRevenue,
         pendingWithdrawals,
+        totalProducts: productsData?.length || 0,
+        activeProducts,
       });
 
+      // Calculate revenue by month (last 6 months)
+      const revenueByMonth = Array.from({ length: 6 }, (_, i) => {
+        const date = new Date();
+        date.setMonth(date.getMonth() - (5 - i));
+        const monthYear = `${date.getMonth() + 1}/${date.getFullYear()}`;
+        
+        const monthRevenue = ordersData?.filter(order => {
+          const orderDate = new Date(order.created_at);
+          return orderDate.getMonth() === date.getMonth() && 
+                 orderDate.getFullYear() === date.getFullYear();
+        }).reduce((sum, order) => sum + parseFloat(String(order.total_amount || 0)), 0) || 0;
+
+        const commission = ordersData?.filter(order => {
+          const orderDate = new Date(order.created_at);
+          return orderDate.getMonth() === date.getMonth() && 
+                 orderDate.getFullYear() === date.getFullYear();
+        }).reduce((sum, order) => sum + parseFloat(String(order.commission_amount || 0)), 0) || 0;
+
+        return {
+          month: monthYear,
+          revenue: monthRevenue,
+          commission: commission,
+        };
+      });
+
+      // Calculate products by category
+      const productsByCategory = categoriesData?.map(cat => ({
+        name: cat.name,
+        value: productsData?.filter(p => p.category_id === cat.id).length || 0,
+      })).filter(c => c.value > 0) || [];
+
+      setRevenueData(revenueByMonth);
+      setCategoryData(productsByCategory);
       setSellers(sellersData || []);
       setOrders(ordersData || []);
       setWithdrawals(withdrawalsData || []);
+      setProducts(productsData || []);
     } catch (error) {
       console.error("Error fetching dashboard data:", error);
       toast.error("Không thể tải dữ liệu");
@@ -143,6 +201,25 @@ export default function AdminDashboard() {
     }
   };
 
+  const updateProductStatus = async (productId: string, newStatus: 'draft' | 'active' | 'inactive') => {
+    try {
+      const { error } = await supabase
+        .from('products')
+        .update({ status: newStatus })
+        .eq('id', productId);
+
+      if (error) throw error;
+
+      toast.success("Cập nhật trạng thái sản phẩm thành công");
+      fetchDashboardData();
+    } catch (error) {
+      console.error("Error updating product:", error);
+      toast.error("Không thể cập nhật sản phẩm");
+    }
+  };
+
+  const COLORS = ['hsl(var(--primary))', 'hsl(var(--accent))', 'hsl(var(--secondary))', '#82ca9d', '#ffc658', '#8884d8'];
+
   if (roleLoading || loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -162,87 +239,227 @@ export default function AdminDashboard() {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-8">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Tổng Người Bán</CardTitle>
+            <CardTitle className="text-sm font-medium">Tổng Cửa Hàng</CardTitle>
             <Store className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.totalSellers}</div>
+            <p className="text-xs text-muted-foreground mt-1">Người bán đã đăng ký</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Tổng Đơn Hàng</CardTitle>
-            <ShoppingCart className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium">Sản Phẩm</CardTitle>
+            <Package className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.totalOrders}</div>
+            <div className="text-2xl font-bold">{stats.activeProducts}/{stats.totalProducts}</div>
+            <p className="text-xs text-muted-foreground mt-1">Đang hoạt động/Tổng</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Doanh Thu Hoa Hồng</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium">Doanh Thu Tháng</CardTitle>
+            <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {stats.totalRevenue.toLocaleString('vi-VN')} ₫
+              {(revenueData[revenueData.length - 1]?.revenue || 0).toLocaleString('vi-VN')} ₫
             </div>
+            <p className="text-xs text-muted-foreground mt-1">Hoa hồng: {(revenueData[revenueData.length - 1]?.commission || 0).toLocaleString('vi-VN')} ₫</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Yêu Cầu Rút Tiền Chờ</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium">Yêu Cầu Rút Tiền</CardTitle>
+            <Calendar className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.pendingWithdrawals}</div>
+            <p className="text-xs text-muted-foreground mt-1">Đang chờ xử lý</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-2 mb-8">
+        <Card>
+          <CardHeader>
+            <CardTitle>Doanh Thu 6 Tháng Gần Đây</CardTitle>
+            <CardDescription>Biểu đồ doanh thu và hoa hồng theo tháng</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={300}>
+              <LineChart data={revenueData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="month" />
+                <YAxis />
+                <Tooltip formatter={(value) => `${Number(value).toLocaleString('vi-VN')} ₫`} />
+                <Legend />
+                <Line type="monotone" dataKey="revenue" stroke="hsl(var(--primary))" name="Doanh thu" strokeWidth={2} />
+                <Line type="monotone" dataKey="commission" stroke="hsl(var(--accent))" name="Hoa hồng" strokeWidth={2} />
+              </LineChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Phân Bố Sản Phẩm</CardTitle>
+            <CardDescription>Số lượng sản phẩm theo danh mục</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={300}>
+              <PieChart>
+                <Pie
+                  data={categoryData}
+                  cx="50%"
+                  cy="50%"
+                  labelLine={false}
+                  label={(entry) => entry.name}
+                  outerRadius={80}
+                  fill="#8884d8"
+                  dataKey="value"
+                >
+                  {categoryData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  ))}
+                </Pie>
+                <Tooltip />
+              </PieChart>
+            </ResponsiveContainer>
           </CardContent>
         </Card>
       </div>
 
       <Tabs defaultValue="sellers" className="space-y-4">
         <TabsList>
-          <TabsTrigger value="sellers">Người Bán</TabsTrigger>
+          <TabsTrigger value="sellers">Cửa Hàng</TabsTrigger>
+          <TabsTrigger value="products">Sản Phẩm</TabsTrigger>
           <TabsTrigger value="orders">Đơn Hàng</TabsTrigger>
-          <TabsTrigger value="withdrawals">Yêu Cầu Rút Tiền</TabsTrigger>
+          <TabsTrigger value="withdrawals">Rút Tiền</TabsTrigger>
         </TabsList>
 
         <TabsContent value="sellers">
           <Card>
             <CardHeader>
-              <CardTitle>Quản Lý Người Bán</CardTitle>
-              <CardDescription>Danh sách tất cả người bán trên hệ thống</CardDescription>
+              <CardTitle>Quản Lý Cửa Hàng</CardTitle>
+              <CardDescription>Danh sách tất cả cửa hàng đã đăng ký và doanh số bán hàng</CardDescription>
             </CardHeader>
             <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Tên</TableHead>
-                    <TableHead>Email</TableHead>
-                    <TableHead>Xác Minh</TableHead>
-                    <TableHead>Tổng Doanh Thu</TableHead>
-                    <TableHead>Ngày Đăng Ký</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {sellers.map((seller) => (
-                    <TableRow key={seller.id}>
-                      <TableCell>{seller.full_name || 'Chưa cập nhật'}</TableCell>
-                      <TableCell>{seller.email}</TableCell>
-                      <TableCell>
-                        <Badge variant={seller.is_verified ? "default" : "secondary"}>
-                          {seller.is_verified ? "Đã xác minh" : "Chưa xác minh"}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>{parseFloat(seller.total_sales || 0).toLocaleString('vi-VN')} ₫</TableCell>
-                      <TableCell>{new Date(seller.created_at).toLocaleDateString('vi-VN')}</TableCell>
+              <ScrollArea className="h-[600px]">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Tên Cửa Hàng</TableHead>
+                      <TableHead>Email</TableHead>
+                      <TableHead>Trạng Thái</TableHead>
+                      <TableHead>Số Sản Phẩm</TableHead>
+                      <TableHead>Tổng Doanh Thu</TableHead>
+                      <TableHead>Hoa Hồng (15%)</TableHead>
+                      <TableHead>Số Tiền Còn Lại</TableHead>
+                      <TableHead>Ngày Đăng Ký</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                  </TableHeader>
+                  <TableBody>
+                    {sellers.map((seller) => {
+                      const sellerProducts = products.filter(p => p.seller_id === seller.user_id).length;
+                      const sellerOrders = orders.filter(o => o.seller_id === seller.user_id);
+                      const totalSales = sellerOrders.reduce((sum, o) => sum + parseFloat(String(o.seller_amount || 0)), 0);
+                      const totalWithdrawn = withdrawals
+                        .filter(w => w.user_id === seller.user_id && w.status === 'completed')
+                        .reduce((sum, w) => sum + parseFloat(String(w.amount || 0)), 0);
+                      const balance = totalSales - totalWithdrawn;
+
+                      return (
+                        <TableRow key={seller.id}>
+                          <TableCell className="font-medium">{seller.full_name || 'Chưa cập nhật'}</TableCell>
+                          <TableCell>{seller.email}</TableCell>
+                          <TableCell>
+                            <Badge variant={seller.is_verified ? "default" : "secondary"}>
+                              {seller.is_verified ? "Đã xác minh" : "Chưa xác minh"}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>{sellerProducts}</TableCell>
+                          <TableCell className="font-medium">{totalSales.toLocaleString('vi-VN')} ₫</TableCell>
+                          <TableCell>{(totalSales * 0.15).toLocaleString('vi-VN')} ₫</TableCell>
+                          <TableCell className="font-bold text-primary">{balance.toLocaleString('vi-VN')} ₫</TableCell>
+                          <TableCell>{new Date(seller.created_at).toLocaleDateString('vi-VN')}</TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              </ScrollArea>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="products">
+          <Card>
+            <CardHeader>
+              <CardTitle>Quản Lý Sản Phẩm</CardTitle>
+              <CardDescription>Danh sách tất cả sản phẩm từ các cửa hàng</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ScrollArea className="h-[600px]">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Tên Sản Phẩm</TableHead>
+                      <TableHead>Cửa Hàng</TableHead>
+                      <TableHead>Danh Mục</TableHead>
+                      <TableHead>Giá</TableHead>
+                      <TableHead>Lượt Xem</TableHead>
+                      <TableHead>Đã Bán</TableHead>
+                      <TableHead>Đánh Giá</TableHead>
+                      <TableHead>Trạng Thái</TableHead>
+                      <TableHead>Hành Động</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {products.map((product) => (
+                      <TableRow key={product.id}>
+                        <TableCell className="font-medium max-w-[200px] truncate">{product.title}</TableCell>
+                        <TableCell>{product.seller?.full_name || product.seller?.email}</TableCell>
+                        <TableCell>{product.category?.name}</TableCell>
+                        <TableCell>{parseFloat(product.price).toLocaleString('vi-VN')} ₫</TableCell>
+                        <TableCell>{product.view_count || 0}</TableCell>
+                        <TableCell>{product.download_count || 0}</TableCell>
+                        <TableCell>
+                          {product.rating_average ? `⭐ ${product.rating_average.toFixed(1)} (${product.rating_count})` : 'Chưa có'}
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant={
+                            product.status === 'active' ? 'default' :
+                            product.status === 'draft' ? 'secondary' : 'outline'
+                          }>
+                            {product.status === 'active' ? 'Hoạt động' :
+                             product.status === 'draft' ? 'Nháp' : 'Tạm ngừng'}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <Select
+                            value={product.status}
+                            onValueChange={(value) => updateProductStatus(product.id, value as any)}
+                          >
+                            <SelectTrigger className="w-[120px]">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="active">Hoạt động</SelectItem>
+                              <SelectItem value="inactive">Tạm ngừng</SelectItem>
+                              <SelectItem value="draft">Nháp</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </ScrollArea>
             </CardContent>
           </Card>
         </TabsContent>
@@ -251,10 +468,11 @@ export default function AdminDashboard() {
           <Card>
             <CardHeader>
               <CardTitle>Quản Lý Đơn Hàng</CardTitle>
-              <CardDescription>Danh sách tất cả đơn hàng trên hệ thống</CardDescription>
+              <CardDescription>Danh sách tất cả đơn hàng và phân phối hoa hồng</CardDescription>
             </CardHeader>
             <CardContent>
-              <Table>
+              <ScrollArea className="h-[600px]">
+                <Table>
                 <TableHeader>
                   <TableRow>
                     <TableHead>Mã Đơn</TableHead>
@@ -307,6 +525,7 @@ export default function AdminDashboard() {
                   ))}
                 </TableBody>
               </Table>
+              </ScrollArea>
             </CardContent>
           </Card>
         </TabsContent>
@@ -315,10 +534,11 @@ export default function AdminDashboard() {
           <Card>
             <CardHeader>
               <CardTitle>Quản Lý Yêu Cầu Rút Tiền</CardTitle>
-              <CardDescription>Danh sách tất cả yêu cầu rút tiền</CardDescription>
+              <CardDescription>Xử lý thanh toán hàng tháng cho các cửa hàng</CardDescription>
             </CardHeader>
             <CardContent>
-              <Table>
+              <ScrollArea className="h-[600px]">
+                <Table>
                 <TableHeader>
                   <TableRow>
                     <TableHead>Người Yêu Cầu</TableHead>
@@ -385,6 +605,7 @@ export default function AdminDashboard() {
                   ))}
                 </TableBody>
               </Table>
+              </ScrollArea>
             </CardContent>
           </Card>
         </TabsContent>

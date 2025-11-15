@@ -30,6 +30,7 @@ export default function AdminDashboard() {
   const [products, setProducts] = useState<any[]>([]);
   const [revenueData, setRevenueData] = useState<any[]>([]);
   const [categoryData, setCategoryData] = useState<any[]>([]);
+  const [bankAccounts, setBankAccounts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -91,6 +92,12 @@ export default function AdminDashboard() {
       const { data: categoriesData } = await supabase
         .from('categories')
         .select('*');
+
+      // Fetch bank accounts
+      const { data: bankAccountsData } = await supabase
+        .from('bank_accounts')
+        .select('*')
+        .order('created_at', { ascending: false });
 
       // Calculate stats
       const totalRevenue = ordersData?.reduce((sum, order) => 
@@ -356,6 +363,7 @@ export default function AdminDashboard() {
                       <TableHead>Tên Cửa Hàng</TableHead>
                       <TableHead>Email</TableHead>
                       <TableHead>Trạng Thái</TableHead>
+                      <TableHead>Thông Tin Ngân Hàng</TableHead>
                       <TableHead>Số Sản Phẩm</TableHead>
                       <TableHead>Tổng Doanh Thu</TableHead>
                       <TableHead>Hoa Hồng (15%)</TableHead>
@@ -372,6 +380,7 @@ export default function AdminDashboard() {
                         .filter(w => w.user_id === seller.user_id && w.status === 'completed')
                         .reduce((sum, w) => sum + parseFloat(String(w.amount || 0)), 0);
                       const balance = totalSales - totalWithdrawn;
+                      const sellerBankAccounts = bankAccounts.filter(ba => ba.user_id === seller.user_id);
 
                       return (
                         <TableRow key={seller.id}>
@@ -381,6 +390,23 @@ export default function AdminDashboard() {
                             <Badge variant={seller.is_verified ? "default" : "secondary"}>
                               {seller.is_verified ? "Đã xác minh" : "Chưa xác minh"}
                             </Badge>
+                          </TableCell>
+                          <TableCell>
+                            {sellerBankAccounts.length > 0 ? (
+                              <div className="space-y-1">
+                                {sellerBankAccounts.map((ba, idx) => (
+                                  <div key={ba.id} className="text-xs">
+                                    <div className="font-medium">{ba.bank_name}</div>
+                                    <div className="text-muted-foreground">
+                                      {ba.account_number} - {ba.account_holder_name}
+                                    </div>
+                                    {ba.is_primary && <Badge variant="outline" className="text-[10px] px-1 py-0">Chính</Badge>}
+                                  </div>
+                                ))}
+                              </div>
+                            ) : (
+                              <span className="text-xs text-muted-foreground">Chưa đăng ký</span>
+                            )}
                           </TableCell>
                           <TableCell>{sellerProducts}</TableCell>
                           <TableCell className="font-medium">{totalSales.toLocaleString('vi-VN')} ₫</TableCell>

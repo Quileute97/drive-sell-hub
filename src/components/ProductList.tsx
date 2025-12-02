@@ -12,6 +12,7 @@ import { getGoogleDriveThumbnail } from "@/lib/utils";
 
 interface Product {
   id: string;
+  slug: string;
   title: string;
   description: string;
   short_description: string;
@@ -148,7 +149,7 @@ export const ProductList = () => {
               <Card 
                 key={product.id} 
                 className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-1 cursor-pointer flex flex-col h-full"
-                onClick={() => navigate(`/product/${product.id}`)}
+                onClick={() => navigate(`/product/${product.slug}`)}
               >
                 <div className="relative overflow-hidden rounded-t-lg aspect-[4/3] bg-muted">
                   <img

@@ -17,6 +17,7 @@ import { ProductFAQ } from "@/components/ProductFAQ";
 
 interface ProductDetail {
   id: string;
+  slug: string;
   title: string;
   description: string;
   short_description: string;
@@ -42,11 +43,12 @@ interface ProductDetail {
   };
   categories: {
     name: string;
+    slug: string;
   };
 }
 
 export default function ProductDetail() {
-  const { id } = useParams();
+  const { slug } = useParams();
   const navigate = useNavigate();
   const [product, setProduct] = useState<ProductDetail | null>(null);
   const [loading, setLoading] = useState(true);
@@ -54,11 +56,10 @@ export default function ProductDetail() {
   const { addToCart } = useCart();
 
   useEffect(() => {
-    if (id) {
+    if (slug) {
       fetchProduct();
-      incrementViewCount();
     }
-  }, [id]);
+  }, [slug]);
 
   const fetchProduct = async () => {
     try {
@@ -67,14 +68,22 @@ export default function ProductDetail() {
         .select(`
           *,
           profiles!products_seller_id_fkey(full_name, avatar_url),
-          categories(name)
+          categories(name, slug)
         `)
-        .eq('id', id)
+        .eq('slug', slug)
         .eq('status', 'active')
         .single();
 
       if (error) throw error;
       setProduct(data);
+      
+      // Increment view count
+      if (data?.id) {
+        await supabase
+          .from('products')
+          .update({ view_count: (data.view_count || 0) + 1 })
+          .eq('id', data.id);
+      }
     } catch (error) {
       console.error('Error fetching product:', error);
       toast({
@@ -88,16 +97,6 @@ export default function ProductDetail() {
     }
   };
 
-  const incrementViewCount = async () => {
-    try {
-      await supabase
-        .from('products')
-        .update({ view_count: (product?.view_count || 0) + 1 })
-        .eq('id', id);
-    } catch (error) {
-      console.error('Error incrementing view count:', error);
-    }
-  };
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('vi-VN', {
@@ -213,7 +212,7 @@ export default function ProductDetail() {
     );
   }
 
-  const productUrl = `https://salemylink.com/product/${product.id}`;
+  const productUrl = `https://salemylink.com/product/${product.slug}`;
   const metaTitle = product.meta_title || `${product.title} - ${product.categories?.name} | Salemylink.com`;
   const metaDescription = product.meta_description || product.short_description || product.description?.substring(0, 160);
   
@@ -279,7 +278,7 @@ export default function ProductDetail() {
           items={[
             { 
               label: product.categories?.name || 'Danh mục', 
-              href: product.category_id ? `/category/${product.categories?.name.toLowerCase().replace(/\s+/g, '-')}` : undefined 
+              href: product.categories?.slug ? `/category/${product.categories.slug}` : undefined 
             },
             { label: product.title }
           ]}

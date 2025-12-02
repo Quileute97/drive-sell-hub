@@ -13,6 +13,7 @@ import { SEO } from "@/components/SEO";
 
 interface Product {
   id: string;
+  slug: string;
   title: string;
   short_description: string;
   price: number;
@@ -163,7 +164,7 @@ export default function Category() {
               <Card
                 key={product.id}
                 className="group cursor-pointer hover:shadow-xl transition-all duration-300 hover:-translate-y-2"
-                onClick={() => navigate(`/product/${product.id}`)}
+                onClick={() => navigate(`/product/${product.slug}`)}
               >
                 <div className="aspect-square overflow-hidden rounded-t-lg">
                   <img

@@ -4,7 +4,7 @@ import { Facebook, Twitter, Instagram, Youtube, Mail, Phone, MapPin } from "luci
 import { supabase } from "@/integrations/supabase/client";
 
 export const Footer = () => {
-  const [categories, setCategories] = useState<{id: string, name: string}[]>([]);
+  const [categories, setCategories] = useState<{id: string, name: string, slug: string}[]>([]);
 
   useEffect(() => {
     fetchCategories();
@@ -14,7 +14,7 @@ export const Footer = () => {
     try {
       const { data } = await supabase
         .from('categories')
-        .select('id, name')
+        .select('id, name, slug')
         .eq('is_active', true)
         .order('sort_order')
         .limit(5);
@@ -78,7 +78,7 @@ export const Footer = () => {
             <ul className="space-y-2">
               {categories.map((category) => (
                 <li key={category.id}>
-                  <a href={`/category/${category.id}`} className="text-muted-foreground hover:text-primary transition-colors">
+                  <a href={`/category/${category.slug}`} className="text-muted-foreground hover:text-primary transition-colors">
                     {category.name}
                   </a>
                 </li>

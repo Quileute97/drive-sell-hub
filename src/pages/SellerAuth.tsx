@@ -8,6 +8,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Eye, EyeOff, ArrowLeft, Store } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useUserRole } from '@/hooks/useUserRole';
 
 const SellerAuth = () => {
   const [email, setEmail] = useState('');
@@ -18,15 +19,71 @@ const SellerAuth = () => {
   const [loading, setLoading] = useState(false);
 
   const { user } = useAuth();
+  const { isSeller } = useUserRole();
   const navigate = useNavigate();
   const { toast } = useToast();
 
+  // Nếu đã là seller, chuyển đến dashboard
   useEffect(() => {
-    if (user) {
-      navigate('/', { replace: true });
+    if (user && isSeller) {
+      navigate('/seller-dashboard', { replace: true });
     }
-  }, [user, navigate]);
+  }, [user, isSeller, navigate]);
 
+  // Đăng ký seller cho user đã đăng nhập
+  const handleRegisterAsSeller = async () => {
+    if (!user) return;
+    
+    setLoading(true);
+    try {
+      // Thêm role seller vào user_roles table
+      const { error } = await supabase
+        .from('user_roles')
+        .insert({
+          user_id: user.id,
+          role: 'seller'
+        });
+
+      if (error) {
+        if (error.code === '23505') {
+          toast({
+            variant: "destructive",
+            title: "Lỗi",
+            description: "Bạn đã đăng ký bán hàng rồi!"
+          });
+        } else {
+          throw error;
+        }
+      } else {
+        // Cập nhật role trong profiles table
+        await supabase
+          .from('profiles')
+          .update({ role: 'seller' })
+          .eq('user_id', user.id);
+
+        toast({
+          title: "Đăng ký thành công!",
+          description: "Bạn đã trở thành người bán. Đang chuyển đến Dashboard..."
+        });
+        
+        // Reload để cập nhật role
+        setTimeout(() => {
+          window.location.href = '/seller-dashboard';
+        }, 1500);
+      }
+    } catch (error: any) {
+      console.error('Error registering as seller:', error);
+      toast({
+        variant: "destructive",
+        title: "Lỗi",
+        description: error.message || "Không thể đăng ký bán hàng"
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Đăng ký tài khoản mới với role seller
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -38,12 +95,13 @@ const SellerAuth = () => {
           title: "Lỗi",
           description: "Mật khẩu xác nhận không khớp"
         });
+        setLoading(false);
         return;
       }
 
-      const redirectUrl = `${window.location.origin}/`;
+      const redirectUrl = `${window.location.origin}/seller-dashboard`;
       
-      const { error } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
@@ -61,7 +119,15 @@ const SellerAuth = () => {
           title: "Lỗi đăng ký",
           description: error.message
         });
-      } else {
+      } else if (data.user) {
+        // Thêm seller role vào user_roles table
+        await supabase
+          .from('user_roles')
+          .insert({
+            user_id: data.user.id,
+            role: 'seller'
+          });
+
         toast({
           title: "Đăng ký thành công",
           description: "Vui lòng kiểm tra email để xác thực tài khoản người bán."
@@ -73,6 +139,59 @@ const SellerAuth = () => {
       setLoading(false);
     }
   };
+
+  // Nếu user đã đăng nhập nhưng chưa là seller, hiển thị form đăng ký seller
+  if (user && !isSeller) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-primary/10 via-background to-secondary/10 flex items-center justify-center p-4">
+        <div className="w-full max-w-md">
+          <div className="mb-8 text-center">
+            <Link 
+              to="/"
+              className="inline-flex items-center text-muted-foreground hover:text-foreground transition-colors mb-4"
+            >
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Quay về trang chủ
+            </Link>
+            <div className="inline-flex items-center justify-center mb-4">
+              <Store className="h-8 w-8 text-primary mr-2" />
+              <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+                SaleMyLink
+              </h1>
+            </div>
+            <p className="text-muted-foreground">
+              Đăng ký trở thành người bán
+            </p>
+          </div>
+
+          <Card className="shadow-xl border-0 bg-card/50 backdrop-blur-sm">
+            <CardHeader>
+              <CardTitle className="text-2xl text-center">
+                Trở thành người bán
+              </CardTitle>
+              <CardDescription className="text-center">
+                Bạn đã có tài khoản. Nhấn nút bên dưới để đăng ký bán hàng.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="p-4 bg-muted/50 rounded-lg">
+                <p className="text-sm text-muted-foreground">
+                  Đang đăng nhập với: <strong>{user.email}</strong>
+                </p>
+              </div>
+              <Button 
+                onClick={handleRegisterAsSeller} 
+                className="w-full" 
+                disabled={loading}
+              >
+                {loading ? 'Đang xử lý...' : 'Đăng ký bán hàng ngay'}
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary/10 via-background to-secondary/10 flex items-center justify-center p-4">
@@ -182,13 +301,13 @@ const SellerAuth = () => {
 
         <p className="text-center text-sm text-muted-foreground mt-4">
           Bằng cách đăng ký, bạn đồng ý với{' '}
-          <a href="#" className="text-primary hover:underline">
+          <Link to="/terms" className="text-primary hover:underline">
             Điều khoản bán hàng
-          </a>{' '}
+          </Link>{' '}
           và{' '}
-          <a href="#" className="text-primary hover:underline">
+          <Link to="/privacy" className="text-primary hover:underline">
             Chính sách bảo mật
-          </a>.
+          </Link>.
         </p>
       </div>
     </div>

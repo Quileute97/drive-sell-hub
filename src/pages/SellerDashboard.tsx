@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -8,6 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useAuth } from '@/contexts/AuthContext';
+import { useUserRole } from '@/hooks/useUserRole';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useToast } from '@/components/ui/use-toast';
@@ -41,10 +43,19 @@ import {
 
 const SellerDashboard = () => {
   const { user, profile } = useAuth();
+  const { isSeller, loading: roleLoading } = useUserRole();
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('shop');
   const [showAddProductForm, setShowAddProductForm] = useState(false);
   const queryClient = useQueryClient();
   const { toast } = useToast();
+
+  // Kiểm tra quyền seller
+  useEffect(() => {
+    if (!roleLoading && !isSeller && user) {
+      navigate('/seller-signup', { replace: true });
+    }
+  }, [isSeller, roleLoading, user, navigate]);
   
   // Form state for shop information
   const [shopForm, setShopForm] = useState({
@@ -192,6 +203,18 @@ const SellerDashboard = () => {
       });
     }
   };
+
+  // Loading state
+  if (roleLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+          <p className="mt-4 text-muted-foreground">Đang tải...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">

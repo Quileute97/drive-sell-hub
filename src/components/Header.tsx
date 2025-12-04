@@ -4,6 +4,7 @@ import { ShoppingCart, User, Search, LogOut } from "lucide-react";
 import { useAuth } from '@/contexts/AuthContext';
 import { Link, useNavigate } from 'react-router-dom';
 import { useCart } from '@/hooks/useCart';
+import { useUserRole } from '@/hooks/useUserRole';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,6 +17,7 @@ import {
 export const Header = () => {
   const { user, profile, signOut } = useAuth();
   const { totalItems } = useCart();
+  const { isSeller, isAdmin } = useUserRole();
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -96,14 +98,14 @@ export const Header = () => {
                   <DropdownMenuItem>
                     Đơn hàng của tôi
                   </DropdownMenuItem>
-                  {profile?.role === 'seller' && (
+                  {isSeller && (
                     <Link to="/seller-dashboard">
                       <DropdownMenuItem>
                         Dashboard bán hàng
                       </DropdownMenuItem>
                     </Link>
                   )}
-                  {profile?.role === 'admin' && (
+                  {isAdmin && (
                     <Link to="/admin">
                       <DropdownMenuItem>
                         Quản trị hệ thống

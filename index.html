@@ -9,6 +9,12 @@
     <meta name="keywords" content="bán sản phẩm digital, ebook việt nam, tài liệu digital, khóa học online, google drive, thương mại điện tử, marketplace digital, bán tài liệu online" />
     <link rel="canonical" href="https://salemylink.com/" />
     
+    <!-- Preconnect for performance -->
+    <link rel="preconnect" href="https://drive.google.com" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="dns-prefetch" href="https://drive.google.com" />
+    
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://salemylink.com/" />
@@ -27,43 +33,83 @@
     
     <!-- Additional SEO -->
     <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+    <meta name="googlebot" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+    <meta name="bingbot" content="index, follow" />
     <meta name="theme-color" content="#6366f1" />
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="geo.region" content="VN" />
+    <meta name="geo.placename" content="Vietnam" />
+    <meta name="language" content="Vietnamese" />
+    <meta name="revisit-after" content="1 days" />
     
-    <!-- Structured Data -->
+    <!-- Structured Data - WebSite with SearchAction -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
       "@type": "WebSite",
       "name": "Salemylink.com",
+      "alternateName": ["Salemylink", "Sale My Link"],
       "url": "https://salemylink.com",
-      "description": "Nền tảng bán sản phẩm digital hàng đầu Việt Nam",
+      "description": "Nền tảng bán sản phẩm digital hàng đầu Việt Nam - Mua bán ebook, tài liệu, khóa học online",
+      "inLanguage": "vi-VN",
       "potentialAction": {
         "@type": "SearchAction",
-        "target": "https://salemylink.com/search?q={search_term_string}",
+        "target": {
+          "@type": "EntryPoint",
+          "urlTemplate": "https://salemylink.com/search?q={search_term_string}"
+        },
         "query-input": "required name=search_term_string"
       }
     }
     </script>
+    
+    <!-- Structured Data - Organization -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
       "@type": "Organization",
+      "@id": "https://salemylink.com/#organization",
       "name": "Salemylink.com",
       "url": "https://salemylink.com",
-      "logo": "https://salemylink.com/logo.png",
-      "description": "Nền tảng thương mại điện tử hàng đầu cho sản phẩm digital tại Việt Nam",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://salemylink.com/logo.png",
+        "width": 512,
+        "height": 512
+      },
+      "description": "Nền tảng thương mại điện tử hàng đầu cho sản phẩm digital tại Việt Nam. Kết nối người mua và người bán sản phẩm số.",
+      "foundingDate": "2024",
+      "areaServed": {
+        "@type": "Country",
+        "name": "Vietnam"
+      },
       "contactPoint": {
         "@type": "ContactPoint",
-        "telephone": "1900-xxxx",
         "contactType": "customer service",
         "areaServed": "VN",
-        "availableLanguage": "Vietnamese"
+        "availableLanguage": ["Vietnamese", "English"]
       },
       "sameAs": [
         "https://facebook.com/salemylink",
         "https://twitter.com/salemylink",
         "https://instagram.com/salemylink"
       ]
+    }
+    </script>
+    
+    <!-- Structured Data - LocalBusiness for local SEO -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "OnlineStore",
+      "name": "Salemylink.com",
+      "url": "https://salemylink.com",
+      "description": "Marketplace sản phẩm digital - Mua bán ebook, tài liệu, khóa học online",
+      "priceRange": "₫₫",
+      "currenciesAccepted": "VND",
+      "paymentAccepted": "Credit Card, Bank Transfer",
+      "areaServed": "VN",
+      "serviceType": "Digital Products Marketplace"
     }
     </script>
   </head>

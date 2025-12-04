@@ -123,25 +123,74 @@ export default function Category() {
     );
   }
 
+  const categoryUrl = `https://salemylink.com/category/${category.slug}`;
+  
+  // Enhanced structured data for category page
+  const categoryStructuredData = {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    "@id": categoryUrl,
+    "name": `${category.name} - Sản phẩm Digital`,
+    "description": category.description || `Khám phá ${products.length} sản phẩm digital trong danh mục ${category.name}`,
+    "url": categoryUrl,
+    "isPartOf": {
+      "@id": "https://salemylink.com/#website"
+    },
+    "breadcrumb": {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Trang chủ",
+          "item": "https://salemylink.com/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": category.name,
+          "item": categoryUrl
+        }
+      ]
+    },
+    "mainEntity": {
+      "@type": "ItemList",
+      "name": `Danh sách ${category.name}`,
+      "description": `${products.length} sản phẩm digital trong danh mục ${category.name}`,
+      "numberOfItems": products.length,
+      "itemListOrder": "https://schema.org/ItemListOrderDescending",
+      "itemListElement": products.slice(0, 10).map((product, index) => ({
+        "@type": "ListItem",
+        "position": index + 1,
+        "item": {
+          "@type": "Product",
+          "name": product.title,
+          "description": product.short_description,
+          "url": `https://salemylink.com/product/${product.slug}`,
+          "offers": {
+            "@type": "Offer",
+            "price": product.price,
+            "priceCurrency": "VND",
+            "availability": "https://schema.org/InStock"
+          },
+          "aggregateRating": product.rating_count > 0 ? {
+            "@type": "AggregateRating",
+            "ratingValue": product.rating_average,
+            "reviewCount": product.rating_count
+          } : undefined
+        }
+      }))
+    }
+  };
+
   return (
     <div className="min-h-screen">
       <SEO 
-        title={`${category.name} - Danh mục sản phẩm digital`}
-        description={category.description || `Khám phá ${products.length} sản phẩm digital chất lượng cao trong danh mục ${category.name}. Mua bán ebook, tài liệu, khóa học online tại Salemylink.com`}
-        keywords={`${category.name}, sản phẩm digital, ebook, tài liệu, khóa học, ${category.name} việt nam, mua ${category.name} online`}
-        url={`https://salemylink.com/category/${category.slug}`}
-        structuredData={{
-          "@context": "https://schema.org",
-          "@type": "CollectionPage",
-          "name": category.name,
-          "description": category.description,
-          "url": `https://salemylink.com/category/${category.slug}`,
-          "numberOfItems": products.length,
-          "about": {
-            "@type": "Thing",
-            "name": category.name
-          }
-        }}
+        title={`${category.name} - Sản phẩm Digital chất lượng cao | Salemylink.com`}
+        description={category.description || `Khám phá ${products.length} sản phẩm digital chất lượng cao trong danh mục ${category.name}. Mua bán ebook, tài liệu, khóa học online tại Salemylink.com với giá tốt nhất.`}
+        keywords={`${category.name}, ${category.name} giá rẻ, mua ${category.name}, ${category.name} online, sản phẩm digital, ebook, tài liệu, khóa học, ${category.name} việt nam, download ${category.name}`}
+        url={categoryUrl}
+        structuredData={categoryStructuredData}
       />
       <Header />
       

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -404,25 +404,30 @@ export default function ProductDetail() {
               </CardContent>
             </Card>
 
-            {/* Seller Info */}
-            <Card>
-              <CardContent className="p-4">
-                <h3 className="font-semibold mb-3">Người bán</h3>
-                <div className="flex items-center space-x-3">
-                  <img
-                    src={product.profiles?.avatar_url || "/placeholder.svg"}
-                    alt={`${product.profiles?.full_name} - Người bán trên Salemylink`}
-                    className="w-10 h-10 rounded-full object-cover"
-                    loading="lazy"
-                    width="40"
-                    height="40"
-                  />
-                  <div>
-                    <div className="font-medium">{product.profiles?.full_name || 'Ẩn danh'}</div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            {/* Seller Info - Compact */}
+            <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
+              <img
+                src={product.profiles?.avatar_url || "/placeholder.svg"}
+                alt={`${product.profiles?.full_name} - Người bán trên Salemylink`}
+                className="w-9 h-9 rounded-full object-cover"
+                loading="lazy"
+              />
+              <div className="flex-1 min-w-0">
+                <span className="text-xs text-muted-foreground">Người bán</span>
+                <Link 
+                  to={`/seller/${product.seller_id}`}
+                  className="block font-medium text-sm hover:text-primary transition-colors truncate"
+                >
+                  {product.profiles?.full_name || 'Ẩn danh'}
+                </Link>
+              </div>
+              <Link 
+                to={`/seller/${product.seller_id}`}
+                className="text-xs text-primary hover:underline whitespace-nowrap"
+              >
+                Xem shop
+              </Link>
+            </div>
 
             {/* Tags */}
             {product.tags && product.tags.length > 0 && (

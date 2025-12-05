@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { 
@@ -40,6 +41,7 @@ const colorMap = [
 type Category = {
   id: string;
   name: string;
+  slug: string;
   icon: string;
   product_count: number;
   color: string;
@@ -61,6 +63,7 @@ export const Categories = () => {
         .select(`
           id,
           name,
+          slug,
           icon,
           products!inner(id)
         `)
@@ -72,6 +75,7 @@ export const Categories = () => {
       const categoriesWithCount = categoriesData?.map((category: any, index: number) => ({
         id: category.id,
         name: category.name,
+        slug: category.slug,
         icon: category.icon || 'BookOpen',
         product_count: category.products?.length || 0,
         color: colorMap[index % colorMap.length]
@@ -117,6 +121,7 @@ export const Categories = () => {
       </section>
     );
   }
+
   return (
     <section className="py-20 gradient-subtle" aria-labelledby="categories-heading">
       <div className="container mx-auto px-4">
@@ -136,45 +141,51 @@ export const Categories = () => {
           {categories.map((category, index) => {
             const IconComponent = iconMap[category.icon] || BookOpen;
             return (
-              <Card 
+              <Link 
                 key={category.id}
-                className="group cursor-pointer hover:shadow-xl transition-all duration-300 hover:-translate-y-2 border-2 hover:border-primary/20"
-                style={{
-                  animationDelay: `${index * 100}ms`
-                }}
+                to={`/category/${category.slug}`}
               >
-                <CardContent className="p-6 text-center">
-                  <div className={`mx-auto w-16 h-16 rounded-full bg-gradient-to-br ${category.color} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform shadow-lg`}>
-                    <IconComponent className="h-8 w-8 text-white" />
-                  </div>
-                  
-                  <h3 className="font-semibold text-lg mb-2 group-hover:text-primary transition-colors">
-                    {category.name}
-                  </h3>
-                  
-                  <p className="text-sm text-muted-foreground mb-4">
-                    {category.product_count} sản phẩm
-                  </p>
-                  
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    className="group-hover:bg-primary group-hover:text-primary-foreground transition-all"
-                  >
-                    Xem tất cả
-                    <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
-                  </Button>
-                </CardContent>
-              </Card>
+                <Card 
+                  className="group cursor-pointer hover:shadow-xl transition-all duration-300 hover:-translate-y-2 border-2 hover:border-primary/20 h-full"
+                  style={{
+                    animationDelay: `${index * 100}ms`
+                  }}
+                >
+                  <CardContent className="p-6 text-center">
+                    <div className={`mx-auto w-16 h-16 rounded-full bg-gradient-to-br ${category.color} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform shadow-lg`}>
+                      <IconComponent className="h-8 w-8 text-white" />
+                    </div>
+                    
+                    <h3 className="font-semibold text-lg mb-2 group-hover:text-primary transition-colors">
+                      {category.name}
+                    </h3>
+                    
+                    <p className="text-sm text-muted-foreground mb-4">
+                      {category.product_count} sản phẩm
+                    </p>
+                    
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="group-hover:bg-primary group-hover:text-primary-foreground transition-all"
+                    >
+                      Xem tất cả
+                      <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                    </Button>
+                  </CardContent>
+                </Card>
+              </Link>
             );
           })}
         </div>
 
         <div className="text-center">
-          <Button variant="accent" size="lg" className="group">
-            Khám phá tất cả danh mục
-            <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
-          </Button>
+          <Link to="/search">
+            <Button variant="accent" size="lg" className="group">
+              Khám phá tất cả danh mục
+              <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+            </Button>
+          </Link>
         </div>
       </div>
     </section>

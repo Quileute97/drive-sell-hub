@@ -295,38 +295,25 @@ export default function ProductDetail() {
             </div>
 
             {/* Preview Content */}
-            <div className="aspect-square rounded-lg overflow-hidden relative">
+            <div className="rounded-lg overflow-hidden relative border bg-muted" style={{ height: '70vh', maxHeight: '600px' }}>
               {product.google_drive_link ? (
-                // Google Drive Preview with overlay to prevent opening in new tab
-                <div className="w-full h-full relative">
-                  <iframe
-                    src={getGoogleDrivePreviewUrl(product.google_drive_link)}
-                    className="w-full h-full"
-                    frameBorder="0"
-                    title={`Xem trước ${product.title}`}
-                    sandbox="allow-same-origin allow-scripts"
-                    allowFullScreen
-                  />
-                  {/* Invisible overlay to prevent clicks on iframe links */}
-                  <div 
-                    className="absolute inset-0 pointer-events-auto"
-                    style={{ 
-                      background: 'transparent',
-                      zIndex: 1
-                    }}
-                    onContextMenu={(e) => e.preventDefault()}
-                  />
-                </div>
+                // Google Drive Preview - allows scrolling inside iframe
+                <iframe
+                  src={getGoogleDrivePreviewUrl(product.google_drive_link)}
+                  className="w-full h-full"
+                  frameBorder="0"
+                  title={`Xem trước ${product.title}`}
+                  sandbox="allow-same-origin allow-scripts"
+                  allowFullScreen
+                />
               ) : (
                 // Fallback to thumbnail if no preview
-                  <img
-                    src={product.thumbnail_url || "/placeholder.svg"}
-                    alt={`${product.title} - ${product.categories?.name} - Sản phẩm digital chất lượng cao trên Salemylink`}
-                    className="w-full h-full object-cover"
-                    loading="lazy"
-                    width="800"
-                    height="800"
-                  />
+                <img
+                  src={product.thumbnail_url || "/placeholder.svg"}
+                  alt={`${product.title} - ${product.categories?.name} - Sản phẩm digital chất lượng cao trên Salemylink`}
+                  className="w-full h-full object-cover"
+                  loading="lazy"
+                />
               )}
             </div>
 

@@ -318,6 +318,7 @@ export type Database = {
           created_at: string
           description: string | null
           download_count: number | null
+          download_only_link: string | null
           file_format: string | null
           file_size: string | null
           google_drive_link: string
@@ -346,6 +347,7 @@ export type Database = {
           created_at?: string
           description?: string | null
           download_count?: number | null
+          download_only_link?: string | null
           file_format?: string | null
           file_size?: string | null
           google_drive_link: string
@@ -374,6 +376,7 @@ export type Database = {
           created_at?: string
           description?: string | null
           download_count?: number | null
+          download_only_link?: string | null
           file_format?: string | null
           file_size?: string | null
           google_drive_link?: string

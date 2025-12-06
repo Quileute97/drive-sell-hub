@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
 import { Star } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -30,12 +31,14 @@ export const ProductReviews = ({ productId }: ProductReviewsProps) => {
   const [showReviewForm, setShowReviewForm] = useState(false);
   const [rating, setRating] = useState(5);
   const [comment, setComment] = useState("");
+  const [guestName, setGuestName] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [currentUser, setCurrentUser] = useState<any>(null);
   const { toast } = useToast();
 
   useEffect(() => {
     fetchReviews();
-    checkUserPurchase();
+    checkUserStatus();
   }, [productId]);
 
   const fetchReviews = async () => {
@@ -63,9 +66,11 @@ export const ProductReviews = ({ productId }: ProductReviewsProps) => {
     }
   };
 
-  const checkUserPurchase = async () => {
+  const checkUserStatus = async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
+      setCurrentUser(user);
+      
       if (!user) return;
 
       // Check if user has purchased this product
@@ -96,48 +101,45 @@ export const ProductReviews = ({ productId }: ProductReviewsProps) => {
 
       if (existingReview) {
         setUserReview(existingReview);
+        setRating(existingReview.rating);
+        setComment(existingReview.comment || "");
       }
     } catch (error) {
-      console.error('Error checking purchase:', error);
+      console.error('Error checking user status:', error);
     }
   };
 
   const handleSubmitReview = async () => {
+    if (!comment.trim()) {
+      toast({
+        title: "Lỗi",
+        description: "Vui lòng nhập nhận xét",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // For guest users, require name
+    if (!currentUser && !guestName.trim()) {
+      toast({
+        title: "Lỗi",
+        description: "Vui lòng nhập tên của bạn",
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
       setSubmitting(true);
-      const { data: { user } } = await supabase.auth.getUser();
       
-      if (!user) {
-        toast({
-          title: "Lỗi",
-          description: "Bạn cần đăng nhập để đánh giá",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      if (!userHasPurchased) {
-        toast({
-          title: "Lỗi",
-          description: "Bạn cần mua sản phẩm này để đánh giá",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      const reviewData = {
-        product_id: productId,
-        buyer_id: user.id,
-        rating,
-        comment,
-        is_verified_purchase: true,
-      };
-
-      if (userReview) {
-        // Update existing review
+      if (currentUser && userReview) {
+        // Update existing review for logged-in user
         const { error } = await supabase
           .from('reviews')
-          .update(reviewData)
+          .update({
+            rating,
+            comment,
+          })
           .eq('id', userReview.id);
 
         if (error) throw error;
@@ -147,7 +149,20 @@ export const ProductReviews = ({ productId }: ProductReviewsProps) => {
           description: "Đã cập nhật đánh giá của bạn",
         });
       } else {
-        // Create new review
+        // Create new review (for both logged-in and guest users)
+        const reviewData: any = {
+          product_id: productId,
+          rating,
+          comment: currentUser ? comment : `[${guestName}] ${comment}`,
+          is_verified_purchase: userHasPurchased,
+          is_approved: true, // Auto-approve for now, can be changed to false for moderation
+        };
+
+        // If user is logged in, add buyer_id
+        if (currentUser) {
+          reviewData.buyer_id = currentUser.id;
+        }
+
         const { error } = await supabase
           .from('reviews')
           .insert(reviewData);
@@ -156,20 +171,21 @@ export const ProductReviews = ({ productId }: ProductReviewsProps) => {
 
         toast({
           title: "Thành công",
-          description: "Đánh giá của bạn đang chờ duyệt",
+          description: "Cảm ơn bạn đã đánh giá!",
         });
       }
 
       setShowReviewForm(false);
       setComment("");
+      setGuestName("");
       setRating(5);
       fetchReviews();
-      checkUserPurchase();
+      checkUserStatus();
     } catch (error) {
       console.error('Error submitting review:', error);
       toast({
         title: "Lỗi",
-        description: "Không thể gửi đánh giá",
+        description: "Không thể gửi đánh giá. Vui lòng thử lại.",
         variant: "destructive",
       });
     } finally {
@@ -226,7 +242,7 @@ export const ProductReviews = ({ productId }: ProductReviewsProps) => {
           <h2 className="text-2xl font-bold">
             Đánh giá sản phẩm ({reviews.length})
           </h2>
-          {userHasPurchased && !showReviewForm && (
+          {!showReviewForm && (
             <Button onClick={() => setShowReviewForm(true)}>
               {userReview ? 'Chỉnh sửa đánh giá' : 'Viết đánh giá'}
             </Button>
@@ -242,6 +258,21 @@ export const ProductReviews = ({ productId }: ProductReviewsProps) => {
               </h3>
               
               <div className="space-y-4">
+                {/* Guest name field - only show for non-logged users */}
+                {!currentUser && (
+                  <div>
+                    <label className="text-sm font-medium mb-2 block">
+                      Tên của bạn <span className="text-destructive">*</span>
+                    </label>
+                    <Input
+                      value={guestName}
+                      onChange={(e) => setGuestName(e.target.value)}
+                      placeholder="Nhập tên hiển thị..."
+                      maxLength={50}
+                    />
+                  </div>
+                )}
+
                 <div>
                   <label className="text-sm font-medium mb-2 block">
                     Đánh giá của bạn
@@ -251,7 +282,7 @@ export const ProductReviews = ({ productId }: ProductReviewsProps) => {
 
                 <div>
                   <label className="text-sm font-medium mb-2 block">
-                    Nhận xét
+                    Nhận xét <span className="text-destructive">*</span>
                   </label>
                   <Textarea
                     value={comment}
@@ -289,9 +320,7 @@ export const ProductReviews = ({ productId }: ProductReviewsProps) => {
           {reviews.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
               <p>Chưa có đánh giá nào cho sản phẩm này</p>
-              {userHasPurchased && (
-                <p className="mt-2">Hãy là người đầu tiên đánh giá!</p>
-              )}
+              <p className="mt-2">Hãy là người đầu tiên đánh giá!</p>
             </div>
           ) : (
             reviews.map((review) => (

@@ -46,6 +46,7 @@ const AddProductForm = ({ onClose, onSuccess }: AddProductFormProps) => {
     short_description: '',
     google_drive_link: '',
     preview_link: '',
+    download_only_link: '',
     category_id: '',
     price: '',
     original_price: '',
@@ -182,6 +183,7 @@ const AddProductForm = ({ onClose, onSuccess }: AddProductFormProps) => {
           short_description: formData.short_description.trim(),
           google_drive_link: formData.google_drive_link.trim(),
           preview_link: formData.preview_link.trim() || null,
+          download_only_link: formData.download_only_link.trim() || null,
           category_id: formData.category_id,
           price: Number(formData.price),
           original_price: formData.original_price ? Number(formData.original_price) : null,
@@ -339,6 +341,21 @@ const AddProductForm = ({ onClose, onSuccess }: AddProductFormProps) => {
                       onChange={(e) => handleInputChange('preview_link', e.target.value)}
                       placeholder="https://... (link xem trước an toàn cho khách hàng)"
                     />
+                  </div>
+
+                  <Separator />
+
+                  <div>
+                    <Label htmlFor="download_only_link">Link tải xuống trực tiếp (EXE, Video, Ảnh...)</Label>
+                    <Input
+                      id="download_only_link"
+                      value={formData.download_only_link}
+                      onChange={(e) => handleInputChange('download_only_link', e.target.value)}
+                      placeholder="https://drive.google.com/... (cho file không thể embed như EXE, video, ảnh)"
+                    />
+                    <p className="text-sm text-muted-foreground mt-1">
+                      Dùng cho các file không thể xem trước trên trình duyệt (EXE, video, ảnh lớn...)
+                    </p>
                   </div>
 
                   <Separator />

@@ -35,6 +35,7 @@ interface ProductDetail {
   seller_id: string;
   category_id: string;
   google_drive_link: string;
+  download_only_link: string | null;
   meta_title: string | null;
   meta_description: string | null;
   profiles: {
@@ -296,7 +297,27 @@ export default function ProductDetail() {
 
             {/* Preview Content */}
             <div className="rounded-lg overflow-hidden relative border bg-muted" style={{ height: '70vh', maxHeight: '600px' }}>
-              {product.google_drive_link ? (
+              {product.download_only_link ? (
+                // Download-only file (EXE, video, images) - show thumbnail with download info
+                <div className="w-full h-full flex flex-col items-center justify-center p-8 text-center">
+                  <img
+                    src={product.thumbnail_url || "/placeholder.svg"}
+                    alt={`${product.title} - ${product.categories?.name}`}
+                    className="max-w-full max-h-48 object-contain rounded-lg mb-6"
+                    loading="lazy"
+                  />
+                  <div className="space-y-4">
+                    <div className="text-muted-foreground">
+                      <p className="font-medium text-lg">File không thể xem trước</p>
+                      <p className="text-sm">Định dạng: {product.file_format || 'EXE/Video/Image'}</p>
+                      {product.file_size && <p className="text-sm">Dung lượng: {product.file_size}</p>}
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      Mua sản phẩm để nhận link tải xuống trực tiếp
+                    </p>
+                  </div>
+                </div>
+              ) : product.google_drive_link ? (
                 // Google Drive Preview - allows scrolling inside iframe
                 <iframe
                   src={getGoogleDrivePreviewUrl(product.google_drive_link)}
@@ -318,7 +339,7 @@ export default function ProductDetail() {
             </div>
 
             {/* Preview Note */}
-            {product.google_drive_link && (
+            {product.google_drive_link && !product.download_only_link && (
               <p className="text-sm text-muted-foreground text-center">
                 Đây là bản xem trước tài liệu. Mua sản phẩm để tải về phiên bản đầy đủ.
               </p>

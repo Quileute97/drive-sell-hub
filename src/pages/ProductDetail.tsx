@@ -231,7 +231,7 @@ export default function ProductDetail() {
           "@type": "Product",
           "name": product.title,
           "description": product.description,
-          "image": [product.thumbnail_url, ...(product.images || [])],
+          "image": [product.thumbnail_url, ...(product.images || [])].filter(Boolean),
           "brand": {
             "@type": "Brand",
             "name": "Salemylink.com"
@@ -248,7 +248,41 @@ export default function ProductDetail() {
             "itemCondition": "https://schema.org/NewCondition",
             "seller": {
               "@type": "Organization",
-              "name": product.profiles?.full_name || "Salemylink.com"
+              "name": product.profiles?.full_name || "Salemylink.com",
+              "image": "https://salemylink.com/logo.png"
+            },
+            "shippingDetails": {
+              "@type": "OfferShippingDetails",
+              "shippingRate": {
+                "@type": "MonetaryAmount",
+                "value": "0",
+                "currency": "VND"
+              },
+              "shippingDestination": {
+                "@type": "DefinedRegion",
+                "addressCountry": "VN"
+              },
+              "deliveryTime": {
+                "@type": "ShippingDeliveryTime",
+                "handlingTime": {
+                  "@type": "QuantitativeValue",
+                  "minValue": 0,
+                  "maxValue": 0,
+                  "unitCode": "DAY"
+                },
+                "transitTime": {
+                  "@type": "QuantitativeValue",
+                  "minValue": 0,
+                  "maxValue": 0,
+                  "unitCode": "DAY"
+                }
+              }
+            },
+            "hasMerchantReturnPolicy": {
+              "@type": "MerchantReturnPolicy",
+              "applicableCountry": "VN",
+              "returnPolicyCategory": "https://schema.org/MerchantReturnNotPermitted",
+              "merchantReturnDays": 0
             }
           },
           "aggregateRating": product.rating_count > 0 ? {

@@ -29,13 +29,13 @@ export const Hero = () => {
         .select('*', { count: 'exact', head: true })
         .eq('status', 'active');
 
-      // Get total downloads from orders
-      const { data: downloadsData } = await supabase
-        .from('orders')
+      // Get total downloads from products
+      const { data: productsData } = await supabase
+        .from('products')
         .select('download_count')
-        .eq('status', 'paid');
+        .eq('status', 'active');
 
-      const totalDownloads = downloadsData?.reduce((sum, order) => sum + (order.download_count || 0), 0) || 0;
+      const totalDownloads = productsData?.reduce((sum, product) => sum + (product.download_count || 0), 0) || 0;
 
       setStats({
         sellers: sellersCount || 0,

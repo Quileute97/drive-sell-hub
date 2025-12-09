@@ -1,2 +1,33 @@
-# Netlify SPA redirect - All routes serve index.html
+# 301 Redirects for old/deprecated URLs
+/seller-auth          /seller-signup        301
+/login                /auth                 301
+/signup               /auth                 301
+/register             /auth                 301
+/dang-nhap            /auth                 301
+/dang-ky              /auth                 301
+/gioi-thieu           /about                301
+/lien-he              /about                301
+/contact              /about                301
+/huong-dan            /how-it-works         301
+/guide                /how-it-works         301
+/chinh-sach-bao-mat   /privacy-policy       301
+/privacy              /privacy-policy       301
+/dieu-khoan           /terms-of-service     301
+/terms                /terms-of-service     301
+/gio-hang             /cart                 301
+/thanh-toan           /cart                 301
+/checkout             /cart                 301
+/tim-kiem             /search               301
+/products             /search               301
+/san-pham             /search               301
+/danh-muc             /                     301
+/categories           /                     301
+/home                 /                     301
+/index                /                     301
+/index.html           /                     301
+/seller               /seller-guide         301
+/become-seller        /seller-signup        301
+/tro-thanh-nguoi-ban  /seller-signup        301
+
+# Netlify SPA redirect - All other routes serve index.html
 /*    /index.html   200

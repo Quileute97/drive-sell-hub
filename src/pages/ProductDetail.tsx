@@ -213,100 +213,103 @@ export default function ProductDetail() {
     );
   }
 
-  const productUrl = `https://salemylink.com/product/${product.slug}`;
-  const metaTitle = product.meta_title || `${product.title} - ${product.categories?.name} | Salemylink.com`;
-  const metaDescription = product.meta_description || product.short_description || product.description?.substring(0, 160);
-  
+  const siteUrl = "https://salemylink.com";
+  const productUrl = `${siteUrl}/product/${product.slug}`;
+  const metaTitle = product.meta_title || `${product.title} - ${product.categories?.name || "Sản phẩm"}`;
+  const metaDescription =
+    product.meta_description ||
+    product.short_description ||
+    (product.description ? product.description.substring(0, 160) : "");
+
+  const productImages = [product.thumbnail_url, ...(product.images || [])].filter(Boolean);
+
+  const productStructuredData: Record<string, any> = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    name: product.title,
+    description: product.description,
+    image: productImages,
+    sku: product.id,
+    category: product.categories?.name,
+    brand: {
+      "@type": "Brand",
+      name: "Salemylink.com",
+    },
+    offers: {
+      "@type": "Offer",
+      url: productUrl,
+      price: product.price,
+      priceCurrency: "VND",
+      availability: "https://schema.org/InStock",
+      itemCondition: "https://schema.org/NewCondition",
+      seller: {
+        "@type": "Organization",
+        name: product.profiles?.full_name || "Salemylink.com",
+      },
+    },
+  };
+
+  // Only include rating markup when there is real rating data (Google rich result guideline)
+  if ((product.rating_count || 0) > 0 && (product.rating_average || 0) > 0) {
+    productStructuredData.aggregateRating = {
+      "@type": "AggregateRating",
+      ratingValue: product.rating_average,
+      reviewCount: product.rating_count,
+      bestRating: "5",
+      worstRating: "1",
+    };
+  }
+
+  const breadcrumbStructuredData = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: "Trang chủ",
+        item: siteUrl,
+      },
+      ...(product.categories?.name && product.categories?.slug
+        ? [
+            {
+              "@type": "ListItem",
+              position: 2,
+              name: product.categories.name,
+              item: `${siteUrl}/category/${product.categories.slug}`,
+            },
+          ]
+        : []),
+      {
+        "@type": "ListItem",
+        position: product.categories?.name && product.categories?.slug ? 3 : 2,
+        name: product.title,
+        item: productUrl,
+      },
+    ],
+  };
+
+  const combinedStructuredData = [breadcrumbStructuredData, productStructuredData];
+
   return (
     <div className="min-h-screen">
       <SEO 
         title={metaTitle}
         description={metaDescription}
-        keywords={`${product.title}, ${product.categories?.name}, ${product.tags?.join(', ')}, sản phẩm digital, mua bán online, ${product.file_format}`}
+        keywords={[
+          product.title,
+          product.categories?.name,
+          ...(product.tags || []),
+          "sản phẩm digital",
+          "mua bán online",
+          product.file_format,
+        ]
+          .filter(Boolean)
+          .join(", ")}
         image={product.thumbnail_url}
         url={productUrl}
-        type="product"
-        structuredData={{
-          "@context": "https://schema.org",
-          "@type": "Product",
-          "name": product.title,
-          "description": product.description,
-          "image": [product.thumbnail_url, ...(product.images || [])].filter(Boolean),
-          "brand": {
-            "@type": "Brand",
-            "name": "Salemylink.com"
-          },
-          "sku": product.id,
-          "category": product.categories?.name,
-          "offers": {
-            "@type": "Offer",
-            "url": productUrl,
-            "price": product.price,
-            "priceCurrency": "VND",
-            "priceValidUntil": new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-            "availability": "https://schema.org/InStock",
-            "itemCondition": "https://schema.org/NewCondition",
-            "seller": {
-              "@type": "Organization",
-              "name": product.profiles?.full_name || "Salemylink.com",
-              "image": "https://salemylink.com/logo.png"
-            },
-            "shippingDetails": {
-              "@type": "OfferShippingDetails",
-              "shippingRate": {
-                "@type": "MonetaryAmount",
-                "value": "0",
-                "currency": "VND"
-              },
-              "shippingDestination": {
-                "@type": "DefinedRegion",
-                "addressCountry": "VN"
-              },
-              "deliveryTime": {
-                "@type": "ShippingDeliveryTime",
-                "handlingTime": {
-                  "@type": "QuantitativeValue",
-                  "minValue": 0,
-                  "maxValue": 0,
-                  "unitCode": "DAY"
-                },
-                "transitTime": {
-                  "@type": "QuantitativeValue",
-                  "minValue": 0,
-                  "maxValue": 0,
-                  "unitCode": "DAY"
-                }
-              }
-            },
-            "hasMerchantReturnPolicy": {
-              "@type": "MerchantReturnPolicy",
-              "applicableCountry": "VN",
-              "returnPolicyCategory": "https://schema.org/MerchantReturnNotPermitted",
-              "merchantReturnDays": 0
-            }
-          },
-          "aggregateRating": {
-            "@type": "AggregateRating",
-            "ratingValue": product.rating_count > 0 ? product.rating_average : 5,
-            "reviewCount": product.rating_count > 0 ? product.rating_count : 1,
-            "bestRating": "5",
-            "worstRating": "1"
-          },
-          "review": {
-            "@type": "Review",
-            "reviewRating": {
-              "@type": "Rating",
-              "ratingValue": product.rating_count > 0 ? product.rating_average : 5,
-              "bestRating": "5",
-              "worstRating": "1"
-            },
-            "author": {
-              "@type": "Person",
-              "name": product.rating_count > 0 ? "Khách hàng đã mua" : "Salemylink"
-            },
-            "reviewBody": product.rating_count > 0 ? "Đánh giá từ khách hàng đã mua sản phẩm" : "Sản phẩm chất lượng, giao hàng nhanh chóng"
-          }
-        }}
+        type="website"
+        structuredData={combinedStructuredData}
       />
       <Header />
       

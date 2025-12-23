@@ -7,7 +7,7 @@ interface SEOProps {
   image?: string;
   url?: string;
   type?: string;
-  structuredData?: object;
+  structuredData?: object | object[];
   noindex?: boolean;
   publishedTime?: string;
   modifiedTime?: string;

@@ -141,16 +141,13 @@ const AddProductForm = ({ onClose, onSuccess }: AddProductFormProps) => {
     setImages(images.filter(img => img !== imageToRemove));
   };
 
-  const validateGoogleDriveLink = (link: string) => {
-    const drivePatterns = [
-      /^https:\/\/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)\/view/,
-      /^https:\/\/drive\.google\.com\/open\?id=([a-zA-Z0-9_-]+)/,
-      /^https:\/\/docs\.google\.com\/document\/d\/([a-zA-Z0-9_-]+)/,
-      /^https:\/\/docs\.google\.com\/spreadsheets\/d\/([a-zA-Z0-9_-]+)/,
-      /^https:\/\/docs\.google\.com\/presentation\/d\/([a-zA-Z0-9_-]+)/
-    ];
-    
-    return drivePatterns.some(pattern => pattern.test(link));
+  const isValidUrl = (url: string) => {
+    try {
+      new URL(url);
+      return true;
+    } catch {
+      return false;
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -163,15 +160,18 @@ const AddProductForm = ({ onClose, onSuccess }: AddProductFormProps) => {
       return;
     }
 
-    // Validate Google Drive link only if provided
-    if (formData.google_drive_link.trim() && !validateGoogleDriveLink(formData.google_drive_link)) {
-      toast.error('Link Google Drive không đúng định dạng. Vui lòng kiểm tra lại.');
+    // Get the primary download link
+    const primaryLink = formData.google_drive_link.trim() || formData.download_only_link.trim();
+    
+    // Require at least one download link
+    if (!primaryLink) {
+      toast.error('Vui lòng nhập ít nhất một link tải xuống');
       return;
     }
 
-    // Require at least one download link
-    if (!formData.google_drive_link.trim() && !formData.download_only_link.trim()) {
-      toast.error('Vui lòng nhập ít nhất một link tải xuống (Google Drive hoặc Link trực tiếp)');
+    // Validate URL format
+    if (!isValidUrl(primaryLink)) {
+      toast.error('Link tải xuống không hợp lệ. Vui lòng nhập URL đầy đủ (bắt đầu bằng https://)');
       return;
     }
 
@@ -336,21 +336,21 @@ const AddProductForm = ({ onClose, onSuccess }: AddProductFormProps) => {
                 <CardContent className="space-y-4">
                   <div className="bg-muted/50 p-4 rounded-lg border border-dashed">
                     <Label htmlFor="google_drive_link" className="text-base font-medium">
-                      Link Google Drive (Cho PDF, DOCX, PPT, Excel...)
+                      Link tải sản phẩm (Google Drive, OneDrive, Dropbox...)
                     </Label>
                     <Input
                       id="google_drive_link"
                       value={formData.google_drive_link}
                       onChange={(e) => handleInputChange('google_drive_link', e.target.value)}
-                      placeholder="https://drive.google.com/file/d/..."
+                      placeholder="https://drive.google.com/... hoặc link tải khác"
                       className="mt-2"
                     />
                     <div className="mt-2 space-y-1">
                       <p className="text-sm text-muted-foreground">
-                        ✅ Định dạng hỗ trợ: <span className="font-medium">PDF, DOCX, PPTX, XLSX, Sheets, Docs</span>
+                        ✅ Hỗ trợ: <span className="font-medium">Google Drive, OneDrive, Dropbox, Mediafire, MEGA...</span>
                       </p>
                       <p className="text-xs text-muted-foreground">
-                        Ví dụ: https://drive.google.com/file/d/xxxxx/view hoặc https://docs.google.com/document/d/xxxxx
+                        💡 Link sẽ mở trong tab mới sau khi khách thanh toán để họ tự tải xuống
                       </p>
                     </div>
                   </div>
@@ -369,28 +369,23 @@ const AddProductForm = ({ onClose, onSuccess }: AddProductFormProps) => {
 
                   <div className="bg-primary/5 p-4 rounded-lg border border-dashed border-primary/30">
                     <Label htmlFor="download_only_link" className="text-base font-medium">
-                      Link tải trực tiếp (Cho EXE, Video, Ảnh, ZIP, RAR...)
+                      Link tải trực tiếp (tùy chọn - cho EXE, Video, ZIP...)
                     </Label>
                     <Input
                       id="download_only_link"
                       value={formData.download_only_link}
                       onChange={(e) => handleInputChange('download_only_link', e.target.value)}
-                      placeholder="https://drive.google.com/uc?export=download&id=... hoặc link trực tiếp khác"
+                      placeholder="https://... (link bất kỳ)"
                       className="mt-2"
                     />
-                    <div className="mt-2 space-y-1">
-                      <p className="text-sm text-muted-foreground">
-                        ✅ Dùng cho: <span className="font-medium">EXE, MP4, AVI, MOV, ZIP, RAR, ISO, JPG, PNG...</span>
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        💡 Nếu dùng Google Drive, hãy dùng link download trực tiếp: https://drive.google.com/uc?export=download&id=FILE_ID
-                      </p>
-                    </div>
+                    <p className="text-sm text-muted-foreground mt-2">
+                      Dùng khi muốn hiển thị riêng nút "Tải xuống" cho file không xem trước được
+                    </p>
                   </div>
                   
                   <div className="bg-amber-500/10 p-3 rounded-lg border border-amber-500/30">
                     <p className="text-sm text-amber-700 dark:text-amber-400">
-                      ⚠️ <strong>Lưu ý:</strong> Bạn cần nhập ít nhất một trong hai link trên. Link sẽ được bảo mật và chỉ gửi cho khách sau khi thanh toán.
+                      ⚠️ <strong>Lưu ý:</strong> Bạn cần nhập ít nhất một link ở trên. Link sẽ mở trong tab mới sau khi khách thanh toán.
                     </p>
                   </div>
 

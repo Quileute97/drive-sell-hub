@@ -552,7 +552,8 @@ export default function ProductDetail() {
         {/* Related Products */}
         <RelatedProducts 
           categoryId={product.category_id} 
-          currentProductId={product.id} 
+          currentProductId={product.id}
+          categorySlug={product.categories?.slug}
         />
       </main>
 

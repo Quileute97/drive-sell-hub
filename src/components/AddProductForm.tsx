@@ -82,14 +82,27 @@ const AddProductForm = ({ onClose, onSuccess }: AddProductFormProps) => {
 
     // Auto-generate slug from title
     if (field === 'title') {
-      const slug = value
+      let slug = value
         .toLowerCase()
         .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/[\u0300-\u036f]/g, '') // Remove Vietnamese diacritics
+        .replace(/đ/g, 'd') // Handle Vietnamese đ
         .replace(/[^a-z0-9\s-]/g, '')
         .replace(/\s+/g, '-')
         .replace(/-+/g, '-')
         .replace(/^-+|-+$/g, '');
+      
+      // SEO improvement: Separate file extensions from words
+      // e.g., "documentpdf" -> "document-pdf", "filedocx" -> "file-docx"
+      const fileExtensions = ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'zip', 'rar', 'exe', 'mp3', 'mp4', 'avi', 'mov', 'jpg', 'jpeg', 'png', 'gif', 'psd', 'ai', 'eps', 'svg', 'txt', 'csv'];
+      fileExtensions.forEach(ext => {
+        // Match extension at end of a word (not already separated)
+        const regex = new RegExp(`([a-z0-9])${ext}(?=-|$)`, 'g');
+        slug = slug.replace(regex, `$1-${ext}`);
+      });
+      
+      // Clean up any double dashes created
+      slug = slug.replace(/-+/g, '-').replace(/^-+|-+$/g, '');
       
       setFormData(prev => ({
         ...prev,

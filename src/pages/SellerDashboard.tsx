@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -28,7 +28,8 @@ import {
   Plus,
   Eye,
   MoreHorizontal,
-  DollarSign
+  DollarSign,
+  Download
 } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import Withdrawal from './Withdrawal';
@@ -92,6 +93,32 @@ const SellerDashboard = () => {
     enabled: !!user?.id
   });
 
+  // Realtime subscription for orders
+  useEffect(() => {
+    if (!user?.id) return;
+
+    const channel = supabase
+      .channel('seller-orders-realtime')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'orders',
+          filter: `seller_id=eq.${user.id}`
+        },
+        () => {
+          // Invalidate orders query to refresh data
+          queryClient.invalidateQueries({ queryKey: ['seller-orders', user.id] });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user?.id, queryClient]);
+
   // Calculate revenue chart data
   const revenueChartData = () => {
     if (!orders.length) return [];
@@ -133,9 +160,12 @@ const SellerDashboard = () => {
 
   // Calculate revenue stats
   const completedOrders = orders.filter(order => order.status === 'delivered');
+  const paidOrDeliveredOrders = orders.filter(order => order.status === 'paid' || order.status === 'delivered');
   const totalRevenue = completedOrders.reduce((sum, order) => sum + Number(order.seller_amount), 0);
   const totalOrders = orders.length;
   const totalProducts = products.length;
+  // Total downloads = sum of quantities from paid/delivered orders
+  const totalDownloads = paidOrDeliveredOrders.reduce((sum, order) => sum + (order.quantity || 1), 0);
 
   const handleAddProductSuccess = () => {
     queryClient.invalidateQueries({ queryKey: ['seller-products', user?.id] });
@@ -448,7 +478,7 @@ const SellerDashboard = () => {
           <TabsContent value="revenue" className="space-y-6">
             <h2 className="text-2xl font-semibold">Báo cáo doanh thu</h2>
             
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
               <Card>
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm font-medium text-muted-foreground">
@@ -473,6 +503,21 @@ const SellerDashboard = () => {
                   <div className="text-2xl font-bold">{totalOrders}</div>
                   <p className="text-xs text-muted-foreground">
                     Tất cả đơn hàng
+                  </p>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-1">
+                    <Download className="h-4 w-4" />
+                    Lượt tải xuống
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{totalDownloads}</div>
+                  <p className="text-xs text-muted-foreground">
+                    Từ đơn đã thanh toán
                   </p>
                 </CardContent>
               </Card>

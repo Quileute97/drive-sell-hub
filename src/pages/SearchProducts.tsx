@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useSearchParams, useNavigate } from "react-router-dom";
+import { useSearchParams, useNavigate, Link } from "react-router-dom";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -36,12 +36,14 @@ interface Product {
   categories: {
     id: string;
     name: string;
+    slug: string;
   };
 }
 
 interface Category {
   id: string;
   name: string;
+  slug: string;
 }
 
 export default function SearchProducts() {
@@ -68,7 +70,7 @@ export default function SearchProducts() {
     try {
       const { data, error } = await supabase
         .from('categories')
-        .select('id, name')
+        .select('id, name, slug')
         .eq('is_active', true)
         .order('sort_order', { ascending: true });
 
@@ -87,7 +89,7 @@ export default function SearchProducts() {
         .select(`
           *,
           profiles!products_seller_id_fkey(full_name),
-          categories(id, name)
+          categories(id, name, slug)
         `)
         .eq('status', 'active');
 
@@ -247,6 +249,19 @@ export default function SearchProducts() {
               Tìm kiếm
             </Button>
           </div>
+
+          {/* Category Quick Links for SEO */}
+          <nav className="flex flex-wrap gap-2" aria-label="Danh mục sản phẩm">
+            {categories.map((category) => (
+              <Link
+                key={category.id}
+                to={`/category/${category.slug}`}
+                className="text-sm px-3 py-1.5 rounded-full bg-muted hover:bg-primary hover:text-primary-foreground transition-colors"
+              >
+                {category.name}
+              </Link>
+            ))}
+          </nav>
         </div>
 
         {/* Results */}
@@ -301,9 +316,14 @@ export default function SearchProducts() {
 
                   <CardContent className="p-4 flex-grow flex flex-col">
                     <div className="mb-2 flex items-center gap-2 flex-wrap">
-                      <Badge variant="secondary" className="text-xs">
-                        {product.categories?.name}
-                      </Badge>
+                      <Link
+                        to={`/category/${product.categories?.slug}`}
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <Badge variant="secondary" className="text-xs hover:bg-primary hover:text-primary-foreground transition-colors cursor-pointer">
+                          {product.categories?.name}
+                        </Badge>
+                      </Link>
                       {product.file_format && (
                         <Badge variant="outline" className="text-xs font-medium bg-primary/10 text-primary border-primary/20">
                           {product.file_format.toUpperCase()}

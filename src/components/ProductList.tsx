@@ -1,10 +1,10 @@
 
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Star, Download, Eye, ShoppingCart } from "lucide-react";
+import { Star, Download, Eye, ShoppingCart, ArrowRight } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useCart } from "@/hooks/useCart";
@@ -33,6 +33,7 @@ interface Product {
   };
   categories: {
     name: string;
+    slug: string;
   };
 }
 
@@ -54,7 +55,7 @@ export const ProductList = () => {
         .select(`
           *,
           profiles!products_seller_id_fkey(full_name),
-          categories(name)
+          categories(name, slug)
         `)
         .eq('status', 'active')
         .order('created_at', { ascending: false })
@@ -167,9 +168,14 @@ export const ProductList = () => {
 
                 <CardContent className="p-4 flex-grow flex flex-col">
                   <div className="mb-2 flex items-center gap-2 flex-wrap">
-                    <Badge variant="secondary" className="text-xs">
-                      {product.categories?.name}
-                    </Badge>
+                    <Link 
+                      to={`/category/${product.categories?.slug}`}
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <Badge variant="secondary" className="text-xs hover:bg-primary hover:text-primary-foreground transition-colors cursor-pointer">
+                        {product.categories?.name}
+                      </Badge>
+                    </Link>
                     {product.file_format && (
                       <Badge variant="outline" className="text-xs font-medium bg-primary/10 text-primary border-primary/20">
                         {product.file_format.toUpperCase()}
@@ -247,9 +253,11 @@ export const ProductList = () => {
         )}
 
         <div className="text-center mt-12">
-          <Button variant="outline" size="lg">
-            Xem tất cả sản phẩm
-          </Button>
+          <a href="/search" className="inline-block">
+            <Button variant="outline" size="lg">
+              Xem tất cả sản phẩm
+            </Button>
+          </a>
         </div>
       </div>
     </section>

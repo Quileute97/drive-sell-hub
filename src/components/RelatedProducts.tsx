@@ -121,7 +121,7 @@ export const RelatedProducts = ({ categoryId, currentProductId, categorySlug }: 
       <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
         {products.map((product) => (
           <article key={product.id} className="group">
-            <Link to={`/product/${product.slug}`} className="block">
+            <Link to={`/product/${product.slug}`} className="block" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
               <Card className="hover:shadow-lg transition-all duration-300 hover:-translate-y-1 flex flex-col h-full">
                 <div className="relative overflow-hidden rounded-t-lg aspect-[4/3] bg-muted">
                   <img

@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Play, Download, Users } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { Link } from "react-router-dom";
 import heroImage from "@/assets/hero-digital-marketplace.jpg";
 
 export const Hero = () => {
@@ -67,14 +68,18 @@ export const Hero = () => {
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start mb-12">
-              <Button variant="hero" size="lg" className="group">
-                Bắt đầu bán ngay
-                <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
+              <Button variant="hero" size="lg" className="group" asChild>
+                <Link to="/seller-auth">
+                  Đăng kí bán ngay
+                  <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
+                </Link>
               </Button>
               
-              <Button variant="outline" size="lg" className="group">
-                <Play className="mr-2 h-5 w-5" />
-                Xem demo
+              <Button variant="outline" size="lg" className="group" asChild>
+                <Link to="/how-it-works">
+                  <Play className="mr-2 h-5 w-5" />
+                  Xem hướng dẫn
+                </Link>
               </Button>
             </div>
 

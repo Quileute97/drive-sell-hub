@@ -19,6 +19,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import AddProductForm from '@/components/AddProductForm';
+import EditProductForm from '@/components/EditProductForm';
 import { 
   Store, 
   Package, 
@@ -29,7 +30,8 @@ import {
   Eye,
   MoreHorizontal,
   DollarSign,
-  Download
+  Download,
+  Trash2
 } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import Withdrawal from './Withdrawal';
@@ -44,6 +46,7 @@ const SellerDashboard = () => {
   const { user, profile } = useAuth();
   const [activeTab, setActiveTab] = useState('shop');
   const [showAddProductForm, setShowAddProductForm] = useState(false);
+  const [editingProduct, setEditingProduct] = useState<any>(null);
   const queryClient = useQueryClient();
   const { toast } = useToast();
   
@@ -169,6 +172,16 @@ const SellerDashboard = () => {
 
   const handleAddProductSuccess = () => {
     queryClient.invalidateQueries({ queryKey: ['seller-products', user?.id] });
+  };
+
+  const handleEditProductSuccess = () => {
+    queryClient.invalidateQueries({ queryKey: ['seller-products', user?.id] });
+    setEditingProduct(null);
+  };
+
+  const handleDeleteProductSuccess = () => {
+    queryClient.invalidateQueries({ queryKey: ['seller-products', user?.id] });
+    setEditingProduct(null);
   };
 
   const handleUpdateProfile = async () => {
@@ -378,11 +391,11 @@ const SellerDashboard = () => {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                          <DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => window.open(`/product/${product.slug}`, '_blank')}>
                             <Eye className="h-4 w-4 mr-2" />
                             Xem chi tiết
                           </DropdownMenuItem>
-                          <DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => setEditingProduct(product)}>
                             <Edit2 className="h-4 w-4 mr-2" />
                             Chỉnh sửa
                           </DropdownMenuItem>
@@ -597,6 +610,15 @@ const SellerDashboard = () => {
         <AddProductForm
           onClose={() => setShowAddProductForm(false)}
           onSuccess={handleAddProductSuccess}
+        />
+      )}
+      
+      {editingProduct && (
+        <EditProductForm
+          product={editingProduct}
+          onClose={() => setEditingProduct(null)}
+          onSuccess={handleEditProductSuccess}
+          onDelete={handleDeleteProductSuccess}
         />
       )}
     </div>

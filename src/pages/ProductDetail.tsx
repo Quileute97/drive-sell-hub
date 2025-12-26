@@ -215,51 +215,99 @@ export default function ProductDetail() {
 
   const siteUrl = "https://salemylink.com";
   const productUrl = `${siteUrl}/product/${product.slug}`;
-  const metaTitle = product.meta_title || `${product.title} - ${product.categories?.name || "Sản phẩm"}`;
+  const metaTitle = product.meta_title || `${product.title} - Mua và tải ngay`;
   const metaDescription =
     product.meta_description ||
     product.short_description ||
-    (product.description ? product.description.substring(0, 160) : "");
+    (product.description ? product.description.substring(0, 160) : `Mua ${product.title} với giá tốt nhất. Tải xuống ngay sau khi thanh toán.`);
 
   const productImages = [product.thumbnail_url, ...(product.images || [])].filter(Boolean);
+  const mainImage = productImages[0] || "https://salemylink.com/placeholder.svg";
 
+  // Enhanced Product Structured Data (schema.org)
   const productStructuredData: Record<string, any> = {
     "@context": "https://schema.org",
     "@type": "Product",
+    "@id": productUrl,
     name: product.title,
-    description: product.description,
-    image: productImages,
+    description: product.description || product.short_description,
+    image: productImages.length > 0 ? productImages : [mainImage],
     sku: product.id,
+    mpn: product.id.slice(0, 12),
     category: product.categories?.name,
     brand: {
       "@type": "Brand",
+      name: product.profiles?.full_name || "Salemylink.com",
+    },
+    manufacturer: {
+      "@type": "Organization",
       name: "Salemylink.com",
+      url: siteUrl,
     },
     offers: {
       "@type": "Offer",
+      "@id": `${productUrl}#offer`,
       url: productUrl,
       price: product.price,
       priceCurrency: "VND",
+      priceValidUntil: new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString().split('T')[0],
       availability: "https://schema.org/InStock",
       itemCondition: "https://schema.org/NewCondition",
       seller: {
         "@type": "Organization",
         name: product.profiles?.full_name || "Salemylink.com",
+        url: `${siteUrl}/seller/${product.seller_id}`,
+      },
+      shippingDetails: {
+        "@type": "OfferShippingDetails",
+        shippingRate: {
+          "@type": "MonetaryAmount",
+          value: "0",
+          currency: "VND",
+        },
+        deliveryTime: {
+          "@type": "ShippingDeliveryTime",
+          handlingTime: {
+            "@type": "QuantitativeValue",
+            minValue: 0,
+            maxValue: 0,
+            unitCode: "MIN",
+          },
+        },
       },
     },
   };
 
-  // Only include rating markup when there is real rating data (Google rich result guideline)
+  // Only include rating markup when there is real rating data
   if ((product.rating_count || 0) > 0 && (product.rating_average || 0) > 0) {
     productStructuredData.aggregateRating = {
       "@type": "AggregateRating",
-      ratingValue: product.rating_average,
+      ratingValue: product.rating_average.toFixed(1),
       reviewCount: product.rating_count,
       bestRating: "5",
       worstRating: "1",
     };
   }
 
+  // Add additional product attributes
+  if (product.file_format) {
+    productStructuredData.additionalProperty = [
+      {
+        "@type": "PropertyValue",
+        name: "Định dạng file",
+        value: product.file_format,
+      },
+    ];
+    if (product.file_size) {
+      productStructuredData.additionalProperty.push({
+        "@type": "PropertyValue",
+        name: "Dung lượng",
+        value: product.file_size,
+      });
+    }
+  }
+
+  // Breadcrumb Structured Data
   const breadcrumbStructuredData = {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
@@ -289,7 +337,52 @@ export default function ProductDetail() {
     ],
   };
 
-  const combinedStructuredData = [breadcrumbStructuredData, productStructuredData];
+  // Website Structured Data for search
+  const websiteStructuredData = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name: "Salemylink.com",
+    url: siteUrl,
+    potentialAction: {
+      "@type": "SearchAction",
+      target: {
+        "@type": "EntryPoint",
+        urlTemplate: `${siteUrl}/search?q={search_term_string}`,
+      },
+      "query-input": "required name=search_term_string",
+    },
+  };
+
+  // FAQPage structured data if product has FAQ
+  const faqStructuredData = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: [
+      {
+        "@type": "Question",
+        name: `Làm thế nào để tải ${product.title}?`,
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: "Sau khi thanh toán thành công, bạn sẽ được chuyển đến trang tải xuống và nhận link tải qua email.",
+        },
+      },
+      {
+        "@type": "Question",
+        name: "Tôi có thể hoàn tiền không?",
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: "Chúng tôi hỗ trợ hoàn tiền trong vòng 7 ngày nếu sản phẩm không đúng mô tả.",
+        },
+      },
+    ],
+  };
+
+  const combinedStructuredData = [
+    breadcrumbStructuredData, 
+    productStructuredData,
+    websiteStructuredData,
+    faqStructuredData,
+  ];
 
   return (
     <div className="min-h-screen">
@@ -302,14 +395,23 @@ export default function ProductDetail() {
           ...(product.tags || []),
           "sản phẩm digital",
           "mua bán online",
+          "tải xuống",
           product.file_format,
+          "salemylink",
         ]
           .filter(Boolean)
           .join(", ")}
-        image={product.thumbnail_url}
+        image={mainImage}
         url={productUrl}
-        type="website"
+        type="product"
         structuredData={combinedStructuredData}
+        productPrice={product.price}
+        productCurrency="VND"
+        productAvailability="InStock"
+        productBrand={product.profiles?.full_name}
+        productCategory={product.categories?.name}
+        productRating={product.rating_average}
+        productReviewCount={product.rating_count}
       />
       <Header />
       

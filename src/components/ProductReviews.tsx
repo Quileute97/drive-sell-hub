@@ -197,15 +197,28 @@ export const ProductReviews = ({ productId }: ProductReviewsProps) => {
     return (
       <div className="flex gap-1">
         {[1, 2, 3, 4, 5].map((star) => (
-          <Star
+          <button
             key={star}
-            className={`h-5 w-5 ${
-              star <= currentRating
-                ? 'fill-yellow-400 text-yellow-400'
-                : 'text-gray-300'
-            } ${interactive ? 'cursor-pointer hover:scale-110 transition-transform' : ''}`}
+            type="button"
+            disabled={!interactive}
             onClick={() => interactive && setRating(star)}
-          />
+            onKeyDown={(e) => {
+              if (interactive && (e.key === 'Enter' || e.key === ' ')) {
+                e.preventDefault();
+                setRating(star);
+              }
+            }}
+            className={`p-0 border-0 bg-transparent ${interactive ? 'cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1 rounded' : 'cursor-default'}`}
+            aria-label={interactive ? `Đánh giá ${star} sao` : undefined}
+          >
+            <Star
+              className={`h-5 w-5 ${
+                star <= currentRating
+                  ? 'fill-yellow-400 text-yellow-400'
+                  : 'text-muted-foreground/40'
+              } ${interactive ? 'hover:scale-110 transition-transform' : ''}`}
+            />
+          </button>
         ))}
       </div>
     );

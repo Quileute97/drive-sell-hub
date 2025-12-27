@@ -166,14 +166,39 @@ serve(async (req) => {
         `)
         .single();
 
-      // If paid, provide download link
-      if (orderStatus === 'paid' && order?.products?.google_drive_link) {
+      // If paid, provide download link and update download count
+      if (orderStatus === 'paid' && order?.products) {
+        // Update order with download link
         await supabaseClient
           .from("orders")
           .update({
-            download_link: order.products.google_drive_link
+            download_link: order.products.google_drive_link || order.products.download_only_link
           })
           .eq("id", payment.order_id);
+
+        // Increment product download count
+        await supabaseClient
+          .from("products")
+          .update({
+            download_count: (order.products.download_count || 0) + 1
+          })
+          .eq("id", order.product_id);
+
+        // Update seller total sales
+        const { data: seller } = await supabaseClient
+          .from("profiles")
+          .select("total_sales")
+          .eq("user_id", order.seller_id)
+          .single();
+
+        if (seller) {
+          await supabaseClient
+            .from("profiles")
+            .update({
+              total_sales: (seller.total_sales || 0) + order.seller_amount
+            })
+            .eq("user_id", order.seller_id);
+        }
       }
     }
 

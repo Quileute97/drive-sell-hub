@@ -3,7 +3,6 @@ import { HelmetProvider } from 'react-helmet-async'
 import App from './App.tsx'
 import './index.css'
 import '@fontsource/inter'
-import { initWebVitals } from './lib/webVitals'
 
 createRoot(document.getElementById("root")!).render(
   <HelmetProvider>
@@ -11,5 +10,9 @@ createRoot(document.getElementById("root")!).render(
   </HelmetProvider>
 );
 
-// Initialize Web Vitals monitoring
-initWebVitals();
+// Initialize Web Vitals monitoring after app mounts
+if (typeof window !== 'undefined') {
+  import('./lib/webVitals').then(({ initWebVitals }) => {
+    initWebVitals();
+  });
+}

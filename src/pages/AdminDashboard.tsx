@@ -68,15 +68,25 @@ export default function AdminDashboard() {
         `)
         .order('created_at', { ascending: false });
 
-      // Fetch withdrawals
+      // Fetch withdrawals with profile data
       const { data: withdrawalsData } = await supabase
         .from('withdrawal_requests')
         .select(`
           *,
-          user:profiles!withdrawal_requests_user_id_fkey(full_name, email),
-          bank_account:bank_accounts(bank_name, account_number)
+          bank_accounts(bank_name, account_number, account_holder_name)
         `)
         .order('requested_at', { ascending: false });
+
+      // Fetch all profiles to join manually
+      const { data: profilesData } = await supabase
+        .from('profiles')
+        .select('user_id, full_name, email');
+
+      // Join withdrawals with profiles
+      const withdrawalsWithProfiles = withdrawalsData?.map(w => ({
+        ...w,
+        user: profilesData?.find(p => p.user_id === w.user_id) || null
+      })) || [];
 
       // Fetch products
       const { data: productsData } = await supabase
@@ -151,7 +161,7 @@ export default function AdminDashboard() {
       setCategoryData(productsByCategory);
       setSellers(sellersData || []);
       setOrders(ordersData || []);
-      setWithdrawals(withdrawalsData || []);
+      setWithdrawals(withdrawalsWithProfiles);
       setProducts(productsData || []);
     } catch (error) {
       console.error("Error fetching dashboard data:", error);
@@ -587,9 +597,13 @@ export default function AdminDashboard() {
                         {parseFloat(withdrawal.net_amount).toLocaleString('vi-VN')} ₫
                       </TableCell>
                       <TableCell>
-                        {withdrawal.bank_account?.bank_name}<br />
+                        {withdrawal.bank_accounts?.bank_name}<br />
                         <span className="text-sm text-muted-foreground">
-                          {withdrawal.bank_account?.account_number}
+                          {withdrawal.bank_accounts?.account_number}
+                        </span>
+                        <br />
+                        <span className="text-xs text-muted-foreground">
+                          {withdrawal.bank_accounts?.account_holder_name}
                         </span>
                       </TableCell>
                       <TableCell>
@@ -610,9 +624,11 @@ export default function AdminDashboard() {
                             <Button
                               size="sm"
                               variant="default"
+                              className="bg-green-600 hover:bg-green-700"
                               onClick={() => updateWithdrawalStatus(withdrawal.id, 'completed')}
                             >
-                              <CheckCircle className="h-4 w-4" />
+                              <CheckCircle className="h-4 w-4 mr-1" />
+                              Đã chi tiền
                             </Button>
                             <Button
                               size="sm"
@@ -622,9 +638,21 @@ export default function AdminDashboard() {
                                 if (reason) updateWithdrawalStatus(withdrawal.id, 'rejected', reason);
                               }}
                             >
-                              <XCircle className="h-4 w-4" />
+                              <XCircle className="h-4 w-4 mr-1" />
+                              Từ chối
                             </Button>
                           </div>
+                        )}
+                        {withdrawal.status === 'completed' && (
+                          <span className="text-green-600 font-medium flex items-center gap-1">
+                            <CheckCircle className="h-4 w-4" />
+                            Đã thanh toán
+                          </span>
+                        )}
+                        {withdrawal.status === 'rejected' && (
+                          <span className="text-destructive text-sm">
+                            {withdrawal.rejected_reason}
+                          </span>
                         )}
                       </TableCell>
                     </TableRow>

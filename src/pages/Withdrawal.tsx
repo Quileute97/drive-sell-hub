@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -78,6 +78,48 @@ export default function Withdrawal() {
     account_holder_name: '',
     branch: ''
   });
+
+  // Realtime subscription for withdrawal status updates
+  useEffect(() => {
+    if (!user?.id) return;
+
+    const channel = supabase
+      .channel('withdrawal-status-updates')
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'withdrawal_requests',
+          filter: `user_id=eq.${user.id}`
+        },
+        (payload) => {
+          // Refresh withdrawals when status changes
+          queryClient.invalidateQueries({ queryKey: ['withdrawals', user.id] });
+          queryClient.invalidateQueries({ queryKey: ['seller-balance', user.id] });
+          
+          // Show toast notification based on new status
+          const newStatus = payload.new.status;
+          if (newStatus === 'completed') {
+            toast({
+              title: "Rút tiền thành công!",
+              description: "Yêu cầu rút tiền của bạn đã được xử lý thành công.",
+            });
+          } else if (newStatus === 'rejected') {
+            toast({
+              title: "Yêu cầu bị từ chối",
+              description: payload.new.rejected_reason || "Yêu cầu rút tiền của bạn đã bị từ chối.",
+              variant: "destructive",
+            });
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user?.id, queryClient, toast]);
 
   // Fetch available balance
   const { data: balanceData } = useQuery({
@@ -274,10 +316,10 @@ export default function Withdrawal() {
   };
 
   const getStatusBadge = (status: string) => {
-    const variants: Record<string, { variant: any; icon: any; label: string }> = {
+    const variants: Record<string, { variant: any; icon: any; label: string; className?: string }> = {
       pending: { variant: 'secondary', icon: Clock, label: 'Chờ xử lý' },
       processing: { variant: 'default', icon: Clock, label: 'Đang xử lý' },
-      completed: { variant: 'default', icon: CheckCircle2, label: 'Hoàn thành' },
+      completed: { variant: 'default', icon: CheckCircle2, label: 'Rút tiền thành công', className: 'bg-green-600 text-white hover:bg-green-700' },
       rejected: { variant: 'destructive', icon: XCircle, label: 'Từ chối' }
     };
 
@@ -285,7 +327,7 @@ export default function Withdrawal() {
     const Icon = config.icon;
 
     return (
-      <Badge variant={config.variant} className="flex items-center gap-1">
+      <Badge variant={config.variant} className={`flex items-center gap-1 ${config.className || ''}`}>
         <Icon className="h-3 w-3" />
         {config.label}
       </Badge>

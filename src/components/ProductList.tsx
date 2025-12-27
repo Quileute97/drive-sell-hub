@@ -8,7 +8,7 @@ import { Star, Download, Eye, ShoppingCart, ArrowRight } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useCart } from "@/hooks/useCart";
-import { getGoogleDriveThumbnail } from "@/lib/utils";
+import { ProductThumbnail } from "@/components/ProductThumbnail";
 
 interface Product {
   id: string;
@@ -152,12 +152,13 @@ export const ProductList = () => {
                 className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-1 cursor-pointer flex flex-col h-full"
                 onClick={() => navigate(`/product/${product.slug}`)}
               >
-                <div className="relative overflow-hidden rounded-t-lg aspect-[4/3] bg-muted">
-                  <img
-                    src={getGoogleDriveThumbnail(product.google_drive_link, 600)}
-                    alt={`Hình ảnh sản phẩm ${product.title}`}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                    loading="lazy"
+                <div className="relative overflow-hidden rounded-t-lg aspect-[4/3] bg-muted group-hover:scale-105 transition-transform duration-300">
+                  <ProductThumbnail
+                    googleDriveLink={product.google_drive_link}
+                    thumbnailUrl={product.thumbnail_url}
+                    fileFormat={product.file_format}
+                    title={product.title}
+                    size={600}
                   />
                   {product.original_price > product.price && (
                     <Badge className="absolute top-3 left-3 bg-destructive text-destructive-foreground shadow-md">

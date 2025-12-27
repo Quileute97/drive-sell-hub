@@ -152,16 +152,18 @@ export const ProductList = () => {
                 className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-1 cursor-pointer flex flex-col h-full"
                 onClick={() => navigate(`/product/${product.slug}`)}
               >
-                <div className="relative overflow-hidden rounded-t-lg aspect-[4/3] bg-muted group-hover:scale-105 transition-transform duration-300">
-                  <ProductThumbnail
-                    googleDriveLink={product.google_drive_link}
-                    thumbnailUrl={product.thumbnail_url}
-                    fileFormat={product.file_format}
-                    title={product.title}
-                    size={600}
-                  />
+                <div className="relative overflow-hidden rounded-t-lg aspect-[4/3] bg-muted">
+                  <div className="w-full h-full group-hover:scale-105 transition-transform duration-300">
+                    <ProductThumbnail
+                      googleDriveLink={product.google_drive_link}
+                      thumbnailUrl={product.thumbnail_url}
+                      fileFormat={product.file_format}
+                      title={product.title}
+                      size={600}
+                    />
+                  </div>
                   {product.original_price > product.price && (
-                    <Badge className="absolute top-3 left-3 bg-destructive text-destructive-foreground shadow-md">
+                    <Badge className="absolute top-3 left-3 bg-destructive text-destructive-foreground shadow-md z-10">
                       -{Math.round(((product.original_price - product.price) / product.original_price) * 100)}%
                     </Badge>
                   )}

@@ -26,7 +26,7 @@ export const SEO = ({
   title = "Salemylink.com - Nền tảng bán sản phẩm Digital hàng đầu Việt Nam",
   description = "Kết nối người mua và người bán sản phẩm digital. Bán tài liệu, ebook, khóa học qua Google Drive một cách an toàn và hiệu quả. Hoa hồng chỉ 5%, thanh toán nhanh chóng.",
   keywords = "bán sản phẩm digital, ebook việt nam, tài liệu digital, khóa học online, google drive, thương mại điện tử, marketplace digital, bán tài liệu online",
-  image = "https://lovable.dev/opengraph-image-p98pqg.png",
+  image = "https://salemylink.com/og-image.png",
   url = "https://salemylink.com/",
   type = "website",
   structuredData,

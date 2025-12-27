@@ -51,14 +51,14 @@ const Index = () => {
           "width": 512,
           "height": 512
         },
-        "image": "https://salemylink.com/logo.png",
+        "image": "https://salemylink.com/og-image.png",
         "description": "Nền tảng bán sản phẩm Digital hàng đầu Việt Nam",
         "contactPoint": {
           "@type": "ContactPoint",
           "contactType": "customer service",
+          "email": "support@salemylink.com",
           "availableLanguage": ["Vietnamese", "English"]
-        },
-        "sameAs": []
+        }
       },
       {
         "@type": "WebSite",

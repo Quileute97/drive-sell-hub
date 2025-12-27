@@ -54,7 +54,7 @@ serve(async (req) => {
       const { orderCode, code, desc, success } = webhookData.data || webhookData;
       
       if (success) {
-        // Payment successful - update order status
+        // Payment successful - update order status to delivered immediately for digital products
         const { data: payment } = await supabaseClient
           .from("payments")
           .select("order_id")
@@ -72,11 +72,11 @@ serve(async (req) => {
             })
             .eq("payment_id", orderCode.toString());
 
-          // Update order status
+          // Update order status to 'delivered' for instant seller withdrawal
           await supabaseClient
             .from("orders")
             .update({
-              status: 'paid'
+              status: 'delivered'
             })
             .eq("id", payment.order_id);
         }
@@ -127,7 +127,7 @@ serve(async (req) => {
     
     if (paymentStatus === 'PAID') {
       dbStatus = 'completed';
-      orderStatus = 'paid';
+      orderStatus = 'delivered'; // Auto-delivered for digital products
     } else if (paymentStatus === 'CANCELLED') {
       dbStatus = 'failed';
       orderStatus = 'cancelled';

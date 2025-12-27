@@ -188,12 +188,16 @@ const AddProductForm = ({ onClose, onSuccess }: AddProductFormProps) => {
     setIsSubmitting(true);
 
     try {
+      // Generate unique slug with timestamp to avoid duplicates
+      const baseSlug = formData.slug.trim() || formData.title.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-');
+      const uniqueSlug = `${baseSlug}-${Date.now().toString(36)}`;
+
       const { error } = await supabase
         .from('products')
         .insert({
           seller_id: user.id,
           title: formData.title.trim(),
-          slug: formData.slug.trim(),
+          slug: uniqueSlug,
           description: formData.description.trim(),
           short_description: formData.short_description.trim(),
           google_drive_link: formData.google_drive_link.trim() || formData.download_only_link.trim() || '',

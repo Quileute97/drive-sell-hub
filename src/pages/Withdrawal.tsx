@@ -416,15 +416,22 @@ export default function Withdrawal() {
                   </Button>
                 </div>
               ) : (
-                <Button 
-                  onClick={() => setShowWithdrawDialog(true)}
-                  disabled={(balanceData?.available || 0) <= 0}
-                  size="lg"
-                  className="w-full"
-                >
-                  <DollarSign className="h-4 w-4 mr-2" />
-                  Tạo yêu cầu rút tiền
-                </Button>
+                <div className="space-y-4">
+                  <Button 
+                    onClick={() => setShowWithdrawDialog(true)}
+                    disabled={(balanceData?.available || 0) <= 0}
+                    size="lg"
+                    className="w-full"
+                  >
+                    <DollarSign className="h-4 w-4 mr-2" />
+                    Tạo yêu cầu rút tiền
+                  </Button>
+                  {(balanceData?.available || 0) <= 0 && (
+                    <p className="text-sm text-muted-foreground text-center">
+                      Số dư khả dụng của bạn là 0₫. Số dư chỉ khả dụng sau khi đơn hàng được đánh dấu "Đã giao".
+                    </p>
+                  )}
+                </div>
               )}
             </CardContent>
           </Card>

@@ -101,18 +101,22 @@ export const ProductThumbnail = ({
   const [imageError, setImageError] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
   
-  const showPreview = canShowPreview(fileFormat) && !imageError;
   const config = getFileTypeConfig(fileFormat);
   const IconComponent = config.icon;
   
-  // Get the image source
-  const imageSrc = thumbnailUrl || getGoogleDriveThumbnail(googleDriveLink, size);
+  // Get the image source - check if it's a valid URL (not placeholder)
+  const rawImageSrc = thumbnailUrl || getGoogleDriveThumbnail(googleDriveLink, size);
+  const hasValidImage = rawImageSrc && rawImageSrc !== "/placeholder.svg";
+  const canPreview = canShowPreview(fileFormat);
   
-  if (!showPreview || imageError) {
+  // Show default icon if: no valid image, or image failed, or format can't preview
+  const shouldShowIcon = !hasValidImage || imageError || !canPreview;
+  
+  if (shouldShowIcon) {
     // Show default thumbnail based on file format
     return (
       <div className={`w-full h-full flex flex-col items-center justify-center ${config.bgColor} ${className}`}>
-        <IconComponent className={`w-16 h-16 md:w-20 md:h-20 ${config.color} mb-3`} />
+        <IconComponent className={`w-16 h-16 md:w-20 md:h-20 ${config.color} mb-3`} strokeWidth={1.5} />
         <span className={`text-sm font-semibold ${config.color} px-3 py-1 rounded-full bg-white/80 dark:bg-black/30`}>
           {config.label}
         </span>
@@ -130,7 +134,7 @@ export const ProductThumbnail = ({
       )}
       
       <img
-        src={imageSrc}
+        src={rawImageSrc}
         alt={`Hình ảnh sản phẩm ${title}`}
         className={`w-full h-full object-cover transition-opacity duration-300 ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
         loading="lazy"

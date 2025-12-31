@@ -38,6 +38,8 @@ interface ProductDetail {
   download_only_link: string | null;
   meta_title: string | null;
   meta_description: string | null;
+  created_at: string;
+  updated_at: string;
   profiles: {
     full_name: string;
     avatar_url: string;
@@ -255,6 +257,9 @@ export default function ProductDetail() {
   const mainImage = productImages[0] || "https://salemylink.com/placeholder.svg";
 
   // Enhanced Product Structured Data (schema.org)
+  const datePublished = new Date(product.created_at).toISOString();
+  const dateModified = new Date(product.updated_at).toISOString();
+  
   const productStructuredData: Record<string, any> = {
     "@context": "https://schema.org",
     "@type": "Product",
@@ -265,6 +270,8 @@ export default function ProductDetail() {
     sku: product.id,
     mpn: product.id.slice(0, 12),
     category: product.categories?.name,
+    datePublished: datePublished,
+    dateModified: dateModified,
     brand: {
       "@type": "Brand",
       name: product.profiles?.full_name || "Salemylink.com",

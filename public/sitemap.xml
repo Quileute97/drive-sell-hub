@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- 
-  Static Sitemap - For dynamic sitemap with all products, use:
+  Static Sitemap Fallback
+  
+  For dynamic sitemap with all products, categories, and sellers, use:
   https://dfalphamyvdfewixrnju.supabase.co/functions/v1/generate-sitemap
   
-  This static file is a fallback. The dynamic sitemap is preferred and 
-  configured in robots.txt as the primary sitemap.
+  This static file serves as a fallback. The dynamic sitemap is the primary 
+  source configured in robots.txt and should be submitted to Google Search Console.
 -->
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -14,7 +16,7 @@
   <!-- Homepage -->
   <url>
     <loc>https://salemylink.com/</loc>
-    <lastmod>2025-01-10</lastmod>
+    <lastmod>2025-12-31</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
@@ -22,21 +24,21 @@
   <!-- About Pages -->
   <url>
     <loc>https://salemylink.com/about</loc>
-    <lastmod>2025-01-10</lastmod>
+    <lastmod>2025-12-31</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
 
   <url>
     <loc>https://salemylink.com/how-it-works</loc>
-    <lastmod>2025-01-10</lastmod>
+    <lastmod>2025-12-31</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
 
   <url>
     <loc>https://salemylink.com/seller-guide</loc>
-    <lastmod>2025-01-10</lastmod>
+    <lastmod>2025-12-31</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -44,7 +46,7 @@
   <!-- Search & Browse -->
   <url>
     <loc>https://salemylink.com/search</loc>
-    <lastmod>2025-01-10</lastmod>
+    <lastmod>2025-12-31</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.7</priority>
   </url>
@@ -52,31 +54,31 @@
   <!-- Legal Pages -->
   <url>
     <loc>https://salemylink.com/privacy-policy</loc>
-    <lastmod>2025-01-10</lastmod>
+    <lastmod>2025-12-31</lastmod>
     <changefreq>yearly</changefreq>
-    <priority>0.5</priority>
+    <priority>0.4</priority>
   </url>
 
   <url>
     <loc>https://salemylink.com/terms-of-service</loc>
-    <lastmod>2025-01-10</lastmod>
+    <lastmod>2025-12-31</lastmod>
     <changefreq>yearly</changefreq>
-    <priority>0.5</priority>
+    <priority>0.4</priority>
   </url>
 
   <!-- Authentication -->
   <url>
     <loc>https://salemylink.com/auth</loc>
-    <lastmod>2025-01-10</lastmod>
+    <lastmod>2025-12-31</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
+    <priority>0.5</priority>
   </url>
 
   <url>
     <loc>https://salemylink.com/seller-auth</loc>
-    <lastmod>2025-01-10</lastmod>
+    <lastmod>2025-12-31</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
+    <priority>0.5</priority>
   </url>
 
 </urlset>

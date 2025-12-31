@@ -43,26 +43,11 @@ export const ProductFAQ = ({ productName, category, fileFormat }: ProductFAQProp
     }
   ];
 
-  // Generate structured data for FAQPage
-  const structuredData = {
-    "@context": "https://schema.org",
-    "@type": "FAQPage",
-    "mainEntity": faqs.map(faq => ({
-      "@type": "Question",
-      "name": faq.question,
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": faq.answer
-      }
-    }))
-  };
+  // NOTE: FAQPage structured data is now generated in ProductDetail.tsx to avoid duplicate schema
+  // This component only renders the UI
 
   return (
     <section className="space-y-6">
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
-      />
       
       <div>
         <h2 className="text-2xl font-bold text-foreground mb-2">

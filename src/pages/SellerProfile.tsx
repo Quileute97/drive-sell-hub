@@ -8,6 +8,7 @@ import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { SEO } from "@/components/SEO";
 import { Breadcrumb } from "@/components/Breadcrumb";
+import { FollowButton } from "@/components/FollowButton";
 
 interface SellerInfo {
   user_id: string;
@@ -205,10 +206,11 @@ export default function SellerProfile() {
                     </Badge>
                   )}
                 </div>
-                <div className="flex items-center text-sm text-muted-foreground">
+                <div className="flex items-center text-sm text-muted-foreground mb-3">
                   <Calendar className="h-4 w-4 mr-1" />
                   Tham gia từ {formatDate(seller.created_at)}
                 </div>
+                <FollowButton sellerId={seller.user_id} />
               </div>
             </div>
 

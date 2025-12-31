@@ -5,6 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Link, useNavigate } from 'react-router-dom';
 import { useCart } from '@/hooks/useCart';
 import { useUserRole } from '@/hooks/useUserRole';
+import { NotificationBell } from '@/components/NotificationBell';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -57,7 +58,9 @@ export const Header = () => {
           </form>
 
           {/* Right Navigation */}
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-2 sm:space-x-4">
+            {user && <NotificationBell />}
+            
             <Link to="/cart">
               <Button variant="ghost" size="sm" className="hidden sm:flex relative">
                 <ShoppingCart className="h-4 w-4" />

@@ -168,6 +168,42 @@ export type Database = {
         }
         Relationships: []
       }
+      notifications: {
+        Row: {
+          created_at: string
+          id: string
+          is_read: boolean | null
+          link: string | null
+          message: string | null
+          metadata: Json | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_read?: boolean | null
+          link?: string | null
+          message?: string | null
+          metadata?: Json | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_read?: boolean | null
+          link?: string | null
+          message?: string | null
+          metadata?: Json | null
+          title?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       orders: {
         Row: {
           buyer_email: string
@@ -528,6 +564,27 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      seller_followers: {
+        Row: {
+          created_at: string
+          follower_id: string
+          id: string
+          seller_id: string
+        }
+        Insert: {
+          created_at?: string
+          follower_id: string
+          id?: string
+          seller_id: string
+        }
+        Update: {
+          created_at?: string
+          follower_id?: string
+          id?: string
+          seller_id?: string
+        }
+        Relationships: []
       }
       user_roles: {
         Row: {

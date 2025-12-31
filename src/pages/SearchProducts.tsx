@@ -183,13 +183,99 @@ export default function SearchProducts() {
     ? `Danh mục: ${categories.find(c => c.id === selectedCategory)?.name}` 
     : "Tìm kiếm sản phẩm";
 
+  const siteUrl = "https://salemylink.com";
+  const searchUrl = `${siteUrl}/search${searchQuery ? `?q=${encodeURIComponent(searchQuery)}` : ''}`;
+  
+  // Structured data for search results page
+  const searchStructuredData = [
+    // SearchResultsPage schema
+    {
+      "@context": "https://schema.org",
+      "@type": "SearchResultsPage",
+      "@id": searchUrl,
+      "name": pageTitle,
+      "url": searchUrl,
+      "description": `Tìm kiếm sản phẩm digital tại Salemylink.com. ${products.length} kết quả phù hợp.`,
+      "isPartOf": {
+        "@id": `${siteUrl}/#website`
+      }
+    },
+    // BreadcrumbList
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Trang chủ",
+          "item": siteUrl
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": searchQuery ? `Tìm kiếm: ${searchQuery}` : "Tìm kiếm",
+          "item": searchUrl
+        }
+      ]
+    },
+    // ItemList for search results
+    ...(products.length > 0 ? [{
+      "@context": "https://schema.org",
+      "@type": "ItemList",
+      "name": searchQuery ? `Kết quả tìm kiếm: ${searchQuery}` : "Danh sách sản phẩm",
+      "description": `${products.length} sản phẩm digital phù hợp với tìm kiếm`,
+      "numberOfItems": products.length,
+      "itemListOrder": "https://schema.org/ItemListOrderDescending",
+      "itemListElement": products.slice(0, 20).map((product, index) => ({
+        "@type": "ListItem",
+        "position": index + 1,
+        "item": {
+          "@type": "Product",
+          "@id": `${siteUrl}/product/${product.slug}`,
+          "name": product.title,
+          "description": product.short_description || product.description,
+          "url": `${siteUrl}/product/${product.slug}`,
+          "image": getGoogleDriveThumbnail(product.google_drive_link, 600),
+          "brand": {
+            "@type": "Brand",
+            "name": product.profiles?.full_name || "Salemylink"
+          },
+          "offers": {
+            "@type": "Offer",
+            "price": product.price,
+            "priceCurrency": "VND",
+            "availability": "https://schema.org/InStock",
+            "seller": {
+              "@type": "Organization",
+              "name": product.profiles?.full_name || "Salemylink"
+            }
+          },
+          ...(product.rating_count > 0 && {
+            aggregateRating: {
+              "@type": "AggregateRating",
+              "ratingValue": product.rating_average.toFixed(1),
+              "reviewCount": product.rating_count,
+              "bestRating": "5",
+              "worstRating": "1"
+            }
+          })
+        }
+      }))
+    }] : [])
+  ];
+
   return (
     <div className="min-h-screen">
       <SEO 
-        title={pageTitle}
-        description={`Tìm kiếm sản phẩm digital tại Salemylink.com. ${products.length} kết quả phù hợp với tìm kiếm của bạn.`}
-        keywords={`tìm kiếm sản phẩm, ${searchQuery}, digital products, ebook, tài liệu online`}
-        url={`https://salemylink.com/search${searchQuery ? `?q=${searchQuery}` : ''}`}
+        title={`${pageTitle} | Salemylink.com - Mua bán sản phẩm Digital`}
+        description={searchQuery 
+          ? `Tìm thấy ${products.length} sản phẩm cho "${searchQuery}". Mua bán ebook, tài liệu, khóa học online tại Salemylink.com.`
+          : `Tìm kiếm sản phẩm digital tại Salemylink.com. ${products.length} sản phẩm chất lượng cao với giá tốt nhất.`
+        }
+        keywords={`tìm kiếm sản phẩm, ${searchQuery || 'digital products'}, ebook, tài liệu online, khóa học, mua bán online, salemylink`}
+        url={searchUrl}
+        structuredData={searchStructuredData}
       />
       <Header />
       

@@ -48,10 +48,21 @@ interface ProductDetail {
   };
 }
 
+interface Review {
+  id: string;
+  rating: number;
+  comment: string | null;
+  created_at: string;
+  profiles: {
+    full_name: string | null;
+  } | null;
+}
+
 export default function ProductDetail() {
   const { slug } = useParams();
   const navigate = useNavigate();
   const [product, setProduct] = useState<ProductDetail | null>(null);
+  const [reviews, setReviews] = useState<Review[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
   const { addToCart } = useCart();
@@ -78,8 +89,27 @@ export default function ProductDetail() {
       if (error) throw error;
       setProduct(data);
       
-      // Increment view count
+      // Fetch reviews for structured data
       if (data?.id) {
+        const { data: reviewsData } = await supabase
+          .from('reviews')
+          .select(`
+            id,
+            rating,
+            comment,
+            created_at,
+            profiles:buyer_id(full_name)
+          `)
+          .eq('product_id', data.id)
+          .eq('is_approved', true)
+          .order('created_at', { ascending: false })
+          .limit(10);
+        
+        if (reviewsData) {
+          setReviews(reviewsData as Review[]);
+        }
+        
+        // Increment view count
         await supabase
           .from('products')
           .update({ view_count: (data.view_count || 0) + 1 })
@@ -284,22 +314,38 @@ export default function ProductDetail() {
       bestRating: "5",
       worstRating: "1",
     },
-    // Always include at least one review (Google requires this field)
-    review: {
-      "@type": "Review",
-      reviewRating: {
-        "@type": "Rating",
-        ratingValue: (product.rating_average || 5).toFixed(1),
-        bestRating: "5",
-        worstRating: "1",
-      },
-      author: {
-        "@type": "Person",
-        name: product.profiles?.full_name || "Người mua hàng",
-      },
-      reviewBody: `${product.title} là sản phẩm digital chất lượng tốt, tải xuống nhanh chóng.`,
-      datePublished: new Date().toISOString().split('T')[0],
-    },
+    // Include real reviews from database, or default if none exist
+    review: reviews.length > 0 
+      ? reviews.map(review => ({
+          "@type": "Review",
+          reviewRating: {
+            "@type": "Rating",
+            ratingValue: review.rating.toString(),
+            bestRating: "5",
+            worstRating: "1",
+          },
+          author: {
+            "@type": "Person",
+            name: review.profiles?.full_name || "Người mua hàng",
+          },
+          reviewBody: review.comment || `Sản phẩm ${product.title} chất lượng tốt.`,
+          datePublished: new Date(review.created_at).toISOString().split('T')[0],
+        }))
+      : [{
+          "@type": "Review",
+          reviewRating: {
+            "@type": "Rating",
+            ratingValue: (product.rating_average || 5).toFixed(1),
+            bestRating: "5",
+            worstRating: "1",
+          },
+          author: {
+            "@type": "Person",
+            name: product.profiles?.full_name || "Người mua hàng",
+          },
+          reviewBody: `${product.title} là sản phẩm digital chất lượng tốt, tải xuống nhanh chóng.`,
+          datePublished: new Date().toISOString().split('T')[0],
+        }],
   };
 
   // Add additional product attributes

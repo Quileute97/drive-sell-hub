@@ -22,16 +22,54 @@ export default function SellerGuide() {
         description="Hướng dẫn chi tiết cách bán sản phẩm digital trên Salemylink.com. Từ chuẩn bị sản phẩm, upload lên Drive, tạo listing đến tăng doanh số hiệu quả."
         keywords="hướng dẫn seller, bán hàng online, kiếm tiền digital, bán ebook, bán tài liệu, google drive, tăng doanh số"
         url="https://salemylink.com/seller-guide"
-        structuredData={{
-          "@context": "https://schema.org",
-          "@type": "Guide",
-          "name": "Hướng dẫn bán hàng trên Salemylink",
-          "description": "Hướng dẫn đầy đủ cho người bán sản phẩm digital",
-          "about": {
-            "@type": "Thing",
-            "name": "Bán sản phẩm digital online"
+        structuredData={[
+          {
+            "@context": "https://schema.org",
+            "@type": "Article",
+            "headline": "Hướng dẫn bán hàng - Bí quyết thành công với sản phẩm digital",
+            "description": "Hướng dẫn chi tiết cách bán sản phẩm digital trên Salemylink.com. Từ chuẩn bị sản phẩm, upload lên Drive, tạo listing đến tăng doanh số hiệu quả.",
+            "image": "https://salemylink.com/og-image.png",
+            "datePublished": "2024-01-01T00:00:00+07:00",
+            "dateModified": "2025-01-01T00:00:00+07:00",
+            "author": {
+              "@type": "Organization",
+              "name": "Salemylink.com",
+              "url": "https://salemylink.com"
+            },
+            "publisher": {
+              "@type": "Organization",
+              "name": "Salemylink.com",
+              "logo": {
+                "@type": "ImageObject",
+                "url": "https://salemylink.com/logo.png"
+              }
+            },
+            "mainEntityOfPage": {
+              "@type": "WebPage",
+              "@id": "https://salemylink.com/seller-guide"
+            },
+            "articleSection": "Hướng dẫn",
+            "wordCount": 1500
+          },
+          {
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            "itemListElement": [
+              {
+                "@type": "ListItem",
+                "position": 1,
+                "name": "Trang chủ",
+                "item": "https://salemylink.com"
+              },
+              {
+                "@type": "ListItem",
+                "position": 2,
+                "name": "Hướng dẫn bán hàng",
+                "item": "https://salemylink.com/seller-guide"
+              }
+            ]
           }
-        }}
+        ]}
       />
       <Header />
       

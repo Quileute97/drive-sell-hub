@@ -19,6 +19,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import AddProductForm from '@/components/AddProductForm';
+import { AvatarUpload } from '@/components/AvatarUpload';
 import EditProductForm from '@/components/EditProductForm';
 import { 
   Store, 
@@ -43,10 +44,11 @@ import {
 } from '@/components/ui/dropdown-menu';
 
 const SellerDashboard = () => {
-  const { user, profile } = useAuth();
+  const { user, profile, refreshProfile } = useAuth();
   const [activeTab, setActiveTab] = useState('shop');
   const [showAddProductForm, setShowAddProductForm] = useState(false);
   const [editingProduct, setEditingProduct] = useState<any>(null);
+  const [avatarUrl, setAvatarUrl] = useState(profile?.avatar_url || '');
   const queryClient = useQueryClient();
   const { toast } = useToast();
   
@@ -284,29 +286,45 @@ const SellerDashboard = () => {
                   Tuỳ chỉnh thông tin và giao diện cửa hàng của bạn
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="shop-name">Tên cửa hàng</Label>
-                    <Input
-                      id="shop-name"
-                      placeholder="Nhập tên cửa hàng"
-                      value={shopForm.full_name}
-                      onChange={(e) => setShopForm(prev => ({ ...prev, full_name: e.target.value }))}
+              <CardContent className="space-y-6">
+                {/* Avatar Upload Section */}
+                <div className="flex flex-col md:flex-row gap-8 items-start">
+                  <div className="flex-shrink-0">
+                    <Label className="mb-3 block">Ảnh đại diện</Label>
+                    <AvatarUpload
+                      userId={user?.id || ''}
+                      currentAvatarUrl={avatarUrl}
+                      fullName={shopForm.full_name}
+                      onAvatarUpdate={(newUrl) => {
+                        setAvatarUrl(newUrl);
+                        refreshProfile?.();
+                      }}
                     />
                   </div>
-                  <div>
-                    <Label htmlFor="shop-email">Email liên hệ</Label>
-                    <Input
-                      id="shop-email"
-                      type="email"
-                      placeholder="shop@example.com"
-                      value={shopForm.email}
-                      disabled
-                    />
-                    <p className="text-xs text-muted-foreground mt-1">Email không thể thay đổi</p>
-                  </div>
-                </div>
+                  
+                  <div className="flex-1 space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="shop-name">Tên cửa hàng</Label>
+                        <Input
+                          id="shop-name"
+                          placeholder="Nhập tên cửa hàng"
+                          value={shopForm.full_name}
+                          onChange={(e) => setShopForm(prev => ({ ...prev, full_name: e.target.value }))}
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="shop-email">Email liên hệ</Label>
+                        <Input
+                          id="shop-email"
+                          type="email"
+                          placeholder="shop@example.com"
+                          value={shopForm.email}
+                          disabled
+                        />
+                        <p className="text-xs text-muted-foreground mt-1">Email không thể thay đổi</p>
+                      </div>
+                    </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
@@ -340,10 +358,12 @@ const SellerDashboard = () => {
                   />
                 </div>
 
-                <Button className="w-full" onClick={handleUpdateProfile}>
-                  <Edit2 className="h-4 w-4 mr-2" />
-                  Cập nhật thông tin
-                </Button>
+                    <Button className="w-full" onClick={handleUpdateProfile}>
+                      <Edit2 className="h-4 w-4 mr-2" />
+                      Cập nhật thông tin
+                    </Button>
+                  </div>
+                </div>
               </CardContent>
             </Card>
           </TabsContent>

@@ -130,6 +130,13 @@ Deno.serve(async (req) => {
   </url>
 
   <url>
+    <loc>${SITE_URL}/sellers</loc>
+    <lastmod>${today}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
     <loc>${SITE_URL}/privacy-policy</loc>
     <lastmod>${today}</lastmod>
     <changefreq>yearly</changefreq>

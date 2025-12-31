@@ -66,9 +66,9 @@ export const Footer = () => {
               <li><a href="/about" className="text-muted-foreground hover:text-primary transition-colors">Về chúng tôi</a></li>
               <li><a href="/how-it-works" className="text-muted-foreground hover:text-primary transition-colors">Cách thức hoạt động</a></li>
               <li><a href="/seller-guide" className="text-muted-foreground hover:text-primary transition-colors">Hướng dẫn bán hàng</a></li>
+              <li><a href="/sellers" className="text-muted-foreground hover:text-primary transition-colors">Người bán</a></li>
               <li><a href="/privacy-policy" className="text-muted-foreground hover:text-primary transition-colors">Chính sách bảo mật</a></li>
               <li><a href="/terms-of-service" className="text-muted-foreground hover:text-primary transition-colors">Điều khoản sử dụng</a></li>
-              <li><a href="/admin/login" className="text-muted-foreground hover:text-primary transition-colors">Đăng nhập Admin</a></li>
             </ul>
           </nav>
 

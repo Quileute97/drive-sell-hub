@@ -21,34 +21,85 @@ export default function HowItWorks() {
         description="Tìm hiểu cách mua và bán sản phẩm digital trên Salemylink.com. Quy trình đơn giản chỉ với 4 bước cho người bán và 3 bước cho người mua."
         keywords="hướng dẫn bán hàng, cách thức hoạt động, mua bán digital, quy trình thanh toán, bán tài liệu online"
         url="https://salemylink.com/how-it-works"
-        structuredData={{
-          "@context": "https://schema.org",
-          "@type": "HowTo",
-          "name": "Cách mua bán sản phẩm digital trên Salemylink",
-          "description": "Hướng dẫn chi tiết quy trình mua bán sản phẩm digital",
-          "step": [
-            {
-              "@type": "HowToStep",
-              "name": "Đăng ký tài khoản",
-              "text": "Tạo tài khoản người bán miễn phí và xác minh thông tin"
+        structuredData={[
+          {
+            "@context": "https://schema.org",
+            "@type": "Article",
+            "headline": "Cách thức hoạt động - Hướng dẫn mua bán sản phẩm digital",
+            "description": "Tìm hiểu cách mua và bán sản phẩm digital trên Salemylink.com. Quy trình đơn giản chỉ với 4 bước cho người bán và 3 bước cho người mua.",
+            "image": "https://salemylink.com/og-image.png",
+            "datePublished": "2024-01-01T00:00:00+07:00",
+            "dateModified": "2025-01-01T00:00:00+07:00",
+            "author": {
+              "@type": "Organization",
+              "name": "Salemylink.com",
+              "url": "https://salemylink.com"
             },
-            {
-              "@type": "HowToStep",
-              "name": "Upload sản phẩm",
-              "text": "Tải sản phẩm lên Google Drive và tạo listing"
+            "publisher": {
+              "@type": "Organization",
+              "name": "Salemylink.com",
+              "logo": {
+                "@type": "ImageObject",
+                "url": "https://salemylink.com/logo.png"
+              }
             },
-            {
-              "@type": "HowToStep",
-              "name": "Nhận đơn hàng",
-              "text": "Khách hàng mua và thanh toán tự động"
-            },
-            {
-              "@type": "HowToStep",
-              "name": "Rút tiền",
-              "text": "Rút doanh thu về tài khoản ngân hàng"
+            "mainEntityOfPage": {
+              "@type": "WebPage",
+              "@id": "https://salemylink.com/how-it-works"
             }
-          ]
-        }}
+          },
+          {
+            "@context": "https://schema.org",
+            "@type": "HowTo",
+            "name": "Cách mua bán sản phẩm digital trên Salemylink",
+            "description": "Hướng dẫn chi tiết quy trình mua bán sản phẩm digital",
+            "totalTime": "PT10M",
+            "step": [
+              {
+                "@type": "HowToStep",
+                "position": 1,
+                "name": "Đăng ký tài khoản",
+                "text": "Tạo tài khoản người bán miễn phí và xác minh thông tin"
+              },
+              {
+                "@type": "HowToStep",
+                "position": 2,
+                "name": "Upload sản phẩm",
+                "text": "Tải sản phẩm lên Google Drive và tạo listing"
+              },
+              {
+                "@type": "HowToStep",
+                "position": 3,
+                "name": "Nhận đơn hàng",
+                "text": "Khách hàng mua và thanh toán tự động"
+              },
+              {
+                "@type": "HowToStep",
+                "position": 4,
+                "name": "Rút tiền",
+                "text": "Rút doanh thu về tài khoản ngân hàng"
+              }
+            ]
+          },
+          {
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            "itemListElement": [
+              {
+                "@type": "ListItem",
+                "position": 1,
+                "name": "Trang chủ",
+                "item": "https://salemylink.com"
+              },
+              {
+                "@type": "ListItem",
+                "position": 2,
+                "name": "Cách thức hoạt động",
+                "item": "https://salemylink.com/how-it-works"
+              }
+            ]
+          }
+        ]}
       />
       <Header />
       

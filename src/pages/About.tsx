@@ -12,13 +12,67 @@ export default function About() {
         description="Tìm hiểu về Salemylink.com - nền tảng thương mại điện tử hàng đầu cho sản phẩm digital tại Việt Nam. Sứ mệnh, tầm nhìn và giá trị cốt lõi của chúng tôi."
         keywords="về salemylink, giới thiệu, sứ mệnh, tầm nhìn, nền tảng digital, thương mại điện tử việt nam"
         url="https://salemylink.com/about"
-        structuredData={{
-          "@context": "https://schema.org",
-          "@type": "AboutPage",
-          "name": "Về Salemylink.com",
-          "description": "Nền tảng thương mại điện tử hàng đầu cho sản phẩm digital tại Việt Nam",
-          "url": "https://salemylink.com/about"
-        }}
+        structuredData={[
+          {
+            "@context": "https://schema.org",
+            "@type": "Article",
+            "headline": "Về Salemylink.com - Nền tảng bán sản phẩm digital hàng đầu Việt Nam",
+            "description": "Tìm hiểu về Salemylink.com - nền tảng thương mại điện tử hàng đầu cho sản phẩm digital tại Việt Nam. Sứ mệnh, tầm nhìn và giá trị cốt lõi của chúng tôi.",
+            "image": "https://salemylink.com/og-image.png",
+            "datePublished": "2024-01-01T00:00:00+07:00",
+            "dateModified": "2025-01-01T00:00:00+07:00",
+            "author": {
+              "@type": "Organization",
+              "name": "Salemylink.com",
+              "url": "https://salemylink.com"
+            },
+            "publisher": {
+              "@type": "Organization",
+              "name": "Salemylink.com",
+              "logo": {
+                "@type": "ImageObject",
+                "url": "https://salemylink.com/logo.png"
+              }
+            },
+            "mainEntityOfPage": {
+              "@type": "WebPage",
+              "@id": "https://salemylink.com/about"
+            }
+          },
+          {
+            "@context": "https://schema.org",
+            "@type": "Organization",
+            "name": "Salemylink.com",
+            "url": "https://salemylink.com",
+            "logo": "https://salemylink.com/logo.png",
+            "description": "Nền tảng thương mại điện tử hàng đầu cho sản phẩm digital tại Việt Nam",
+            "foundingDate": "2024",
+            "sameAs": [],
+            "contactPoint": {
+              "@type": "ContactPoint",
+              "contactType": "customer service",
+              "availableLanguage": "Vietnamese"
+            }
+          },
+          {
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            "itemListElement": [
+              {
+                "@type": "ListItem",
+                "position": 1,
+                "name": "Trang chủ",
+                "item": "https://salemylink.com"
+              },
+              {
+                "@type": "ListItem",
+                "position": 2,
+                "name": "Về chúng tôi",
+                "item": "https://salemylink.com/about"
+              }
+            ]
+          }
+        ]}
       />
       <Header />
       

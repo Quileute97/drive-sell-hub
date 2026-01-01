@@ -29,5 +29,8 @@
 /become-seller        /seller-signup        301
 /tro-thanh-nguoi-ban  /seller-signup        301
 
+# Dynamic sitemap proxy - serves sitemap from edge function at your domain
+/sitemap.xml  https://dfalphamyvdfewixrnju.supabase.co/functions/v1/generate-sitemap  200
+
 # Netlify SPA redirect - All other routes serve index.html
 /*    /index.html   200

@@ -39,8 +39,5 @@ Allow: /
 User-agent: LinkedInBot
 Allow: /
 
-# Sitemap location (Dynamic sitemap from edge function)
-Sitemap: https://dfalphamyvdfewixrnju.supabase.co/functions/v1/generate-sitemap
-
-# Alternative static sitemap
+# Sitemap location (served from your domain via proxy)
 Sitemap: https://salemylink.com/sitemap.xml

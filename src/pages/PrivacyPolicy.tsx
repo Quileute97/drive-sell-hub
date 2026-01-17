@@ -1,15 +1,65 @@
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { Card, CardContent } from "@/components/ui/card";
+import { SEO } from "@/components/SEO";
 
 export default function PrivacyPolicy() {
+  const lastUpdated = "2025-01-15";
+  
+  const structuredData = [
+    {
+      "@context": "https://schema.org",
+      "@type": "WebPage",
+      "@id": "https://salemylink.com/privacy-policy",
+      "name": "Chính sách bảo mật - Salemylink.com",
+      "description": "Chính sách bảo mật của Salemylink.com. Tìm hiểu cách chúng tôi thu thập, sử dụng và bảo vệ thông tin cá nhân của bạn.",
+      "url": "https://salemylink.com/privacy-policy",
+      "datePublished": "2024-01-01T00:00:00+07:00",
+      "dateModified": `${lastUpdated}T00:00:00+07:00`,
+      "inLanguage": "vi-VN",
+      "isPartOf": {
+        "@id": "https://salemylink.com/#website"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "Salemylink.com",
+        "url": "https://salemylink.com"
+      }
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Trang chủ",
+          "item": "https://salemylink.com"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Chính sách bảo mật",
+          "item": "https://salemylink.com/privacy-policy"
+        }
+      ]
+    }
+  ];
+
   return (
     <div className="min-h-screen">
+      <SEO 
+        title="Chính sách bảo mật"
+        description="Chính sách bảo mật của Salemylink.com. Tìm hiểu cách chúng tôi thu thập, sử dụng và bảo vệ thông tin cá nhân của bạn khi sử dụng nền tảng mua bán sản phẩm digital."
+        keywords="chính sách bảo mật, privacy policy, bảo mật thông tin, salemylink, quyền riêng tư, dữ liệu cá nhân"
+        url="https://salemylink.com/privacy-policy"
+        structuredData={structuredData}
+      />
       <Header />
       
       <main className="container mx-auto px-4 py-12 max-w-4xl">
         <h1 className="text-4xl font-bold mb-6">Chính sách bảo mật</h1>
-        <p className="text-muted-foreground mb-8">Cập nhật lần cuối: {new Date().toLocaleDateString('vi-VN')}</p>
+        <p className="text-muted-foreground mb-8">Cập nhật lần cuối: {new Date(lastUpdated).toLocaleDateString('vi-VN')}</p>
 
         <div className="prose max-w-none space-y-8">
           <Card>

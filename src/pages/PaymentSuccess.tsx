@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { CheckCircle, Download, ArrowLeft, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { SEO } from '@/components/SEO';
 
 export const PaymentSuccess = () => {
   const [searchParams] = useSearchParams();
@@ -95,6 +96,12 @@ export const PaymentSuccess = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEO 
+        title="Thanh toán thành công"
+        description="Thanh toán của bạn đã được xử lý thành công. Cảm ơn bạn đã mua hàng tại Salemylink.com."
+        url="https://salemylink.com/payment/success"
+        noindex={true}
+      />
       <Header />
       
       <main className="container mx-auto px-4 py-8">

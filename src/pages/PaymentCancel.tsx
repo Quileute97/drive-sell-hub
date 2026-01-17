@@ -4,10 +4,17 @@ import { Footer } from '@/components/Footer';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, ShoppingCart } from 'lucide-react';
+import { SEO } from '@/components/SEO';
 
 export const PaymentCancel = () => {
   return (
     <div className="min-h-screen bg-background">
+      <SEO 
+        title="Thanh toán đã hủy"
+        description="Bạn đã hủy quá trình thanh toán. Sản phẩm vẫn được lưu trong giỏ hàng."
+        url="https://salemylink.com/payment/cancel"
+        noindex={true}
+      />
       <Header />
       
       <main className="container mx-auto px-4 py-8">

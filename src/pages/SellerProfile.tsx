@@ -167,13 +167,88 @@ export default function SellerProfile() {
     );
   }
 
+  const siteUrl = "https://salemylink.com";
+  const sellerUrl = `${siteUrl}/seller/${seller.user_id}`;
+  
+  const sellerStructuredData = [
+    {
+      "@context": "https://schema.org",
+      "@type": "ProfilePage",
+      "@id": sellerUrl,
+      "name": `${seller.full_name || 'Người bán'} - Cửa hàng sản phẩm Digital`,
+      "description": `Khám phá ${stats.totalProducts} sản phẩm digital từ ${seller.full_name}. ${stats.totalDownloads} lượt tải, đánh giá ${stats.avgRating.toFixed(1)}/5 sao.`,
+      "url": sellerUrl,
+      "dateCreated": seller.created_at,
+      "mainEntity": {
+        "@type": "Person",
+        "@id": `${sellerUrl}#person`,
+        "name": seller.full_name || "Người bán",
+        "url": sellerUrl,
+        "image": seller.avatar_url || undefined,
+        "worksFor": {
+          "@type": "Organization",
+          "name": "Salemylink.com"
+        }
+      },
+      "isPartOf": {
+        "@id": `${siteUrl}/#website`
+      }
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Trang chủ",
+          "item": siteUrl
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Người bán",
+          "item": `${siteUrl}/sellers`
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": seller.full_name || "Cửa hàng",
+          "item": sellerUrl
+        }
+      ]
+    },
+    ...(products.length > 0 ? [{
+      "@context": "https://schema.org",
+      "@type": "ItemList",
+      "name": `Sản phẩm của ${seller.full_name || 'Cửa hàng'}`,
+      "numberOfItems": products.length,
+      "itemListElement": products.slice(0, 10).map((product, index) => ({
+        "@type": "ListItem",
+        "position": index + 1,
+        "item": {
+          "@type": "Product",
+          "name": product.title,
+          "url": `${siteUrl}/product/${product.slug}`,
+          "offers": {
+            "@type": "Offer",
+            "price": product.price,
+            "priceCurrency": "VND"
+          }
+        }
+      }))
+    }] : [])
+  ];
+
   return (
     <div className="min-h-screen bg-background">
       <SEO 
-        title={`${seller.full_name || 'Người bán'} - Cửa hàng trên Salemylink`}
-        description={`Khám phá ${stats.totalProducts} sản phẩm digital từ ${seller.full_name}. ${stats.totalDownloads} lượt tải, đánh giá ${stats.avgRating.toFixed(1)}/5 sao.`}
-        keywords={`${seller.full_name}, cửa hàng, người bán, sản phẩm digital, Salemylink`}
-        url={`https://salemylink.com/seller/${seller.user_id}`}
+        title={`${seller.full_name || 'Người bán'} - Cửa hàng sản phẩm Digital | Salemylink`}
+        description={`Khám phá ${stats.totalProducts} sản phẩm digital từ ${seller.full_name}. ${stats.totalDownloads} lượt tải, đánh giá ${stats.avgRating.toFixed(1)}/5 sao. Mua ngay tại Salemylink.com`}
+        keywords={`${seller.full_name}, cửa hàng, người bán, sản phẩm digital, Salemylink, ebook, tài liệu`}
+        url={sellerUrl}
+        image={seller.avatar_url || undefined}
+        structuredData={sellerStructuredData}
       />
       <Header />
 

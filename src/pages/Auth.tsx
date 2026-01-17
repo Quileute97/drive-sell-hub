@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/contexts/AuthContext';
 import { Eye, EyeOff, ArrowLeft } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
+import { SEO } from '@/components/SEO';
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -60,7 +61,15 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary/10 via-background to-secondary/10 flex items-center justify-center p-4">
+    <>
+      <SEO 
+        title="Đăng nhập / Đăng ký"
+        description="Đăng nhập hoặc đăng ký tài khoản Salemylink.com để mua bán sản phẩm digital. Hỗ trợ đăng nhập bằng Google."
+        keywords="đăng nhập, đăng ký, tài khoản, salemylink, login, register, google login"
+        url="https://salemylink.com/auth"
+        noindex={true}
+      />
+      <div className="min-h-screen bg-gradient-to-br from-primary/10 via-background to-secondary/10 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         <div className="mb-8 text-center">
           <Link 
@@ -289,6 +298,7 @@ const Auth = () => {
         </p>
       </div>
     </div>
+    </>
   );
 };
 

@@ -10,6 +10,7 @@ import { Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useState } from 'react';
+import { SEO } from '@/components/SEO';
 
 export const Cart = () => {
   const { 
@@ -105,6 +106,12 @@ export const Cart = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEO 
+        title="Giỏ hàng"
+        description="Giỏ hàng của bạn trên Salemylink.com. Xem lại sản phẩm digital đã chọn và tiến hành thanh toán."
+        url="https://salemylink.com/cart"
+        noindex={true}
+      />
       <Header />
       
       <main className="container mx-auto px-4 py-8">

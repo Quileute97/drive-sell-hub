@@ -8,6 +8,30 @@
 /gioi-thieu           /about                301
 /lien-he              /about                301
 /contact              /about                301
+
+# Product slug redirects (old URLs with .pdf and special chars to normalized slugs)
+/product/tai-lieu-on-thi-tuyen-sinh-vao-lop-10-mon-tieng-anhpdf                              /product/tai-lieu-on-thi-tuyen-sinh-vao-lop-10-mon-tieng-anh                              301
+/product/de-thi-thu-vao-lop-10-thpt-chuyen-hung-vuong-2023-2024pdf                           /product/de-thi-thu-vao-lop-10-thpt-chuyen-hung-vuong-2023-2024                           301
+/product/de-thi-vao-lop-10-nam-dinh-mon-toan-2024-2025pdf                                    /product/de-thi-vao-lop-10-nam-dinh-mon-toan-2024-2025                                    301
+/product/de-thi-vao-lop-10-nam-dinh-mon-tieng-anh-2024-2025pdf                               /product/de-thi-vao-lop-10-nam-dinh-mon-tieng-anh-2024-2025                               301
+/product/de-thi-tuyen-sinh-vao-lop-10-tinh-quang-tri-mon-toan-2024-2025pdf                   /product/de-thi-tuyen-sinh-vao-lop-10-tinh-quang-tri-mon-toan-2024-2025                   301
+/product/de-thi-tuyen-sinh-vao-lop-10-tinh-quang-tri-mon-tieng-anh-2024-2025pdf              /product/de-thi-tuyen-sinh-vao-lop-10-tinh-quang-tri-mon-tieng-anh-2024-2025              301
+/product/de-thi-hoc-ky-2-tieng-anh-6-global-success-2024-2025--de-so-4                       /product/de-thi-hoc-ky-2-tieng-anh-6-global-success-2024-2025-de-so-4                     301
+/product/de-thi-hoc-ky-2-tieng-anh-6-global-success-2024-2025--de-so-3                       /product/de-thi-hoc-ky-2-tieng-anh-6-global-success-2024-2025-de-so-3                     301
+/product/de-thi-hoc-ky-2-tieng-anh-6-global-success-2024-2025--de-so-2                       /product/de-thi-hoc-ky-2-tieng-anh-6-global-success-2024-2025-de-so-2                     301
+/product/de-thi-hoc-ky-2-tieng-anh-6-global-success-2024-2025--de-so-1                       /product/de-thi-hoc-ky-2-tieng-anh-6-global-success-2024-2025-de-so-1                     301
+
+# Vietnamese product URL redirects (san-pham paths)
+/san-pham/tai-lieu-on-thi-tuyen-sinh-vao-lop-10-mon-tieng-anhpdf                             /product/tai-lieu-on-thi-tuyen-sinh-vao-lop-10-mon-tieng-anh                              301
+/san-pham/de-thi-thu-vao-lop-10-thpt-chuyen-hung-vuong-2023-2024pdf                          /product/de-thi-thu-vao-lop-10-thpt-chuyen-hung-vuong-2023-2024                           301
+/san-pham/de-thi-vao-lop-10-nam-dinh-mon-toan-2024-2025pdf                                   /product/de-thi-vao-lop-10-nam-dinh-mon-toan-2024-2025                                    301
+/san-pham/de-thi-vao-lop-10-nam-dinh-mon-tieng-anh-2024-2025pdf                              /product/de-thi-vao-lop-10-nam-dinh-mon-tieng-anh-2024-2025                               301
+/san-pham/de-thi-tuyen-sinh-vao-lop-10-tinh-quang-tri-mon-toan-2024-2025pdf                  /product/de-thi-tuyen-sinh-vao-lop-10-tinh-quang-tri-mon-toan-2024-2025                   301
+/san-pham/de-thi-tuyen-sinh-vao-lop-10-tinh-quang-tri-mon-tieng-anh-2024-2025pdf             /product/de-thi-tuyen-sinh-vao-lop-10-tinh-quang-tri-mon-tieng-anh-2024-2025              301
+/san-pham/de-thi-hoc-ky-2-tieng-anh-6-global-success-2024-2025--de-so-4                      /product/de-thi-hoc-ky-2-tieng-anh-6-global-success-2024-2025-de-so-4                     301
+/san-pham/de-thi-hoc-ky-2-tieng-anh-6-global-success-2024-2025--de-so-3                      /product/de-thi-hoc-ky-2-tieng-anh-6-global-success-2024-2025-de-so-3                     301
+/san-pham/de-thi-hoc-ky-2-tieng-anh-6-global-success-2024-2025--de-so-2                      /product/de-thi-hoc-ky-2-tieng-anh-6-global-success-2024-2025-de-so-2                     301
+/san-pham/de-thi-hoc-ky-2-tieng-anh-6-global-success-2024-2025--de-so-1                      /product/de-thi-hoc-ky-2-tieng-anh-6-global-success-2024-2025-de-so-1                     301
 /huong-dan            /how-it-works         301
 /guide                /how-it-works         301
 /chinh-sach-bao-mat   /privacy-policy       301

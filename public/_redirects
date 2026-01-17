@@ -19,8 +19,15 @@
 /checkout             /cart                 301
 /tim-kiem             /search               301
 /products             /search               301
-/san-pham             /search               301
 /danh-muc             /                     301
+/categories           /                     301
+
+# Vietnamese URL redirects for products and categories
+/san-pham/:slug       /product/:slug        301
+/san-pham             /search               301
+/danh-muc/:slug       /category/:slug       301
+/nguoi-ban/:id        /seller/:id           301
+/nguoi-ban            /sellers              301
 /categories           /                     301
 /home                 /                     301
 /index                /                     301

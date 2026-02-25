@@ -146,7 +146,7 @@ export const ProductList = () => {
           </div>
         ) : (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {products.map((product) => (
+            {products.map((product, index) => (
               <Card 
                 key={product.id} 
                 className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-1 cursor-pointer flex flex-col h-full"
@@ -160,6 +160,8 @@ export const ProductList = () => {
                       fileFormat={product.file_format}
                       title={product.title}
                       size={600}
+                      loading={index < 4 ? "eager" : "lazy"}
+                      fetchPriority={index < 2 ? "high" : "auto"}
                     />
                   </div>
                   {product.original_price > product.price && (

@@ -100,7 +100,7 @@ export const Hero = () => {
             </div>
           </div>
 
-          {/* Right Image */}
+          {/* Right Image — LCP element: eager load, fetchpriority high, explicit dimensions */}
           <div className="relative animate-float">
             <div className="relative rounded-2xl overflow-hidden shadow-elegant">
               <img 
@@ -108,8 +108,11 @@ export const Hero = () => {
                 alt="Nền tảng thương mại điện tử bán sản phẩm digital - Kết nối người mua và người bán tài liệu, ebook, khóa học online qua Google Drive"
                 className="w-full h-auto"
                 loading="eager"
+                fetchPriority="high"
+                decoding="async"
                 width="800"
                 height="600"
+                style={{ aspectRatio: '4/3' }}
               />
               <div className="absolute inset-0 bg-gradient-to-tr from-primary/20 to-transparent"></div>
             </div>

@@ -283,6 +283,24 @@ export default function ProductDetail() {
       width: 200,
       height: 200,
     },
+    image: `${siteUrl}/og-image.png`,
+  });
+
+  // WebSite node
+  graphNodes.push({
+    "@type": "WebSite",
+    "@id": `${siteUrl}/#website`,
+    url: siteUrl,
+    name: "Salemylink.com",
+    publisher: { "@id": `${siteUrl}/#organization` },
+    potentialAction: {
+      "@type": "SearchAction",
+      target: {
+        "@type": "EntryPoint",
+        urlTemplate: `${siteUrl}/search?q={search_term_string}`,
+      },
+      "query-input": "required name=search_term_string",
+    },
   });
 
   // 2. BreadcrumbList
@@ -391,7 +409,7 @@ export default function ProductDetail() {
     };
   }
 
-  // Only include real reviews
+  // Only include real reviews with enhanced schema
   if (reviews.length > 0) {
     productNode.review = reviews.map((review, index) => ({
       "@type": "Review",
@@ -406,8 +424,9 @@ export default function ProductDetail() {
         "@type": "Person",
         name: review.profiles?.full_name || "Khách hàng",
       },
-      ...(review.comment ? { reviewBody: review.comment } : {}),
+      reviewBody: review.comment || `Đánh giá ${review.rating} sao cho ${product.title}`,
       datePublished: new Date(review.created_at).toISOString().split('T')[0],
+      publisher: { "@id": `${siteUrl}/#organization` },
     }));
   }
 
@@ -433,59 +452,56 @@ export default function ProductDetail() {
 
   graphNodes.push(productNode);
 
-  // 4. FAQPage node
+  // 4. FAQPage node — dynamic FAQs based on product data
+  const faqItems: { name: string; text: string }[] = [
+    {
+      name: `${product.title} có định dạng file gì?`,
+      text: product.file_format 
+        ? `Sản phẩm được cung cấp ở định dạng ${product.file_format}${product.file_size ? `, dung lượng ${product.file_size}` : ''}. Bạn có thể tải xuống và sử dụng ngay sau khi thanh toán thành công.`
+        : `Sản phẩm được cung cấp ở định dạng digital, bạn có thể tải xuống ngay sau khi thanh toán thành công.`
+    },
+    {
+      name: `Giá ${product.title} là bao nhiêu?`,
+      text: `${product.title} hiện có giá ${new Intl.NumberFormat('vi-VN').format(product.price)} VND${product.original_price && product.original_price > product.price ? ` (giảm ${Math.round(((product.original_price - product.price) / product.original_price) * 100)}% từ ${new Intl.NumberFormat('vi-VN').format(product.original_price)} VND)` : ''}. Thanh toán nhanh chóng qua nhiều phương thức trên Salemylink.com.`
+    },
+    {
+      name: `Mua ${product.title} ở đâu uy tín?`,
+      text: `Bạn có thể mua ${product.title} tại Salemylink.com - nền tảng bán sản phẩm digital uy tín hàng đầu Việt Nam. Sản phẩm được bán bởi ${product.profiles?.full_name || 'người bán uy tín'}${product.download_count > 0 ? `, đã có ${product.download_count} lượt tải` : ''}${product.rating_count > 0 ? ` và ${product.rating_count} đánh giá` : ''}.`
+    },
+    {
+      name: "Tôi nhận sản phẩm như thế nào sau khi mua?",
+      text: "Sau khi thanh toán thành công, bạn sẽ nhận được link tải sản phẩm ngay lập tức. Link sẽ hiển thị trên trang xác nhận đơn hàng và được gửi qua email. Sản phẩm digital được giao ngay, không mất thời gian chờ đợi."
+    },
+    {
+      name: "Có hỗ trợ sau khi mua không?",
+      text: `Có, người bán ${product.profiles?.full_name || ''} cung cấp hỗ trợ cho sản phẩm. Bạn có thể liên hệ trực tiếp qua trang hồ sơ người bán trên Salemylink.com hoặc thông tin trong email xác nhận.`
+    },
+  ];
+
+  // Add rating-based FAQ if product has reviews
+  if (product.rating_count > 0) {
+    faqItems.push({
+      name: `${product.title} có tốt không? Đánh giá thế nào?`,
+      text: `${product.title} được đánh giá ${product.rating_average.toFixed(1)}/5 sao bởi ${product.rating_count} khách hàng. ${product.rating_average >= 4 ? 'Đây là sản phẩm được đánh giá cao trên Salemylink.com.' : 'Hãy xem các đánh giá chi tiết bên dưới để biết thêm.'}`
+    });
+  }
+
   graphNodes.push({
     "@type": "FAQPage",
     "@id": `${productUrl}#faq`,
-    mainEntity: [
-      {
-        "@type": "Question",
-        name: `${product.title} có định dạng file gì?`,
-        acceptedAnswer: {
-          "@type": "Answer",
-          text: product.file_format 
-            ? `Sản phẩm được cung cấp ở định dạng ${product.file_format}. Bạn có thể tải xuống và sử dụng ngay sau khi thanh toán thành công.`
-            : `Sản phẩm được cung cấp ở định dạng digital, bạn có thể tải xuống ngay sau khi thanh toán thành công.`
-        },
+    mainEntity: faqItems.map(faq => ({
+      "@type": "Question",
+      name: faq.name,
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: faq.text,
       },
-      {
-        "@type": "Question",
-        name: `Mua ${product.title} ở đâu uy tín?`,
-        acceptedAnswer: {
-          "@type": "Answer",
-          text: `Bạn có thể mua ${product.title} tại Salemylink.com - nền tảng bán sản phẩm digital uy tín hàng đầu Việt Nam. Thanh toán an toàn, nhận link tải ngay sau khi thanh toán.`,
-        },
-      },
-      {
-        "@type": "Question",
-        name: "Tôi nhận sản phẩm như thế nào sau khi mua?",
-        acceptedAnswer: {
-          "@type": "Answer",
-          text: "Sau khi thanh toán thành công, bạn sẽ nhận được link tải sản phẩm ngay lập tức. Link sẽ hiển thị trên trang xác nhận đơn hàng và được gửi qua email.",
-        },
-      },
-      {
-        "@type": "Question",
-        name: `Giá ${product.title} là bao nhiêu?`,
-        acceptedAnswer: {
-          "@type": "Answer",
-          text: `${product.title} hiện có giá ${new Intl.NumberFormat('vi-VN').format(product.price)} VND${product.original_price && product.original_price > product.price ? `, giảm từ ${new Intl.NumberFormat('vi-VN').format(product.original_price)} VND` : ''}. Thanh toán nhanh chóng qua nhiều phương thức trên Salemylink.com.`,
-        },
-      },
-      {
-        "@type": "Question",
-        name: "Có hỗ trợ sau khi mua không?",
-        acceptedAnswer: {
-          "@type": "Answer",
-          text: "Có, người bán cung cấp hỗ trợ cho sản phẩm. Bạn có thể liên hệ trực tiếp với người bán qua thông tin trong email xác nhận hoặc trang hồ sơ người bán trên Salemylink.com.",
-        },
-      },
-    ],
+    })),
   });
 
-  // 5. WebPage node 
+  // 5. WebPage node — use ItemPage for product pages (more specific)
   graphNodes.push({
-    "@type": "WebPage",
+    "@type": "ItemPage",
     "@id": `${productUrl}#webpage`,
     url: productUrl,
     name: metaTitle,
@@ -494,8 +510,14 @@ export default function ProductDetail() {
     dateModified: dateModified,
     isPartOf: { "@id": `${siteUrl}/#website` },
     breadcrumb: { "@id": `${productUrl}#breadcrumb` },
-    about: { "@id": `${productUrl}#product` },
+    mainEntity: { "@id": `${productUrl}#product` },
     inLanguage: "vi",
+    potentialAction: {
+      "@type": "BuyAction",
+      target: productUrl,
+      "price": product.price.toString(),
+      "priceCurrency": "VND",
+    },
   });
 
   // Combined structured data using @graph

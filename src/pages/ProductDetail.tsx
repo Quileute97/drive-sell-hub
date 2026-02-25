@@ -14,6 +14,7 @@ import { useCart } from "@/hooks/useCart";
 import { SEO } from "@/components/SEO";
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { ProductFAQ } from "@/components/ProductFAQ";
+import { RelatedCategories } from "@/components/RelatedCategories";
 
 interface ProductDetail {
   id: string;
@@ -780,6 +781,12 @@ export default function ProductDetail() {
           categoryId={product.category_id} 
           currentProductId={product.id}
           categorySlug={product.categories?.slug}
+        />
+
+        {/* Related Categories — internal linking for SEO */}
+        <RelatedCategories 
+          currentCategoryId={product.category_id}
+          title="Khám phá danh mục khác"
         />
       </main>
 

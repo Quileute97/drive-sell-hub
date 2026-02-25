@@ -10,6 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Star, Eye, Download, ChevronRight } from "lucide-react";
 import { getGoogleDriveThumbnail } from "@/lib/utils";
 import { SEO } from "@/components/SEO";
+import { RelatedCategories } from "@/components/RelatedCategories";
 
 interface Product {
   id: string;
@@ -448,6 +449,12 @@ export default function Category() {
             <p className="text-muted-foreground mt-2">Danh mục {category.name} đang được cập nhật. Hãy quay lại sau!</p>
           </div>
         )}
+
+        {/* Related Categories — cross-linking for SEO authority */}
+        <RelatedCategories 
+          currentCategoryId={category.id}
+          title={`Danh mục liên quan đến ${category.name}`}
+        />
       </main>
 
       <Footer />

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { normalizeSlug, generateSlugFromTitle } from '@/lib/slugUtils';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -112,35 +113,18 @@ const EditProductForm = ({ product, onClose, onSuccess, onDelete }: EditProductF
     }));
 
     if (field === 'title') {
-      let slug = value
-        .toLowerCase()
-        .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '')
-        .replace(/đ/g, 'd')
-        .replace(/[^a-z0-9\s-]/g, '')
-        .replace(/\s+/g, '-')
-        .replace(/-+/g, '-')
-        .replace(/^-+|-+$/g, '');
-      
-      const fileExtensions = ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'zip', 'rar', 'exe', 'mp3', 'mp4', 'avi', 'mov', 'jpg', 'jpeg', 'png', 'gif', 'psd', 'ai', 'eps', 'svg', 'txt', 'csv'];
-      fileExtensions.forEach(ext => {
-        const regex = new RegExp(`([a-z0-9])${ext}(?=-|$)`, 'g');
-        slug = slug.replace(regex, `$1-${ext}`);
-      });
-      
-      slug = slug.replace(/-+/g, '-').replace(/^-+|-+$/g, '');
-      
-      setFormData(prev => ({
-        ...prev,
-        slug
-      }));
+      const slug = generateSlugFromTitle(value);
+      setFormData(prev => ({ ...prev, slug }));
+    }
+
+    // Normalize slug when manually edited
+    if (field === 'slug') {
+      const normalized = normalizeSlug(value);
+      setFormData(prev => ({ ...prev, slug: normalized }));
     }
 
     if (field === 'title' && !formData.meta_title) {
-      setFormData(prev => ({
-        ...prev,
-        meta_title: value
-      }));
+      setFormData(prev => ({ ...prev, meta_title: value }));
     }
   };
 
@@ -213,7 +197,7 @@ const EditProductForm = ({ product, onClose, onSuccess, onDelete }: EditProductF
         .from('products')
         .update({
           title: formData.title.trim(),
-          slug: formData.slug.trim(),
+          slug: normalizeSlug(formData.slug.trim()),
           description: formData.description.trim(),
           short_description: formData.short_description.trim(),
           google_drive_link: formData.google_drive_link.trim() || formData.download_only_link.trim() || '',

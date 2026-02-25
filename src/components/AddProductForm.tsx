@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { normalizeSlug, generateSlugFromTitle } from '@/lib/slugUtils';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -82,40 +83,19 @@ const AddProductForm = ({ onClose, onSuccess }: AddProductFormProps) => {
 
     // Auto-generate slug from title
     if (field === 'title') {
-      let slug = value
-        .toLowerCase()
-        .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '') // Remove Vietnamese diacritics
-        .replace(/đ/g, 'd') // Handle Vietnamese đ
-        .replace(/[^a-z0-9\s-]/g, '')
-        .replace(/\s+/g, '-')
-        .replace(/-+/g, '-')
-        .replace(/^-+|-+$/g, '');
-      
-      // SEO improvement: Separate file extensions from words
-      // e.g., "documentpdf" -> "document-pdf", "filedocx" -> "file-docx"
-      const fileExtensions = ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'zip', 'rar', 'exe', 'mp3', 'mp4', 'avi', 'mov', 'jpg', 'jpeg', 'png', 'gif', 'psd', 'ai', 'eps', 'svg', 'txt', 'csv'];
-      fileExtensions.forEach(ext => {
-        // Match extension at end of a word (not already separated)
-        const regex = new RegExp(`([a-z0-9])${ext}(?=-|$)`, 'g');
-        slug = slug.replace(regex, `$1-${ext}`);
-      });
-      
-      // Clean up any double dashes created
-      slug = slug.replace(/-+/g, '-').replace(/^-+|-+$/g, '');
-      
-      setFormData(prev => ({
-        ...prev,
-        slug
-      }));
+      const slug = generateSlugFromTitle(value);
+      setFormData(prev => ({ ...prev, slug }));
+    }
+
+    // Normalize slug when manually edited
+    if (field === 'slug') {
+      const normalized = normalizeSlug(value);
+      setFormData(prev => ({ ...prev, slug: normalized }));
     }
 
     // Auto-generate meta title from title if empty
     if (field === 'title' && !formData.meta_title) {
-      setFormData(prev => ({
-        ...prev,
-        meta_title: value
-      }));
+      setFormData(prev => ({ ...prev, meta_title: value }));
     }
   };
 
@@ -189,7 +169,7 @@ const AddProductForm = ({ onClose, onSuccess }: AddProductFormProps) => {
 
     try {
       // Generate unique slug with timestamp to avoid duplicates
-      const baseSlug = formData.slug.trim() || formData.title.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-');
+      const baseSlug = normalizeSlug(formData.slug.trim() || formData.title.trim());
       const uniqueSlug = `${baseSlug}-${Date.now().toString(36)}`;
 
       const { error } = await supabase

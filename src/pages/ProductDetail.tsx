@@ -313,46 +313,34 @@ export default function ProductDetail() {
         },
       },
     },
-    // Always include aggregateRating (Google requires this field)
-    aggregateRating: {
-      "@type": "AggregateRating",
-      ratingValue: (product.rating_average || 5).toFixed(1),
-      reviewCount: product.rating_count || 1,
-      bestRating: "5",
-      worstRating: "1",
-    },
-    // Include real reviews from database, or default if none exist
-    review: reviews.length > 0 
-      ? reviews.map(review => ({
-          "@type": "Review",
-          reviewRating: {
-            "@type": "Rating",
-            ratingValue: review.rating.toString(),
-            bestRating: "5",
-            worstRating: "1",
-          },
-          author: {
-            "@type": "Person",
-            name: review.profiles?.full_name || "Người mua hàng",
-          },
-          reviewBody: review.comment || `Sản phẩm ${product.title} chất lượng tốt.`,
-          datePublished: new Date(review.created_at).toISOString().split('T')[0],
-        }))
-      : [{
-          "@type": "Review",
-          reviewRating: {
-            "@type": "Rating",
-            ratingValue: (product.rating_average || 5).toFixed(1),
-            bestRating: "5",
-            worstRating: "1",
-          },
-          author: {
-            "@type": "Person",
-            name: product.profiles?.full_name || "Người mua hàng",
-          },
-          reviewBody: `${product.title} là sản phẩm digital chất lượng tốt, tải xuống nhanh chóng.`,
-          datePublished: new Date().toISOString().split('T')[0],
-        }],
+    // Only include aggregateRating when there are real reviews (avoid fake data that Google flags)
+    ...(product.rating_count > 0 ? {
+      aggregateRating: {
+        "@type": "AggregateRating",
+        ratingValue: product.rating_average.toFixed(1),
+        reviewCount: product.rating_count,
+        bestRating: "5",
+        worstRating: "1",
+      },
+    } : {}),
+    // Only include real reviews from database (no fake/default reviews)
+    ...(reviews.length > 0 ? {
+      review: reviews.map(review => ({
+        "@type": "Review",
+        reviewRating: {
+          "@type": "Rating",
+          ratingValue: review.rating.toString(),
+          bestRating: "5",
+          worstRating: "1",
+        },
+        author: {
+          "@type": "Person",
+          name: review.profiles?.full_name || "Người mua hàng",
+        },
+        ...(review.comment ? { reviewBody: review.comment } : {}),
+        datePublished: new Date(review.created_at).toISOString().split('T')[0],
+      })),
+    } : {}),
   };
 
   // Add additional product attributes

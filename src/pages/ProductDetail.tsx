@@ -247,47 +247,94 @@ export default function ProductDetail() {
 
   const siteUrl = "https://salemylink.com";
   const productUrl = `${siteUrl}/product/${product.slug}`;
-  const metaTitle = product.meta_title || `${product.title} - Mua và tải ngay`;
+  
+  // SEO-optimized meta title: Include primary keyword + action word + brand
+  const metaTitle = product.meta_title || 
+    `${product.title} - Tải xuống ngay | ${product.categories?.name || 'Sản phẩm Digital'}`;
+  
+  // SEO-optimized description with call-to-action
   const metaDescription =
     product.meta_description ||
     product.short_description ||
-    (product.description ? product.description.substring(0, 160) : `Mua ${product.title} với giá tốt nhất. Tải xuống ngay sau khi thanh toán.`);
+    (product.description 
+      ? product.description.substring(0, 140) + ` Tải ngay tại Salemylink.com`
+      : `${product.title} - ${product.categories?.name || 'Sản phẩm digital'}. Tải xuống ngay sau khi thanh toán. An toàn, nhanh chóng trên Salemylink.com`);
 
   const productImages = [product.thumbnail_url, ...(product.images || [])].filter(Boolean);
-  const mainImage = productImages[0] || "https://salemylink.com/placeholder.svg";
+  const mainImage = productImages[0] || `${siteUrl}/og-image.png`;
 
-  // Enhanced Product Structured Data (schema.org)
   const datePublished = new Date(product.created_at).toISOString();
   const dateModified = new Date(product.updated_at).toISOString();
-  
-  const productStructuredData: Record<string, any> = {
-    "@context": "https://schema.org",
-    "@type": "Product",
-    "@id": productUrl,
+  const priceValidUntil = new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString().split('T')[0];
+
+  // Build structured data using @graph pattern (Google recommended - avoids duplicate @context)
+  const graphNodes: Record<string, any>[] = [];
+
+  // 1. Organization node (referenced by other nodes)
+  graphNodes.push({
+    "@type": "Organization",
+    "@id": `${siteUrl}/#organization`,
+    name: "Salemylink.com",
+    url: siteUrl,
+    logo: {
+      "@type": "ImageObject",
+      url: `${siteUrl}/logo.png`,
+      width: 200,
+      height: 200,
+    },
+  });
+
+  // 2. BreadcrumbList
+  const breadcrumbItems = [
+    {
+      "@type": "ListItem",
+      position: 1,
+      name: "Trang chủ",
+      item: siteUrl,
+    },
+  ];
+  if (product.categories?.name && product.categories?.slug) {
+    breadcrumbItems.push({
+      "@type": "ListItem",
+      position: 2,
+      name: product.categories.name,
+      item: `${siteUrl}/category/${product.categories.slug}`,
+    });
+  }
+  breadcrumbItems.push({
+    "@type": "ListItem",
+    position: breadcrumbItems.length + 1,
     name: product.title,
-    description: product.description || product.short_description,
+    item: productUrl,
+  });
+
+  graphNodes.push({
+    "@type": "BreadcrumbList",
+    "@id": `${productUrl}#breadcrumb`,
+    itemListElement: breadcrumbItems,
+  });
+
+  // 3. Product node (core)
+  const productNode: Record<string, any> = {
+    "@type": "Product",
+    "@id": `${productUrl}#product`,
+    name: product.title,
+    description: product.description || product.short_description || metaDescription,
     image: productImages.length > 0 ? productImages : [mainImage],
-    sku: product.id,
-    mpn: product.id.slice(0, 12),
+    url: productUrl,
+    sku: product.slug,
     category: product.categories?.name,
-    datePublished: datePublished,
-    dateModified: dateModified,
     brand: {
       "@type": "Brand",
       name: product.profiles?.full_name || "Salemylink.com",
-    },
-    manufacturer: {
-      "@type": "Organization",
-      name: "Salemylink.com",
-      url: siteUrl,
     },
     offers: {
       "@type": "Offer",
       "@id": `${productUrl}#offer`,
       url: productUrl,
-      price: product.price,
+      price: product.price.toString(),
       priceCurrency: "VND",
-      priceValidUntil: new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString().split('T')[0],
+      priceValidUntil: priceValidUntil,
       availability: "https://schema.org/InStock",
       itemCondition: "https://schema.org/NewCondition",
       seller: {
@@ -297,6 +344,10 @@ export default function ProductDetail() {
       },
       shippingDetails: {
         "@type": "OfferShippingDetails",
+        shippingDestination: {
+          "@type": "DefinedRegion",
+          addressCountry: "VN",
+        },
         shippingRate: {
           "@type": "MonetaryAmount",
           value: "0",
@@ -310,107 +361,81 @@ export default function ProductDetail() {
             maxValue: 0,
             unitCode: "MIN",
           },
+          transitTime: {
+            "@type": "QuantitativeValue",
+            minValue: 0,
+            maxValue: 0,
+            unitCode: "MIN",
+          },
         },
       },
+      hasMerchantReturnPolicy: {
+        "@type": "MerchantReturnPolicy",
+        applicableCountry: "VN",
+        returnPolicyCategory: "https://schema.org/MerchantReturnNotPermitted",
+        merchantReturnDays: 0,
+      },
     },
-    // Only include aggregateRating when there are real reviews (avoid fake data that Google flags)
-    ...(product.rating_count > 0 ? {
-      aggregateRating: {
-        "@type": "AggregateRating",
-        ratingValue: product.rating_average.toFixed(1),
-        reviewCount: product.rating_count,
+  };
+
+  // Only include aggregateRating with real data
+  if (product.rating_count > 0) {
+    productNode.aggregateRating = {
+      "@type": "AggregateRating",
+      "@id": `${productUrl}#rating`,
+      ratingValue: product.rating_average.toFixed(1),
+      reviewCount: product.rating_count,
+      bestRating: "5",
+      worstRating: "1",
+    };
+  }
+
+  // Only include real reviews
+  if (reviews.length > 0) {
+    productNode.review = reviews.map((review, index) => ({
+      "@type": "Review",
+      "@id": `${productUrl}#review-${index}`,
+      reviewRating: {
+        "@type": "Rating",
+        ratingValue: review.rating.toString(),
         bestRating: "5",
         worstRating: "1",
       },
-    } : {}),
-    // Only include real reviews from database (no fake/default reviews)
-    ...(reviews.length > 0 ? {
-      review: reviews.map(review => ({
-        "@type": "Review",
-        reviewRating: {
-          "@type": "Rating",
-          ratingValue: review.rating.toString(),
-          bestRating: "5",
-          worstRating: "1",
-        },
-        author: {
-          "@type": "Person",
-          name: review.profiles?.full_name || "Người mua hàng",
-        },
-        ...(review.comment ? { reviewBody: review.comment } : {}),
-        datePublished: new Date(review.created_at).toISOString().split('T')[0],
-      })),
-    } : {}),
-  };
-
-  // Add additional product attributes
-  if (product.file_format) {
-    productStructuredData.additionalProperty = [
-      {
-        "@type": "PropertyValue",
-        name: "Định dạng file",
-        value: product.file_format,
+      author: {
+        "@type": "Person",
+        name: review.profiles?.full_name || "Khách hàng",
       },
-    ];
-    if (product.file_size) {
-      productStructuredData.additionalProperty.push({
-        "@type": "PropertyValue",
-        name: "Dung lượng",
-        value: product.file_size,
-      });
-    }
+      ...(review.comment ? { reviewBody: review.comment } : {}),
+      datePublished: new Date(review.created_at).toISOString().split('T')[0],
+    }));
   }
 
-  // Breadcrumb Structured Data
-  const breadcrumbStructuredData = {
-    "@context": "https://schema.org",
-    "@type": "BreadcrumbList",
-    itemListElement: [
-      {
-        "@type": "ListItem",
-        position: 1,
-        name: "Trang chủ",
-        item: siteUrl,
-      },
-      ...(product.categories?.name && product.categories?.slug
-        ? [
-            {
-              "@type": "ListItem",
-              position: 2,
-              name: product.categories.name,
-              item: `${siteUrl}/category/${product.categories.slug}`,
-            },
-          ]
-        : []),
-      {
-        "@type": "ListItem",
-        position: product.categories?.name && product.categories?.slug ? 3 : 2,
-        name: product.title,
-        item: productUrl,
-      },
-    ],
-  };
+  // Additional product properties
+  const additionalProperties = [];
+  if (product.file_format) {
+    additionalProperties.push({
+      "@type": "PropertyValue",
+      name: "Định dạng file",
+      value: product.file_format,
+    });
+  }
+  if (product.file_size) {
+    additionalProperties.push({
+      "@type": "PropertyValue",
+      name: "Dung lượng",
+      value: product.file_size,
+    });
+  }
+  if (additionalProperties.length > 0) {
+    productNode.additionalProperty = additionalProperties;
+  }
 
-  // Website Structured Data for search
-  const websiteStructuredData = {
-    "@context": "https://schema.org",
-    "@type": "WebSite",
-    name: "Salemylink.com",
-    url: siteUrl,
-    potentialAction: {
-      "@type": "SearchAction",
-      target: {
-        "@type": "EntryPoint",
-        urlTemplate: `${siteUrl}/search?q={search_term_string}`,
-      },
-      "query-input": "required name=search_term_string",
-    },
-  };
+  graphNodes.push(productNode);
 
-  // FAQPage structured data - ALL FAQ questions in ONE single FAQPage (Google requirement)
-  const faqStructuredData = {
-    "@context": "https://schema.org",
+  // 4. FAQPage node
+  graphNodes.push({
     "@type": "FAQPage",
+    "@id": `${productUrl}#faq`,
     mainEntity: [
       {
         "@type": "Question",
@@ -424,26 +449,26 @@ export default function ProductDetail() {
       },
       {
         "@type": "Question",
+        name: `Mua ${product.title} ở đâu uy tín?`,
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: `Bạn có thể mua ${product.title} tại Salemylink.com - nền tảng bán sản phẩm digital uy tín hàng đầu Việt Nam. Thanh toán an toàn, nhận link tải ngay sau khi thanh toán.`,
+        },
+      },
+      {
+        "@type": "Question",
         name: "Tôi nhận sản phẩm như thế nào sau khi mua?",
         acceptedAnswer: {
           "@type": "Answer",
-          text: "Sau khi thanh toán thành công, bạn sẽ nhận được link Google Drive để tải sản phẩm về. Link này sẽ được gửi qua email và hiển thị ngay trên trang xác nhận đơn hàng.",
+          text: "Sau khi thanh toán thành công, bạn sẽ nhận được link tải sản phẩm ngay lập tức. Link sẽ hiển thị trên trang xác nhận đơn hàng và được gửi qua email.",
         },
       },
       {
         "@type": "Question",
-        name: "Sản phẩm có được cập nhật không?",
+        name: `Giá ${product.title} là bao nhiêu?`,
         acceptedAnswer: {
           "@type": "Answer",
-          text: "Tùy thuộc vào người bán, một số sản phẩm sẽ được cập nhật định kỳ. Bạn nên liên hệ trực tiếp với người bán để biết thêm chi tiết về chính sách cập nhật.",
-        },
-      },
-      {
-        "@type": "Question",
-        name: "Tôi có thể hoàn tiền không?",
-        acceptedAnswer: {
-          "@type": "Answer",
-          text: "Chính sách hoàn tiền phụ thuộc vào từng người bán. Vui lòng đọc kỹ mô tả sản phẩm hoặc liên hệ với người bán trước khi mua để biết về chính sách hoàn tiền cụ thể.",
+          text: `${product.title} hiện có giá ${new Intl.NumberFormat('vi-VN').format(product.price)} VND${product.original_price && product.original_price > product.price ? `, giảm từ ${new Intl.NumberFormat('vi-VN').format(product.original_price)} VND` : ''}. Thanh toán nhanh chóng qua nhiều phương thức trên Salemylink.com.`,
         },
       },
       {
@@ -451,47 +476,66 @@ export default function ProductDetail() {
         name: "Có hỗ trợ sau khi mua không?",
         acceptedAnswer: {
           "@type": "Answer",
-          text: "Người bán thường cung cấp hỗ trợ cho sản phẩm của họ. Bạn có thể liên hệ trực tiếp với người bán thông qua thông tin được cung cấp trong email xác nhận hoặc trong file sản phẩm.",
+          text: "Có, người bán cung cấp hỗ trợ cho sản phẩm. Bạn có thể liên hệ trực tiếp với người bán qua thông tin trong email xác nhận hoặc trang hồ sơ người bán trên Salemylink.com.",
         },
       },
     ],
+  });
+
+  // 5. WebPage node 
+  graphNodes.push({
+    "@type": "WebPage",
+    "@id": `${productUrl}#webpage`,
+    url: productUrl,
+    name: metaTitle,
+    description: metaDescription,
+    datePublished: datePublished,
+    dateModified: dateModified,
+    isPartOf: { "@id": `${siteUrl}/#website` },
+    breadcrumb: { "@id": `${productUrl}#breadcrumb` },
+    about: { "@id": `${productUrl}#product` },
+    inLanguage: "vi",
+  });
+
+  // Combined structured data using @graph
+  const combinedStructuredData = {
+    "@context": "https://schema.org",
+    "@graph": graphNodes,
   };
 
-  const combinedStructuredData = [
-    breadcrumbStructuredData, 
-    productStructuredData,
-    websiteStructuredData,
-    faqStructuredData,
-  ];
+  // SEO keywords: product-specific + long-tail
+  const seoKeywords = [
+    product.title,
+    `${product.title} tải xuống`,
+    `mua ${product.title}`,
+    product.categories?.name,
+    ...(product.tags || []),
+    product.file_format ? `tài liệu ${product.file_format}` : null,
+    "sản phẩm digital",
+    "tải xuống nhanh",
+    "salemylink",
+  ].filter(Boolean).join(", ");
 
   return (
     <div className="min-h-screen">
       <SEO 
         title={metaTitle}
         description={metaDescription}
-        keywords={[
-          product.title,
-          product.categories?.name,
-          ...(product.tags || []),
-          "sản phẩm digital",
-          "mua bán online",
-          "tải xuống",
-          product.file_format,
-          "salemylink",
-        ]
-          .filter(Boolean)
-          .join(", ")}
+        keywords={seoKeywords}
         image={mainImage}
         url={productUrl}
         type="product"
         structuredData={combinedStructuredData}
+        publishedTime={datePublished}
+        modifiedTime={dateModified}
+        author={product.profiles?.full_name}
         productPrice={product.price}
         productCurrency="VND"
         productAvailability="InStock"
         productBrand={product.profiles?.full_name}
         productCategory={product.categories?.name}
-        productRating={product.rating_average}
-        productReviewCount={product.rating_count}
+        productRating={product.rating_count > 0 ? product.rating_average : undefined}
+        productReviewCount={product.rating_count > 0 ? product.rating_count : undefined}
       />
       <Header />
       
@@ -707,9 +751,9 @@ export default function ProductDetail() {
         <article className="mt-12">
           <Card>
             <CardContent className="p-6">
-              <h2 className="text-2xl font-bold mb-4">Mô tả sản phẩm</h2>
-              <div className="prose max-w-none">
-                <p className="whitespace-pre-wrap">{product.description}</p>
+              <h2 className="text-2xl font-bold mb-4">Mô tả chi tiết {product.title}</h2>
+              <div className="prose max-w-none" itemProp="description">
+                <p className="whitespace-pre-wrap leading-relaxed">{product.description}</p>
               </div>
             </CardContent>
           </Card>

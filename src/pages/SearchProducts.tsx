@@ -13,6 +13,8 @@ import { getGoogleDriveThumbnail } from "@/lib/utils";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { SEO } from "@/components/SEO";
+import { ProductThumbnail } from "@/components/ProductThumbnail";
+import { RelatedCategories } from "@/components/RelatedCategories";
 
 interface Product {
   id: string;
@@ -177,112 +179,165 @@ export default function SearchProducts() {
     return stars;
   };
 
-  const pageTitle = searchQuery 
-    ? `Tìm kiếm: ${searchQuery}` 
-    : selectedCategory 
-    ? `Danh mục: ${categories.find(c => c.id === selectedCategory)?.name}` 
-    : "Tìm kiếm sản phẩm";
 
   const siteUrl = "https://salemylink.com";
-  const searchUrl = `${siteUrl}/search${searchQuery ? `?q=${encodeURIComponent(searchQuery)}` : ''}`;
+  const currentQuery = searchParams.get('q') || '';
+  const currentCategorySlug = categories.find(c => c.id === selectedCategory)?.slug;
   
-  // Structured data for search results page
-  const searchStructuredData = [
-    // SearchResultsPage schema
-    {
-      "@context": "https://schema.org",
-      "@type": "SearchResultsPage",
-      "@id": searchUrl,
-      "name": pageTitle,
-      "url": searchUrl,
-      "description": `Tìm kiếm sản phẩm digital tại Salemylink.com. ${products.length} kết quả phù hợp.`,
-      "isPartOf": {
-        "@id": `${siteUrl}/#website`
-      }
-    },
-    // BreadcrumbList
-    {
-      "@context": "https://schema.org",
-      "@type": "BreadcrumbList",
-      "itemListElement": [
-        {
-          "@type": "ListItem",
-          "position": 1,
-          "name": "Trang chủ",
-          "item": siteUrl
+  // Build canonical URL - strip sort/filter params for cleaner canonical
+  const canonicalUrl = currentQuery 
+    ? `${siteUrl}/search?q=${encodeURIComponent(currentQuery)}`
+    : `${siteUrl}/search`;
+
+  // Dynamic SEO content based on search context
+  const categoryName = categories.find(c => c.id === selectedCategory)?.name;
+  
+  const metaTitle = currentQuery
+    ? `${currentQuery} - Tìm kiếm sản phẩm Digital | Salemylink.com`
+    : categoryName && selectedCategory !== 'all'
+    ? `${categoryName} - Sản phẩm Digital | Salemylink.com`
+    : "Tìm kiếm sản phẩm Digital chất lượng cao | Salemylink.com";
+  
+  const metaDescription = currentQuery
+    ? `Tìm thấy ${products.length} sản phẩm digital cho "${currentQuery}" tại Salemylink.com. Ebook, tài liệu, khóa học online giá tốt, thanh toán an toàn, tải về ngay.`
+    : `Khám phá ${products.length}+ sản phẩm digital chất lượng cao tại Salemylink.com. Ebook, tài liệu học tập, khóa học online với giá tốt nhất Việt Nam.`;
+
+  const metaKeywords = [
+    currentQuery,
+    categoryName,
+    'sản phẩm digital', 'ebook', 'tài liệu online', 'khóa học', 
+    'mua bán online', 'salemylink', 'tải ebook', 'digital marketplace việt nam'
+  ].filter(Boolean).join(', ');
+
+  // Consolidated @graph structured data
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "SearchResultsPage",
+        "@id": canonicalUrl,
+        "name": metaTitle,
+        "url": canonicalUrl,
+        "description": metaDescription,
+        "isPartOf": { "@id": `${siteUrl}/#website` },
+        "about": {
+          "@type": "Thing",
+          "name": currentQuery || "Sản phẩm Digital"
         },
-        {
+        "breadcrumb": { "@id": `${canonicalUrl}#breadcrumb` }
+      },
+      {
+        "@type": "BreadcrumbList",
+        "@id": `${canonicalUrl}#breadcrumb`,
+        "itemListElement": [
+          {
+            "@type": "ListItem",
+            "position": 1,
+            "name": "Trang chủ",
+            "item": siteUrl
+          },
+          ...(categoryName && selectedCategory !== 'all' ? [{
+            "@type": "ListItem",
+            "position": 2,
+            "name": categoryName,
+            "item": `${siteUrl}/category/${currentCategorySlug}`
+          }] : []),
+          {
+            "@type": "ListItem",
+            "position": categoryName && selectedCategory !== 'all' ? 3 : 2,
+            "name": currentQuery ? `Tìm kiếm: ${currentQuery}` : "Tìm kiếm",
+            "item": canonicalUrl
+          }
+        ]
+      },
+      ...(products.length > 0 ? [{
+        "@type": "ItemList",
+        "@id": `${canonicalUrl}#results`,
+        "name": currentQuery ? `Kết quả tìm kiếm: ${currentQuery}` : "Sản phẩm Digital",
+        "description": `${products.length} sản phẩm digital phù hợp`,
+        "numberOfItems": products.length,
+        "itemListOrder": "https://schema.org/ItemListOrderDescending",
+        "itemListElement": products.slice(0, 20).map((product, index) => ({
           "@type": "ListItem",
-          "position": 2,
-          "name": searchQuery ? `Tìm kiếm: ${searchQuery}` : "Tìm kiếm",
-          "item": searchUrl
-        }
-      ]
-    },
-    // ItemList for search results
-    ...(products.length > 0 ? [{
-      "@context": "https://schema.org",
-      "@type": "ItemList",
-      "name": searchQuery ? `Kết quả tìm kiếm: ${searchQuery}` : "Danh sách sản phẩm",
-      "description": `${products.length} sản phẩm digital phù hợp với tìm kiếm`,
-      "numberOfItems": products.length,
-      "itemListOrder": "https://schema.org/ItemListOrderDescending",
-      "itemListElement": products.slice(0, 20).map((product, index) => ({
-        "@type": "ListItem",
-        "position": index + 1,
-        "item": {
-          "@type": "Product",
-          "@id": `${siteUrl}/product/${product.slug}`,
-          "name": product.title,
-          "description": product.short_description || product.description,
-          "url": `${siteUrl}/product/${product.slug}`,
-          "image": getGoogleDriveThumbnail(product.google_drive_link, 600),
-          "brand": {
-            "@type": "Brand",
-            "name": product.profiles?.full_name || "Salemylink"
-          },
-          "offers": {
-            "@type": "Offer",
-            "price": product.price,
-            "priceCurrency": "VND",
-            "availability": "https://schema.org/InStock",
-            "seller": {
-              "@type": "Organization",
+          "position": index + 1,
+          "item": {
+            "@type": "Product",
+            "@id": `${siteUrl}/product/${product.slug}`,
+            "name": product.title,
+            "description": product.short_description || product.description?.substring(0, 160),
+            "url": `${siteUrl}/product/${product.slug}`,
+            "image": product.thumbnail_url || getGoogleDriveThumbnail(product.google_drive_link, 600),
+            "category": product.categories?.name,
+            "brand": {
+              "@type": "Brand",
               "name": product.profiles?.full_name || "Salemylink"
-            }
+            },
+            "offers": {
+              "@type": "Offer",
+              "price": product.price,
+              "priceCurrency": "VND",
+              "availability": "https://schema.org/InStock",
+              "url": `${siteUrl}/product/${product.slug}`,
+              "seller": {
+                "@type": "Organization",
+                "name": product.profiles?.full_name || "Salemylink"
+              }
+            },
+            ...(product.rating_count > 0 ? {
+              "aggregateRating": {
+                "@type": "AggregateRating",
+                "ratingValue": product.rating_average.toFixed(1),
+                "reviewCount": product.rating_count,
+                "bestRating": "5",
+                "worstRating": "1"
+              }
+            } : {})
+          }
+        }))
+      }] : []),
+      {
+        "@type": "WebSite",
+        "@id": `${siteUrl}/#website`,
+        "url": siteUrl,
+        "name": "Salemylink.com",
+        "potentialAction": {
+          "@type": "SearchAction",
+          "target": {
+            "@type": "EntryPoint",
+            "urlTemplate": `${siteUrl}/search?q={search_term_string}`
           },
-          ...(product.rating_count > 0 && {
-            aggregateRating: {
-              "@type": "AggregateRating",
-              "ratingValue": product.rating_average.toFixed(1),
-              "reviewCount": product.rating_count,
-              "bestRating": "5",
-              "worstRating": "1"
-            }
-          })
+          "query-input": "required name=search_term_string"
         }
-      }))
-    }] : [])
-  ];
+      }
+    ]
+  };
+
+  // noindex search pages with query params to avoid thin/duplicate content
+  const shouldNoindex = !!currentQuery;
 
   return (
     <div className="min-h-screen">
       <SEO 
-        title={`${pageTitle} | Salemylink.com - Mua bán sản phẩm Digital`}
-        description={searchQuery 
-          ? `Tìm thấy ${products.length} sản phẩm cho "${searchQuery}". Mua bán ebook, tài liệu, khóa học online tại Salemylink.com.`
-          : `Tìm kiếm sản phẩm digital tại Salemylink.com. ${products.length} sản phẩm chất lượng cao với giá tốt nhất.`
-        }
-        keywords={`tìm kiếm sản phẩm, ${searchQuery || 'digital products'}, ebook, tài liệu online, khóa học, mua bán online, salemylink`}
-        url={searchUrl}
-        structuredData={searchStructuredData}
+        title={metaTitle}
+        description={metaDescription}
+        keywords={metaKeywords}
+        url={canonicalUrl}
+        structuredData={structuredData}
+        noindex={shouldNoindex}
       />
       <Header />
       
       <main className="container mx-auto px-4 py-8">
         {/* Search and Filter Section */}
         <div className="mb-8 space-y-4">
-          <h1 className="text-3xl font-bold">Tìm kiếm sản phẩm</h1>
+          <h1 className="text-3xl font-bold">
+            {currentQuery 
+              ? <>Kết quả tìm kiếm: <span className="text-primary">"{currentQuery}"</span></>
+              : categoryName && selectedCategory !== 'all'
+              ? <>Sản phẩm <span className="text-primary">{categoryName}</span></>
+              : "Tìm kiếm sản phẩm Digital"
+            }
+          </h1>
           
           <div className="flex flex-col md:flex-row gap-4">
             {/* Search Input */}
@@ -380,21 +435,26 @@ export default function SearchProducts() {
               Tìm thấy {products.length} sản phẩm
             </p>
             <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {products.map((product) => (
-                <Card 
+              {products.map((product, index) => (
+                <article 
                   key={product.id} 
-                  className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-1 cursor-pointer flex flex-col h-full"
+                  className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-1 cursor-pointer flex flex-col h-full rounded-lg border bg-card text-card-foreground shadow-sm"
                   onClick={() => navigate(`/product/${product.slug}`)}
                 >
                   <div className="relative overflow-hidden rounded-t-lg aspect-[4/3] bg-muted">
-                    <img
-                      src={getGoogleDriveThumbnail(product.google_drive_link, 600)}
-                      alt={`Hình ảnh sản phẩm ${product.title}`}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                      loading="lazy"
-                    />
+                    <div className="w-full h-full group-hover:scale-105 transition-transform duration-300">
+                      <ProductThumbnail
+                        googleDriveLink={product.google_drive_link}
+                        thumbnailUrl={product.thumbnail_url}
+                        fileFormat={product.file_format}
+                        title={product.title}
+                        size={600}
+                        loading={index < 4 ? "eager" : "lazy"}
+                        fetchPriority={index < 2 ? "high" : "auto"}
+                      />
+                    </div>
                     {product.original_price > product.price && (
-                      <Badge className="absolute top-3 left-3 bg-destructive text-destructive-foreground shadow-md">
+                      <Badge className="absolute top-3 left-3 bg-destructive text-destructive-foreground shadow-md z-10">
                         -{Math.round(((product.original_price - product.price) / product.original_price) * 100)}%
                       </Badge>
                     )}
@@ -481,13 +541,14 @@ export default function SearchProducts() {
                       Thêm vào giỏ
                     </Button>
                   </CardFooter>
-                </Card>
+                </article>
               ))}
             </div>
           </>
         )}
       </main>
 
+      <RelatedCategories />
       <Footer />
     </div>
   );

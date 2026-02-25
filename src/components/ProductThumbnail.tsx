@@ -20,6 +20,10 @@ interface ProductThumbnailProps {
   title: string;
   size?: number;
   className?: string;
+  /** Set to "eager" for above-the-fold images (LCP optimization) */
+  loading?: "lazy" | "eager";
+  /** Set to "high" for LCP images */
+  fetchPriority?: "high" | "low" | "auto";
 }
 
 // File formats that can show preview from Google Drive
@@ -96,7 +100,9 @@ export const ProductThumbnail = ({
   fileFormat,
   title,
   size = 600,
-  className = ""
+  className = "",
+  loading = "lazy",
+  fetchPriority = "auto",
 }: ProductThumbnailProps) => {
   const [imageError, setImageError] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
@@ -137,7 +143,11 @@ export const ProductThumbnail = ({
         src={rawImageSrc}
         alt={`Hình ảnh sản phẩm ${title}`}
         className={`w-full h-full object-cover transition-opacity duration-300 ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
-        loading="lazy"
+        loading={loading}
+        fetchPriority={fetchPriority}
+        decoding="async"
+        width={size}
+        height={Math.round(size * 0.75)}
         onLoad={() => setImageLoaded(true)}
         onError={() => {
           setImageError(true);

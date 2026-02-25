@@ -13,11 +13,11 @@
     <link rel="alternate" hreflang="vi" href="https://salemylink.com/" />
     <link rel="alternate" hreflang="x-default" href="https://salemylink.com/" />
     
-    <!-- Preconnect for performance -->
+    <!-- Preconnect — critical third-party origins (LCP improvement) -->
+    <link rel="preconnect" href="https://dfalphamyvdfewixrnju.supabase.co" />
     <link rel="preconnect" href="https://drive.google.com" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link rel="dns-prefetch" href="https://drive.google.com" />
+    <link rel="dns-prefetch" href="https://lh3.googleusercontent.com" />
     
     <!-- Favicon and App Icons -->
     <link rel="icon" type="image/png" href="/logo.png" />
@@ -46,80 +46,80 @@
     <!-- Additional SEO -->
     <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
     <meta name="googlebot" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
-    <meta name="bingbot" content="index, follow" />
-    <meta name="theme-color" content="#6366f1" />
+    <meta name="theme-color" content="#0f3a7e" />
     <meta name="format-detection" content="telephone=no" />
     <meta name="geo.region" content="VN" />
     <meta name="geo.placename" content="Vietnam" />
     <meta name="language" content="Vietnamese" />
-    <meta name="revisit-after" content="1 days" />
     
-    <!-- Structured Data - WebSite with SearchAction -->
+    <!-- Critical CSS for above-the-fold content (prevents FOUC, improves FCP) -->
+    <style>
+      /* Minimal critical CSS to prevent layout shift */
+      *,*::before,*::after{box-sizing:border-box;margin:0}
+      html{-webkit-text-size-adjust:100%;font-feature-settings:normal}
+      body{font-family:Inter,system-ui,-apple-system,sans-serif;line-height:1.5;color:#1a1a2e;background:#fff}
+      #root{min-height:100vh}
+      /* Reserve header space to prevent CLS */
+      .header-placeholder{height:64px}
+      /* Font display swap for all fonts */
+      @font-face{font-family:'Inter';font-display:swap;src:local('Inter')}
+    </style>
+    
+    <!-- Structured Data - combined @graph (single script tag, better performance) -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
-      "@type": "WebSite",
-      "name": "Salemylink.com",
-      "alternateName": ["Salemylink", "Sale My Link"],
-      "url": "https://salemylink.com",
-      "description": "Nền tảng bán sản phẩm digital hàng đầu Việt Nam - Mua bán ebook, tài liệu, khóa học online",
-      "inLanguage": "vi-VN",
-      "potentialAction": {
-        "@type": "SearchAction",
-        "target": {
-          "@type": "EntryPoint",
-          "urlTemplate": "https://salemylink.com/search?q={search_term_string}"
+      "@graph": [
+        {
+          "@type": "WebSite",
+          "@id": "https://salemylink.com/#website",
+          "url": "https://salemylink.com",
+          "name": "Salemylink.com",
+          "alternateName": ["Salemylink", "Sale My Link"],
+          "description": "Nền tảng bán sản phẩm digital hàng đầu Việt Nam",
+          "inLanguage": "vi-VN",
+          "potentialAction": {
+            "@type": "SearchAction",
+            "target": {
+              "@type": "EntryPoint",
+              "urlTemplate": "https://salemylink.com/search?q={search_term_string}"
+            },
+            "query-input": "required name=search_term_string"
+          }
         },
-        "query-input": "required name=search_term_string"
-      }
-    }
-    </script>
-    
-    <!-- Structured Data - Organization -->
-    <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "Organization",
-      "@id": "https://salemylink.com/#organization",
-      "name": "Salemylink.com",
-      "url": "https://salemylink.com",
-      "logo": {
-        "@type": "ImageObject",
-        "url": "https://salemylink.com/logo.png",
-        "width": 512,
-        "height": 512
-      },
-      "image": "https://salemylink.com/og-image.png",
-      "description": "Nền tảng thương mại điện tử hàng đầu cho sản phẩm digital tại Việt Nam. Kết nối người mua và người bán sản phẩm số.",
-      "foundingDate": "2024",
-      "areaServed": {
-        "@type": "Country",
-        "name": "Vietnam"
-      },
-      "contactPoint": {
-        "@type": "ContactPoint",
-        "contactType": "customer service",
-        "email": "support@salemylink.com",
-        "areaServed": "VN",
-        "availableLanguage": ["Vietnamese", "English"]
-      }
-    }
-    </script>
-    
-    <!-- Structured Data - OnlineStore -->
-    <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "OnlineStore",
-      "name": "Salemylink.com",
-      "url": "https://salemylink.com",
-      "logo": "https://salemylink.com/logo.png",
-      "description": "Marketplace sản phẩm digital - Mua bán ebook, tài liệu, khóa học online",
-      "priceRange": "₫₫",
-      "currenciesAccepted": "VND",
-      "paymentAccepted": "Credit Card, Bank Transfer, PayOS",
-      "areaServed": "VN",
-      "serviceType": "Digital Products Marketplace"
+        {
+          "@type": "Organization",
+          "@id": "https://salemylink.com/#organization",
+          "name": "Salemylink.com",
+          "url": "https://salemylink.com",
+          "logo": {
+            "@type": "ImageObject",
+            "url": "https://salemylink.com/logo.png",
+            "width": 512,
+            "height": 512
+          },
+          "image": "https://salemylink.com/og-image.png",
+          "description": "Nền tảng thương mại điện tử hàng đầu cho sản phẩm digital tại Việt Nam.",
+          "foundingDate": "2024",
+          "areaServed": { "@type": "Country", "name": "Vietnam" },
+          "contactPoint": {
+            "@type": "ContactPoint",
+            "contactType": "customer service",
+            "email": "support@salemylink.com",
+            "availableLanguage": ["Vietnamese", "English"]
+          }
+        },
+        {
+          "@type": "OnlineStore",
+          "name": "Salemylink.com",
+          "url": "https://salemylink.com",
+          "description": "Marketplace sản phẩm digital - Mua bán ebook, tài liệu, khóa học online",
+          "currenciesAccepted": "VND",
+          "paymentAccepted": "Credit Card, Bank Transfer, PayOS",
+          "priceRange": "₫₫",
+          "areaServed": "VN"
+        }
+      ]
     }
     </script>
   </head>

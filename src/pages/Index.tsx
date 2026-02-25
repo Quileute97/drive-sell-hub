@@ -1,10 +1,27 @@
+import { lazy, Suspense } from "react";
 import { Header } from "@/components/Header";
 import { Hero } from "@/components/Hero";
-import { Features } from "@/components/Features";
-import { Categories } from "@/components/Categories";
 import { ProductList } from "@/components/ProductList";
 import { Footer } from "@/components/Footer";
 import { SEO } from "@/components/SEO";
+
+// Lazy load below-fold components (improves FID/TBT)
+const Features = lazy(() => import("@/components/Features").then(m => ({ default: m.Features })));
+const Categories = lazy(() => import("@/components/Categories").then(m => ({ default: m.Categories })));
+
+const LazyFallback = () => (
+  <div className="py-20">
+    <div className="container mx-auto px-4">
+      <div className="animate-pulse space-y-6">
+        <div className="h-8 bg-muted rounded w-1/3 mx-auto"></div>
+        <div className="h-4 bg-muted rounded w-2/3 mx-auto"></div>
+        <div className="grid md:grid-cols-3 gap-6">
+          {[1,2,3].map(i => <div key={i} className="h-40 bg-muted rounded"></div>)}
+        </div>
+      </div>
+    </div>
+  </div>
+);
 
 const Index = () => {
   const siteUrl = "https://salemylink.com";
@@ -12,16 +29,13 @@ const Index = () => {
   const homepageStructuredData = {
     "@context": "https://schema.org",
     "@graph": [
-      // WebPage
       {
         "@type": "WebPage",
         "@id": `${siteUrl}/#webpage`,
         "url": siteUrl,
         "name": "Salemylink.com - Nền tảng bán sản phẩm Digital hàng đầu Việt Nam",
         "description": "Kết nối người mua và người bán sản phẩm digital. Bán tài liệu, ebook, khóa học qua Google Drive một cách an toàn và hiệu quả.",
-        "isPartOf": {
-          "@id": `${siteUrl}/#website`
-        },
+        "isPartOf": { "@id": `${siteUrl}/#website` },
         "about": {
           "@type": "Thing",
           "name": "Digital Products Marketplace"
@@ -42,13 +56,8 @@ const Index = () => {
             "item": siteUrl
           }]
         },
-        "speakable": {
-          "@type": "SpeakableSpecification",
-          "cssSelector": ["h1", ".hero-description"]
-        },
         "inLanguage": "vi-VN"
       },
-      // Organization - Enhanced
       {
         "@type": "Organization",
         "@id": `${siteUrl}/#organization`,
@@ -64,124 +73,56 @@ const Index = () => {
           "height": 512,
           "caption": "Salemylink.com Logo"
         },
-        "image": [
-          `${siteUrl}/og-image.png`,
-          `${siteUrl}/logo.png`
-        ],
-        "description": "Nền tảng bán sản phẩm Digital hàng đầu Việt Nam - Kết nối người mua và người bán ebook, tài liệu, khóa học online",
+        "image": [`${siteUrl}/og-image.png`, `${siteUrl}/logo.png`],
+        "description": "Nền tảng bán sản phẩm Digital hàng đầu Việt Nam",
         "slogan": "Bán sản phẩm Digital dễ dàng - Hoa hồng chỉ từ 5%",
         "foundingDate": "2024",
         "address": {
           "@type": "PostalAddress",
-          "addressCountry": "VN",
-          "addressLocality": "Hồ Chí Minh",
-          "addressRegion": "Việt Nam"
+          "addressCountry": "VN"
         },
-        "areaServed": {
-          "@type": "Country",
-          "name": "Vietnam"
-        },
+        "areaServed": { "@type": "Country", "name": "Vietnam" },
         "contactPoint": [
           {
             "@type": "ContactPoint",
             "contactType": "customer service",
             "email": "support@salemylink.com",
-            "availableLanguage": ["Vietnamese", "English"],
-            "hoursAvailable": {
-              "@type": "OpeningHoursSpecification",
-              "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
-              "opens": "08:00",
-              "closes": "22:00"
-            }
-          },
-          {
-            "@type": "ContactPoint",
-            "contactType": "sales",
-            "email": "sales@salemylink.com",
             "availableLanguage": ["Vietnamese", "English"]
           }
         ],
         "sameAs": [
           "https://facebook.com/salemylink",
-          "https://twitter.com/salemylink",
-          "https://youtube.com/@salemylink"
+          "https://twitter.com/salemylink"
         ]
       },
-      // WebSite - Enhanced
       {
         "@type": "WebSite",
         "@id": `${siteUrl}/#website`,
         "url": siteUrl,
         "name": "Salemylink.com",
         "alternateName": "Salemylink",
-        "description": "Nền tảng bán sản phẩm Digital hàng đầu Việt Nam",
-        "publisher": {
-          "@id": `${siteUrl}/#organization`
-        },
+        "publisher": { "@id": `${siteUrl}/#organization` },
         "inLanguage": "vi-VN",
-        "copyrightYear": new Date().getFullYear(),
-        "potentialAction": [
-          {
-            "@type": "SearchAction",
-            "target": {
-              "@type": "EntryPoint",
-              "urlTemplate": `${siteUrl}/search?q={search_term_string}`
-            },
-            "query-input": "required name=search_term_string"
+        "potentialAction": {
+          "@type": "SearchAction",
+          "target": {
+            "@type": "EntryPoint",
+            "urlTemplate": `${siteUrl}/search?q={search_term_string}`
           },
-          {
-            "@type": "ReadAction",
-            "target": siteUrl
-          }
-        ]
+          "query-input": "required name=search_term_string"
+        }
       },
-      // OnlineStore / E-commerce
       {
         "@type": "OnlineStore",
         "@id": `${siteUrl}/#store`,
         "name": "Salemylink.com",
         "url": siteUrl,
-        "description": "Marketplace mua bán sản phẩm digital - Ebook, tài liệu, khóa học online",
+        "description": "Marketplace mua bán sản phẩm digital",
         "currenciesAccepted": "VND",
-        "paymentAccepted": ["Credit Card", "Debit Card", "Bank Transfer", "PayOS"],
+        "paymentAccepted": ["Credit Card", "Bank Transfer", "PayOS"],
         "priceRange": "₫10,000 - ₫10,000,000",
-        "areaServed": {
-          "@type": "Country",
-          "name": "Vietnam"
-        },
-        "hasOfferCatalog": {
-          "@type": "OfferCatalog",
-          "name": "Danh mục sản phẩm Digital",
-          "itemListElement": [
-            {
-              "@type": "OfferCatalog",
-              "name": "Tài liệu học tập",
-              "url": `${siteUrl}/category/tai-lieu-hoc-tap`
-            },
-            {
-              "@type": "OfferCatalog",
-              "name": "Ebook & Sách",
-              "url": `${siteUrl}/category/ebook-sach`
-            },
-            {
-              "@type": "OfferCatalog",
-              "name": "Template & Thiết kế",
-              "url": `${siteUrl}/category/template-thiet-ke`
-            },
-            {
-              "@type": "OfferCatalog",
-              "name": "Khóa học Online",
-              "url": `${siteUrl}/category/khoa-hoc-online`
-            },
-            {
-              "@type": "OfferCatalog",
-              "name": "Phần mềm & Ứng dụng",
-              "url": `${siteUrl}/category/phan-mem-ung-dung`
-            }
-          ]
-        }
+        "areaServed": { "@type": "Country", "name": "Vietnam" }
       },
-      // FAQPage for homepage
       {
         "@type": "FAQPage",
         "mainEntity": [
@@ -233,10 +174,17 @@ const Index = () => {
       />
       <Header />
       <main>
+        {/* Above-the-fold: eagerly loaded for LCP */}
         <Hero />
         <ProductList />
-        <Features />
-        <Categories />
+        
+        {/* Below-the-fold: lazy loaded for better FID/TBT */}
+        <Suspense fallback={<LazyFallback />}>
+          <Features />
+        </Suspense>
+        <Suspense fallback={<LazyFallback />}>
+          <Categories />
+        </Suspense>
       </main>
       <Footer />
     </div>

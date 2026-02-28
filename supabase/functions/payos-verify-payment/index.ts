@@ -128,7 +128,7 @@ serve(async (req) => {
     if (paymentStatus === 'PAID') {
       dbStatus = 'completed';
       orderStatus = 'delivered'; // Auto-delivered for digital products
-    } else if (paymentStatus === 'CANCELLED') {
+    } else if (paymentStatus === 'CANCELLED' || paymentStatus === 'EXPIRED') {
       dbStatus = 'failed';
       orderStatus = 'cancelled';
     }
@@ -155,7 +155,7 @@ serve(async (req) => {
         .from("orders")
         .update({
           status: orderStatus,
-          ...(orderStatus === 'paid' && {
+          ...(orderStatus === 'delivered' && {
             download_expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString() // 7 days
           })
         })
@@ -166,8 +166,8 @@ serve(async (req) => {
         `)
         .single();
 
-      // If paid, provide download link and update download count
-      if (orderStatus === 'paid' && order?.products) {
+      // If payment succeeded, provide download link and update stats
+      if (orderStatus === 'delivered' && order?.products) {
         // Update order with download link
         await supabaseClient
           .from("orders")

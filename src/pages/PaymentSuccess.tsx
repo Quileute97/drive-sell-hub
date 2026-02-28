@@ -29,16 +29,7 @@ export const PaymentSuccess = () => {
       }
 
       try {
-        const { data, error } = await supabase.functions.invoke('payos-verify-payment', {
-          body: {},
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          }
-        });
-
-        // Alternative: direct API call with query params
-        const supabaseUrl = 'https://dfalphamyvdfewixrnju.supabase.co';
+        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://dfalphamyvdfewixrnju.supabase.co';
         const response = await fetch(`${supabaseUrl}/functions/v1/payos-verify-payment?orderCode=${orderCode}`, {
           method: 'GET',
           headers: {
@@ -49,24 +40,40 @@ export const PaymentSuccess = () => {
 
         const result = await response.json();
 
-        if (result.success) {
-          if (result.status === 'PAID') {
-            setPaymentStatus('success');
-            
-            // Get order details
-            const { data: orders } = await supabase
-              .from('orders')
-              .select(`
-                *,
-                products(*),
-                payments(*)
-              `)
-              .eq('order_number', `ORD${orderCode}`)
-              .single();
+        if (result.success && result.status === 'PAID') {
+          setPaymentStatus('success');
+          
+          // Wait a moment for DB to update, then fetch order details
+          await new Promise(resolve => setTimeout(resolve, 1500));
+          
+          const { data: orders } = await supabase
+            .from('orders')
+            .select(`
+              *,
+              products(*),
+              payments(*)
+            `)
+            .eq('order_number', `ORD${orderCode}`)
+            .single();
 
-            setOrderDetails(orders);
+          if (!orders) {
+            // Try matching by payment_id
+            const { data: paymentData } = await supabase
+              .from('payments')
+              .select('order_id')
+              .eq('payment_id', orderCode)
+              .single();
+            
+            if (paymentData) {
+              const { data: orderByPayment } = await supabase
+                .from('orders')
+                .select(`*, products(*), payments(*)`)
+                .eq('id', paymentData.order_id)
+                .single();
+              setOrderDetails(orderByPayment);
+            }
           } else {
-            setPaymentStatus('failed');
+            setOrderDetails(orders);
           }
         } else {
           setPaymentStatus('failed');

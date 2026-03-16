@@ -68,7 +68,7 @@ const Iframe = Node.create({
     return ['div', { class: 'iframe-wrapper' }, ['iframe', mergeAttributes(HTMLAttributes)]];
   },
 
-  addCommands() {
+  addCommands(): any {
     return {
       setIframe: (options: { src: string }) => ({ commands }: any) => {
         return commands.insertContent({

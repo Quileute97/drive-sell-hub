@@ -75,6 +75,7 @@ const EditProductForm = ({ product, onClose, onSuccess, onDelete }: EditProductF
   const [currentTag, setCurrentTag] = useState('');
   const [images, setImages] = useState<string[]>(product.images || []);
   const [currentImage, setCurrentImage] = useState('');
+  const [focusKeyword, setFocusKeyword] = useState('');
 
   const [formData, setFormData] = useState({
     title: product.title,

@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { RichTextEditor } from '@/components/RichTextEditor';
+import { SEOScoreChecker } from '@/components/SEOScoreChecker';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
@@ -39,7 +40,7 @@ const AddProductForm = ({ onClose, onSuccess }: AddProductFormProps) => {
   const [currentTag, setCurrentTag] = useState('');
   const [images, setImages] = useState<string[]>([]);
   const [currentImage, setCurrentImage] = useState('');
-
+  const [focusKeyword, setFocusKeyword] = useState('');
   // Form data state
   const [formData, setFormData] = useState({
     title: '',
@@ -538,6 +539,28 @@ const AddProductForm = ({ onClose, onSuccess }: AddProductFormProps) => {
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
+                  <div>
+                    <Label htmlFor="focus_keyword">Từ khóa chính (Focus Keyword)</Label>
+                    <Input
+                      id="focus_keyword"
+                      value={focusKeyword}
+                      onChange={(e) => setFocusKeyword(e.target.value)}
+                      placeholder="Nhập từ khóa chính cho sản phẩm"
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Từ khóa mà bạn muốn sản phẩm xuất hiện trên Google
+                    </p>
+                  </div>
+
+                  <SEOScoreChecker
+                    html={formData.description}
+                    title={formData.meta_title || formData.title}
+                    metaDescription={formData.meta_description || formData.short_description}
+                    focusKeyword={focusKeyword}
+                  />
+
+                  <Separator />
+
                   <div>
                     <Label htmlFor="meta_title">Meta Title</Label>
                     <Input

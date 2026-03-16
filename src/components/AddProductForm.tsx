@@ -278,12 +278,10 @@ const AddProductForm = ({ onClose, onSuccess }: AddProductFormProps) => {
 
                   <div>
                     <Label htmlFor="description">Mô tả chi tiết</Label>
-                    <Textarea
-                      id="description"
+                    <RichTextEditor
                       value={formData.description}
-                      onChange={(e) => handleInputChange('description', e.target.value)}
-                      placeholder="Mô tả chi tiết về sản phẩm, tính năng, cách sử dụng..."
-                      rows={6}
+                      onChange={(html) => handleInputChange('description', html)}
+                      placeholder="Viết mô tả chi tiết sản phẩm, tính năng, cách sử dụng... Hỗ trợ chèn ảnh, video từ Google Drive, YouTube"
                     />
                   </div>
 

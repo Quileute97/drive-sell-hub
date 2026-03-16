@@ -775,9 +775,11 @@ export default function ProductDetail() {
           <Card>
             <CardContent className="p-6">
               <h2 className="text-2xl font-bold mb-4">Mô tả chi tiết {product.title}</h2>
-              <div className="prose max-w-none" itemProp="description">
-                <p className="whitespace-pre-wrap leading-relaxed">{product.description}</p>
-              </div>
+              <div 
+                className="prose prose-sm sm:prose-base max-w-none prose-headings:font-bold prose-a:text-primary prose-img:rounded-lg prose-img:mx-auto" 
+                itemProp="description"
+                dangerouslySetInnerHTML={{ __html: product.description || '' }}
+              />
             </CardContent>
           </Card>
         </article>

@@ -617,6 +617,28 @@ const EditProductForm = ({ product, onClose, onSuccess, onDelete }: EditProductF
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div>
+                    <Label htmlFor="focus_keyword">Từ khóa chính (Focus Keyword)</Label>
+                    <Input
+                      id="focus_keyword"
+                      value={focusKeyword}
+                      onChange={(e) => setFocusKeyword(e.target.value)}
+                      placeholder="Nhập từ khóa chính cho sản phẩm"
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Từ khóa mà bạn muốn sản phẩm xuất hiện trên Google
+                    </p>
+                  </div>
+
+                  <SEOScoreChecker
+                    html={formData.description}
+                    title={formData.meta_title || formData.title}
+                    metaDescription={formData.meta_description || formData.short_description}
+                    focusKeyword={focusKeyword}
+                  />
+
+                  <Separator />
+
+                  <div>
                     <Label htmlFor="meta_title">Meta Title</Label>
                     <Input
                       id="meta_title"

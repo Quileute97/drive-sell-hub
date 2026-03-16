@@ -40,7 +40,7 @@ const AddProductForm = ({ onClose, onSuccess }: AddProductFormProps) => {
   const [currentTag, setCurrentTag] = useState('');
   const [images, setImages] = useState<string[]>([]);
   const [currentImage, setCurrentImage] = useState('');
-
+  const [focusKeyword, setFocusKeyword] = useState('');
   // Form data state
   const [formData, setFormData] = useState({
     title: '',

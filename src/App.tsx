@@ -30,6 +30,7 @@ const AdminAuth = lazy(() => import("./pages/AdminAuth"));
 const SellerProfile = lazy(() => import("./pages/SellerProfile"));
 const Sellers = lazy(() => import("./pages/Sellers"));
 const Withdrawal = lazy(() => import("./pages/Withdrawal"));
+const TagProducts = lazy(() => import("./pages/TagProducts"));
 
 const queryClient = new QueryClient();
 
@@ -70,6 +71,7 @@ const App = () => (
               <Route path="/seller/:sellerId" element={<SellerProfile />} />
               <Route path="/sellers" element={<Sellers />} />
               <Route path="/withdrawal" element={<Withdrawal />} />
+              <Route path="/tag/:tag" element={<TagProducts />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>

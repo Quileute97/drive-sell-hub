@@ -731,9 +731,11 @@ export default function ProductDetail() {
                 <h3 className="font-semibold mb-3">Tags</h3>
                 <div className="flex flex-wrap gap-2">
                   {product.tags.map((tag, index) => (
-                    <Badge key={index} variant="outline">
-                      {tag}
-                    </Badge>
+                    <Link key={index} to={`/tag/${encodeURIComponent(tag)}`}>
+                      <Badge variant="outline" className="cursor-pointer hover:bg-accent hover:text-accent-foreground transition-colors">
+                        {tag}
+                      </Badge>
+                    </Link>
                   ))}
                 </div>
               </div>

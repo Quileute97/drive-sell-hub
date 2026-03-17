@@ -15,6 +15,7 @@ import { SEO } from "@/components/SEO";
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { ProductFAQ } from "@/components/ProductFAQ";
 import { RelatedCategories } from "@/components/RelatedCategories";
+import { TableOfContents, injectHeadingIds } from "@/components/TableOfContents";
 
 interface ProductDetail {
   id: string;

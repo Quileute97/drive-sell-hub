@@ -186,6 +186,9 @@ const Index = () => {
         <Suspense fallback={<LazyFallback />}>
           <Categories />
         </Suspense>
+        <Suspense fallback={<LazyFallback />}>
+          <PopularTags />
+        </Suspense>
       </main>
       <Footer />
     </div>

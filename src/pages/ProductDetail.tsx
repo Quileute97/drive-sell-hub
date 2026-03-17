@@ -15,6 +15,7 @@ import { SEO } from "@/components/SEO";
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { ProductFAQ } from "@/components/ProductFAQ";
 import { RelatedCategories } from "@/components/RelatedCategories";
+import { TableOfContents, injectHeadingIds } from "@/components/TableOfContents";
 
 interface ProductDetail {
   id: string;
@@ -777,10 +778,11 @@ export default function ProductDetail() {
           <Card>
             <CardContent className="p-6">
               <h2 className="text-2xl font-bold mb-4">Mô tả chi tiết {product.title}</h2>
+              <TableOfContents htmlContent={product.description || ''} />
               <div 
-                className="prose prose-sm sm:prose-base max-w-none prose-headings:font-bold prose-a:text-primary prose-img:rounded-lg prose-img:mx-auto" 
+                className="prose prose-sm sm:prose-base max-w-none prose-headings:font-bold prose-a:text-primary prose-img:rounded-lg prose-img:mx-auto prose-headings:scroll-mt-20" 
                 itemProp="description"
-                dangerouslySetInnerHTML={{ __html: product.description || '' }}
+                dangerouslySetInnerHTML={{ __html: injectHeadingIds(product.description || '') }}
               />
             </CardContent>
           </Card>

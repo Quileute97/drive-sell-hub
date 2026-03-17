@@ -30,6 +30,7 @@ const AdminAuth = lazy(() => import("./pages/AdminAuth"));
 const SellerProfile = lazy(() => import("./pages/SellerProfile"));
 const Sellers = lazy(() => import("./pages/Sellers"));
 const Withdrawal = lazy(() => import("./pages/Withdrawal"));
+const TagProducts = lazy(() => import("./pages/TagProducts"));
 
 const queryClient = new QueryClient();
 

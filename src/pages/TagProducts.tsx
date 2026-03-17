@@ -146,8 +146,8 @@ export default function TagProducts() {
         title={metaTitle}
         description={metaDescription}
         keywords={metaKeywords}
-        canonicalUrl={canonicalUrl}
-        ogType="website"
+        url={canonicalUrl}
+        type="website"
         structuredData={structuredData}
       />
       <Header />

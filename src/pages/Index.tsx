@@ -8,6 +8,7 @@ import { SEO } from "@/components/SEO";
 // Lazy load below-fold components (improves FID/TBT)
 const Features = lazy(() => import("@/components/Features").then(m => ({ default: m.Features })));
 const Categories = lazy(() => import("@/components/Categories").then(m => ({ default: m.Categories })));
+const PopularTags = lazy(() => import("@/components/PopularTags").then(m => ({ default: m.PopularTags })));
 
 const LazyFallback = () => (
   <div className="py-20">
@@ -184,6 +185,9 @@ const Index = () => {
         </Suspense>
         <Suspense fallback={<LazyFallback />}>
           <Categories />
+        </Suspense>
+        <Suspense fallback={<LazyFallback />}>
+          <PopularTags />
         </Suspense>
       </main>
       <Footer />

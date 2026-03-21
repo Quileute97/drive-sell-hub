@@ -43,7 +43,6 @@ const AddProductForm = ({ onClose, onSuccess }: AddProductFormProps) => {
   const [images, setImages] = useState<string[]>([]);
   const [currentImage, setCurrentImage] = useState('');
   const [focusKeyword, setFocusKeyword] = useState('');
-  const isFree = isFreeProduct(Number(formData.price || 0));
   // Form data state
   const [formData, setFormData] = useState({
     title: '',
@@ -64,6 +63,7 @@ const AddProductForm = ({ onClose, onSuccess }: AddProductFormProps) => {
     // Product specifications
     status: 'active' as 'draft' | 'active'
   });
+  const isFree = isFreeProduct(Number(formData.price || 0));
 
   // Fetch categories
   const { data: categories = [] } = useQuery({

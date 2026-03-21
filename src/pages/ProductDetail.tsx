@@ -691,7 +691,7 @@ export default function ProductDetail() {
                   <span className="text-lg text-muted-foreground line-through">
                     {formatPrice(product.original_price)}
                   </span>
-                  <Badge className="bg-red-500">
+                  <Badge className="bg-destructive text-destructive-foreground">
                     Giảm {Math.round(((product.original_price - product.price) / product.original_price) * 100)}%
                   </Badge>
                 </div>

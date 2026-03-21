@@ -16,6 +16,7 @@ import { Breadcrumb } from "@/components/Breadcrumb";
 import { ProductFAQ } from "@/components/ProductFAQ";
 import { RelatedCategories } from "@/components/RelatedCategories";
 import { TableOfContents, injectHeadingIds } from "@/components/TableOfContents";
+import { getProductDownloadUrl, isFreeProduct } from "@/lib/productAccess";
 
 interface ProductDetail {
   id: string;
@@ -173,6 +174,22 @@ export default function ProductDetail() {
     }
   };
 
+  const handleFreeDownload = () => {
+    if (!product) return;
+
+    const downloadUrl = getProductDownloadUrl(product.google_drive_link, product.download_only_link);
+    if (!downloadUrl) {
+      toast({
+        title: "Thiếu link tải",
+        description: "Tài liệu miễn phí này hiện chưa có link tải hợp lệ",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    window.open(downloadUrl, '_blank', 'noopener,noreferrer');
+  };
+
   const handleShare = async () => {
     const url = window.location.href;
     
@@ -268,6 +285,7 @@ export default function ProductDetail() {
   const datePublished = new Date(product.created_at).toISOString();
   const dateModified = new Date(product.updated_at).toISOString();
   const priceValidUntil = new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString().split('T')[0];
+  const isFree = isFreeProduct(product.price);
 
   // Build structured data using @graph pattern (Google recommended - avoids duplicate @context)
   const graphNodes: Record<string, any>[] = [];
@@ -601,9 +619,9 @@ export default function ProductDetail() {
                       <p className="text-sm">Định dạng: {product.file_format || 'EXE/Video/Image'}</p>
                       {product.file_size && <p className="text-sm">Dung lượng: {product.file_size}</p>}
                     </div>
-                    <p className="text-sm text-muted-foreground">
-                      Mua sản phẩm để nhận link tải xuống trực tiếp
-                    </p>
+                      <p className="text-sm text-muted-foreground">
+                        {isFree ? 'Tải miễn phí ngay để nhận tài liệu' : 'Mua sản phẩm để nhận link tải xuống trực tiếp'}
+                      </p>
                   </div>
                 </div>
               ) : product.google_drive_link ? (
@@ -666,14 +684,14 @@ export default function ProductDetail() {
             {/* Price */}
             <div className="space-y-2">
               <div className="text-3xl font-bold text-primary">
-                {formatPrice(product.price)}
+                {isFree ? 'Miễn phí' : formatPrice(product.price)}
               </div>
               {product.original_price > product.price && (
                 <div className="flex items-center space-x-2">
                   <span className="text-lg text-muted-foreground line-through">
                     {formatPrice(product.original_price)}
                   </span>
-                  <Badge className="bg-red-500">
+                  <Badge className="bg-destructive text-destructive-foreground">
                     Giảm {Math.round(((product.original_price - product.price) / product.original_price) * 100)}%
                   </Badge>
                 </div>
@@ -744,22 +762,33 @@ export default function ProductDetail() {
 
             {/* Action Buttons */}
             <div className="space-y-3">
-              <div className="grid grid-cols-2 gap-3">
-                <Button 
-                  size="lg" 
-                  variant="outline"
-                  onClick={() => addToCart(product.id)}
-                >
-                  <ShoppingCart className="h-4 w-4 mr-2" />
-                  Thêm vào giỏ
-                </Button>
+              {isFree ? (
                 <Button 
                   size="lg"
-                  onClick={handleBuyNow}
+                  className="w-full"
+                  onClick={handleFreeDownload}
                 >
-                  Mua ngay - {formatPrice(product.price)}
+                  <Download className="h-4 w-4 mr-2" />
+                  Tải miễn phí
                 </Button>
-              </div>
+              ) : (
+                <div className="grid grid-cols-2 gap-3">
+                  <Button 
+                    size="lg" 
+                    variant="outline"
+                    onClick={() => addToCart(product.id)}
+                  >
+                    <ShoppingCart className="h-4 w-4 mr-2" />
+                    Thêm vào giỏ
+                  </Button>
+                  <Button 
+                    size="lg"
+                    onClick={handleBuyNow}
+                  >
+                    Mua ngay - {formatPrice(product.price)}
+                  </Button>
+                </div>
+              )}
               <Button 
                 variant="outline" 
                 size="lg" 

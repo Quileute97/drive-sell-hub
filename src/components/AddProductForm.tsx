@@ -11,10 +11,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import { Switch } from '@/components/ui/switch';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery } from '@tanstack/react-query';
 import { toast } from 'sonner';
+import { isFreeProduct } from '@/lib/productAccess';
 import { 
   Upload, 
   Link, 
@@ -61,6 +63,7 @@ const AddProductForm = ({ onClose, onSuccess }: AddProductFormProps) => {
     // Product specifications
     status: 'active' as 'draft' | 'active'
   });
+  const isFree = isFreeProduct(Number(formData.price || 0));
 
   // Fetch categories
   const { data: categories = [] } = useQuery({
@@ -157,7 +160,7 @@ const AddProductForm = ({ onClose, onSuccess }: AddProductFormProps) => {
       return;
     }
 
-    if (!formData.price || Number(formData.price) <= 0) {
+    if (formData.price === '' || Number(formData.price) < 0) {
       toast.error('Vui lòng nhập giá hợp lệ');
       return;
     }
@@ -422,6 +425,23 @@ const AddProductForm = ({ onClose, onSuccess }: AddProductFormProps) => {
                 <CardContent className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
                     <div>
+                      <div className="mb-3 flex items-center justify-between rounded-lg border bg-muted/40 px-3 py-2">
+                        <div>
+                          <Label htmlFor="free-product" className="text-sm font-medium">Tài liệu miễn phí</Label>
+                          <p className="text-xs text-muted-foreground">Bật để hiển thị nút tải miễn phí cho khách</p>
+                        </div>
+                        <Switch
+                          id="free-product"
+                          checked={isFree}
+                          onCheckedChange={(checked) => {
+                            setFormData((prev) => ({
+                              ...prev,
+                              price: checked ? '0' : prev.price === '0' ? '' : prev.price,
+                              original_price: checked ? '' : prev.original_price,
+                            }));
+                          }}
+                        />
+                      </div>
                       <Label htmlFor="price">Giá bán *</Label>
                       <Input
                         id="price"
@@ -432,7 +452,11 @@ const AddProductForm = ({ onClose, onSuccess }: AddProductFormProps) => {
                         required
                         min="0"
                         step="1000"
+                        disabled={isFree}
                       />
+                      {isFree && (
+                        <p className="mt-1 text-xs text-muted-foreground">Sản phẩm này sẽ cho phép tải trực tiếp thay vì thêm vào giỏ.</p>
+                      )}
                     </div>
                     <div>
                       <Label htmlFor="original_price">Giá gốc (tùy chọn)</Label>
@@ -444,6 +468,7 @@ const AddProductForm = ({ onClose, onSuccess }: AddProductFormProps) => {
                         placeholder="0"
                         min="0"
                         step="1000"
+                        disabled={isFree}
                       />
                     </div>
                   </div>

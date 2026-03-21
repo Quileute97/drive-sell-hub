@@ -7,6 +7,7 @@ import { Star, Download, Eye, ShoppingCart, ArrowRight } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useCart } from "@/hooks/useCart";
 import { getGoogleDriveThumbnail } from "@/lib/utils";
+import { getProductDownloadUrl, isFreeProduct } from "@/lib/productAccess";
 
 interface RelatedProduct {
   id: string;
@@ -16,6 +17,7 @@ interface RelatedProduct {
   price: number;
   original_price: number;
   google_drive_link: string;
+  download_only_link?: string | null;
   download_count: number;
   view_count: number;
   rating_average: number;
@@ -41,6 +43,11 @@ export const RelatedProducts = ({ categoryId, currentProductId, categorySlug }: 
   const [products, setProducts] = useState<RelatedProduct[]>([]);
   const [loading, setLoading] = useState(true);
   const { addToCart } = useCart();
+
+  const handleFreeDownload = (downloadUrl: string | null) => {
+    if (!downloadUrl) return;
+    window.open(downloadUrl, "_blank", "noopener,noreferrer");
+  };
 
   useEffect(() => {
     fetchRelatedProducts();
@@ -119,8 +126,11 @@ export const RelatedProducts = ({ categoryId, currentProductId, categorySlug }: 
       </div>
 
       <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {products.map((product) => (
-          <article key={product.id} className="group">
+        {products.map((product) => {
+          const isFree = isFreeProduct(product.price);
+          const downloadUrl = getProductDownloadUrl(product.google_drive_link, product.download_only_link);
+
+          return <article key={product.id} className="group">
             <Link to={`/product/${product.slug}`} className="block" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
               <Card className="hover:shadow-lg transition-all duration-300 hover:-translate-y-1 flex flex-col h-full">
                 <div className="relative overflow-hidden rounded-t-lg aspect-[4/3] bg-muted">
@@ -185,7 +195,7 @@ export const RelatedProducts = ({ categoryId, currentProductId, categorySlug }: 
                   <div className="mt-auto">
                     <div className="flex items-baseline gap-2 mb-2">
                       <div className="text-lg font-bold text-primary">
-                        {formatPrice(product.price)}
+                        {isFree ? 'Miễn phí' : formatPrice(product.price)}
                       </div>
                       {product.original_price > product.price && (
                         <div className="text-xs text-muted-foreground line-through">
@@ -201,14 +211,20 @@ export const RelatedProducts = ({ categoryId, currentProductId, categorySlug }: 
               <Button 
                 className="w-full" 
                 size="sm"
-                onClick={() => addToCart(product.id)}
+                onClick={() => {
+                  if (isFree) {
+                    handleFreeDownload(downloadUrl);
+                    return;
+                  }
+                  addToCart(product.id);
+                }}
               >
-                <ShoppingCart className="h-4 w-4 mr-2" />
-                Thêm vào giỏ
+                {isFree ? <Download className="h-4 w-4 mr-2" /> : <ShoppingCart className="h-4 w-4 mr-2" />}
+                {isFree ? 'Tải miễn phí' : 'Thêm vào giỏ'}
               </Button>
             </CardFooter>
-          </article>
-        ))}
+          </article>;
+        })}
       </div>
     </section>
   );

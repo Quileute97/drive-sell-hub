@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useCart } from "@/hooks/useCart";
 import { ProductThumbnail } from "@/components/ProductThumbnail";
+import { getProductDownloadUrl, isFreeProduct } from "@/lib/productAccess";
 
 interface Product {
   id: string;
@@ -20,6 +21,7 @@ interface Product {
   original_price: number;
   thumbnail_url: string;
   google_drive_link: string;
+  download_only_link?: string | null;
   download_count: number;
   view_count: number;
   rating_average: number;
@@ -99,6 +101,19 @@ export const ProductList = () => {
     return stars;
   };
 
+  const handleFreeDownload = (downloadUrl: string | null) => {
+    if (!downloadUrl) {
+      toast({
+        title: "Thiếu link tải",
+        description: "Tài liệu miễn phí này hiện chưa có link tải hợp lệ",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    window.open(downloadUrl, "_blank", "noopener,noreferrer");
+  };
+
   if (loading) {
     return (
       <section className="py-20">
@@ -146,8 +161,11 @@ export const ProductList = () => {
           </div>
         ) : (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {products.map((product, index) => (
-              <Card 
+            {products.map((product, index) => {
+              const isFree = isFreeProduct(product.price);
+              const downloadUrl = getProductDownloadUrl(product.google_drive_link, product.download_only_link);
+
+              return <Card 
                 key={product.id} 
                 className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-1 cursor-pointer flex flex-col h-full"
                 onClick={() => navigate(`/product/${product.slug}`)}
@@ -224,7 +242,7 @@ export const ProductList = () => {
                   <div className="mt-auto">
                     <div className="flex items-baseline gap-2 mb-2">
                       <div className="text-xl font-bold text-primary">
-                        {formatPrice(product.price)}
+                        {isFree ? 'Miễn phí' : formatPrice(product.price)}
                       </div>
                       {product.original_price > product.price && (
                         <div className="text-sm text-muted-foreground line-through">
@@ -245,15 +263,19 @@ export const ProductList = () => {
                     size="sm"
                     onClick={(e) => {
                       e.stopPropagation();
-                      addToCart(product.id);
+                        if (isFree) {
+                          handleFreeDownload(downloadUrl);
+                          return;
+                        }
+                        addToCart(product.id);
                     }}
                   >
-                    <ShoppingCart className="h-4 w-4 mr-2" />
-                    Thêm vào giỏ
+                      {isFree ? <Download className="h-4 w-4 mr-2" /> : <ShoppingCart className="h-4 w-4 mr-2" />}
+                      {isFree ? 'Tải miễn phí' : 'Thêm vào giỏ'}
                   </Button>
                 </CardFooter>
-              </Card>
-            ))}
+                </Card>;
+            })}
           </div>
         )}
 

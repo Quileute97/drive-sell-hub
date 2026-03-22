@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { normalizeSlug, generateSlugFromTitle } from '@/lib/slugUtils';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -96,7 +96,7 @@ const EditProductForm = ({ product, onClose, onSuccess, onDelete }: EditProductF
     meta_description: product.meta_description || '',
     status: product.status as 'draft' | 'active'
   });
-  const isFree = isFreeProduct(Number(formData.price || 0));
+  const [isFreeEnabled, setIsFreeEnabled] = useState(isFreeProduct(product.price));
 
   const { data: categories = [] } = useQuery({
     queryKey: ['categories'],
@@ -117,6 +117,10 @@ const EditProductForm = ({ product, onClose, onSuccess, onDelete }: EditProductF
       ...prev,
       [field]: value
     }));
+
+    if (field === 'price') {
+      setIsFreeEnabled(value !== '' && isFreeProduct(Number(value)));
+    }
 
     if (field === 'title') {
       const slug = generateSlugFromTitle(value);
@@ -510,11 +514,12 @@ const EditProductForm = ({ product, onClose, onSuccess, onDelete }: EditProductF
                         </div>
                         <Switch
                           id="free-product"
-                          checked={isFree}
+                          checked={isFreeEnabled}
                           onCheckedChange={(checked) => {
+                            setIsFreeEnabled(checked);
                             setFormData((prev) => ({
                               ...prev,
-                              price: checked ? '0' : prev.price === '0' ? '' : prev.price,
+                              price: checked ? '0' : '',
                               original_price: checked ? '' : prev.original_price,
                             }));
                           }}
@@ -530,9 +535,9 @@ const EditProductForm = ({ product, onClose, onSuccess, onDelete }: EditProductF
                         required
                         min="0"
                         step="1000"
-                        disabled={isFree}
+                        disabled={isFreeEnabled}
                       />
-                      {isFree && (
+                      {isFreeEnabled && (
                         <p className="mt-1 text-xs text-muted-foreground">Người dùng sẽ thấy nút tải trực tiếp cho sản phẩm này.</p>
                       )}
                     </div>
@@ -546,7 +551,7 @@ const EditProductForm = ({ product, onClose, onSuccess, onDelete }: EditProductF
                         placeholder="0"
                         min="0"
                         step="1000"
-                        disabled={isFree}
+                        disabled={isFreeEnabled}
                       />
                     </div>
                   </div>

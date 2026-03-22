@@ -63,7 +63,7 @@ const AddProductForm = ({ onClose, onSuccess }: AddProductFormProps) => {
     // Product specifications
     status: 'active' as 'draft' | 'active'
   });
-  const isFree = isFreeProduct(Number(formData.price || 0));
+  const [isFreeEnabled, setIsFreeEnabled] = useState(false);
 
   // Fetch categories
   const { data: categories = [] } = useQuery({
@@ -85,6 +85,10 @@ const AddProductForm = ({ onClose, onSuccess }: AddProductFormProps) => {
       ...prev,
       [field]: value
     }));
+
+    if (field === 'price') {
+      setIsFreeEnabled(value !== '' && isFreeProduct(Number(value)));
+    }
 
     // Auto-generate slug from title
     if (field === 'title') {
@@ -432,11 +436,12 @@ const AddProductForm = ({ onClose, onSuccess }: AddProductFormProps) => {
                         </div>
                         <Switch
                           id="free-product"
-                          checked={isFree}
+                          checked={isFreeEnabled}
                           onCheckedChange={(checked) => {
+                            setIsFreeEnabled(checked);
                             setFormData((prev) => ({
                               ...prev,
-                              price: checked ? '0' : prev.price === '0' ? '' : prev.price,
+                              price: checked ? '0' : '',
                               original_price: checked ? '' : prev.original_price,
                             }));
                           }}
@@ -452,9 +457,9 @@ const AddProductForm = ({ onClose, onSuccess }: AddProductFormProps) => {
                         required
                         min="0"
                         step="1000"
-                        disabled={isFree}
+                        disabled={isFreeEnabled}
                       />
-                      {isFree && (
+                      {isFreeEnabled && (
                         <p className="mt-1 text-xs text-muted-foreground">Sản phẩm này sẽ cho phép tải trực tiếp thay vì thêm vào giỏ.</p>
                       )}
                     </div>
@@ -468,7 +473,7 @@ const AddProductForm = ({ onClose, onSuccess }: AddProductFormProps) => {
                         placeholder="0"
                         min="0"
                         step="1000"
-                        disabled={isFree}
+                        disabled={isFreeEnabled}
                       />
                     </div>
                   </div>

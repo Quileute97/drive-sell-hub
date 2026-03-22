@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useCart } from "@/hooks/useCart";
 import { ProductThumbnail } from "@/components/ProductThumbnail";
+import { FreeDownloadButton } from "@/components/FreeDownloadButton";
 import { getProductDownloadUrl, isFreeProduct } from "@/lib/productAccess";
 
 interface Product {
@@ -101,17 +102,12 @@ export const ProductList = () => {
     return stars;
   };
 
-  const handleFreeDownload = (downloadUrl: string | null) => {
-    if (!downloadUrl) {
-      toast({
-        title: "Thiếu link tải",
-        description: "Tài liệu miễn phí này hiện chưa có link tải hợp lệ",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    window.open(downloadUrl, "_blank", "noopener,noreferrer");
+  const handleMissingFreeDownload = () => {
+    toast({
+      title: "Thiếu link tải",
+      description: "Tài liệu miễn phí này hiện chưa có link tải hợp lệ",
+      variant: "destructive",
+    });
   };
 
   if (loading) {
@@ -258,21 +254,26 @@ export const ProductList = () => {
                 </CardContent>
 
                 <CardFooter className="p-4 pt-0">
-                  <Button 
-                    className="w-full" 
-                    size="sm"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                        if (isFree) {
-                          handleFreeDownload(downloadUrl);
-                          return;
-                        }
+                  {isFree ? (
+                    <FreeDownloadButton
+                      size="sm"
+                      downloadUrl={downloadUrl}
+                      onMissingUrl={handleMissingFreeDownload}
+                      onClick={(e) => e.stopPropagation()}
+                    />
+                  ) : (
+                    <Button 
+                      className="w-full" 
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation();
                         addToCart(product.id);
-                    }}
-                  >
-                      {isFree ? <Download className="h-4 w-4 mr-2" /> : <ShoppingCart className="h-4 w-4 mr-2" />}
-                      {isFree ? 'Tải miễn phí' : 'Thêm vào giỏ'}
-                  </Button>
+                      }}
+                    >
+                      <ShoppingCart className="h-4 w-4 mr-2" />
+                      Thêm vào giỏ
+                    </Button>
+                  )}
                 </CardFooter>
                 </Card>;
             })}

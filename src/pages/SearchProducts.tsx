@@ -15,6 +15,7 @@ import { Footer } from "@/components/Footer";
 import { SEO } from "@/components/SEO";
 import { ProductThumbnail } from "@/components/ProductThumbnail";
 import { RelatedCategories } from "@/components/RelatedCategories";
+import { FreeDownloadButton } from "@/components/FreeDownloadButton";
 import { getProductDownloadUrl, isFreeProduct } from "@/lib/productAccess";
 
 interface Product {
@@ -62,17 +63,12 @@ export default function SearchProducts() {
   const { toast } = useToast();
   const { addToCart } = useCart();
 
-  const handleFreeDownload = (downloadUrl: string | null) => {
-    if (!downloadUrl) {
-      toast({
-        title: "Thiếu link tải",
-        description: "Tài liệu miễn phí này hiện chưa có link tải hợp lệ",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    window.open(downloadUrl, "_blank", "noopener,noreferrer");
+  const handleMissingFreeDownload = () => {
+    toast({
+      title: "Thiếu link tải",
+      description: "Tài liệu miễn phí này hiện chưa có link tải hợp lệ",
+      variant: "destructive",
+    });
   };
 
   useEffect(() => {
@@ -547,21 +543,26 @@ export default function SearchProducts() {
                   </CardContent>
 
                   <CardFooter className="p-4 pt-0">
-                    <Button 
-                      className="w-full" 
-                      size="sm"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        if (isFree) {
-                          handleFreeDownload(downloadUrl);
-                          return;
-                        }
-                        addToCart(product.id);
-                      }}
-                    >
-                      {isFree ? <Download className="h-4 w-4 mr-2" /> : <ShoppingCart className="h-4 w-4 mr-2" />}
-                      {isFree ? 'Tải miễn phí' : 'Thêm vào giỏ'}
-                    </Button>
+                    {isFree ? (
+                      <FreeDownloadButton
+                        size="sm"
+                        downloadUrl={downloadUrl}
+                        onMissingUrl={handleMissingFreeDownload}
+                        onClick={(e) => e.stopPropagation()}
+                      />
+                    ) : (
+                      <Button 
+                        className="w-full" 
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          addToCart(product.id);
+                        }}
+                      >
+                        <ShoppingCart className="h-4 w-4 mr-2" />
+                        Thêm vào giỏ
+                      </Button>
+                    )}
                   </CardFooter>
                 </article>;
               })}

@@ -1,0 +1,100 @@
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /
+
+  # Canonical legacy redirects
+  RewriteRule ^seller-auth$ /seller-signup [R=301,L]
+  RewriteRule ^login$ /auth [R=301,L]
+  RewriteRule ^signup$ /auth [R=301,L]
+  RewriteRule ^register$ /auth [R=301,L]
+  RewriteRule ^dang-nhap$ /auth [R=301,L]
+  RewriteRule ^dang-ky$ /auth [R=301,L]
+  RewriteRule ^gioi-thieu$ /about [R=301,L]
+  RewriteRule ^lien-he$ /about [R=301,L]
+  RewriteRule ^contact$ /about [R=301,L]
+  RewriteRule ^huong-dan$ /how-it-works [R=301,L]
+  RewriteRule ^guide$ /how-it-works [R=301,L]
+  RewriteRule ^chinh-sach-bao-mat$ /privacy-policy [R=301,L]
+  RewriteRule ^privacy$ /privacy-policy [R=301,L]
+  RewriteRule ^dieu-khoan$ /terms-of-service [R=301,L]
+  RewriteRule ^terms$ /terms-of-service [R=301,L]
+  RewriteRule ^gio-hang$ /cart [R=301,L]
+  RewriteRule ^thanh-toan$ /cart [R=301,L]
+  RewriteRule ^checkout$ /cart [R=301,L]
+  RewriteRule ^tim-kiem$ /search [R=301,L]
+  RewriteRule ^products$ /search [R=301,L]
+  RewriteRule ^san-pham$ /search [R=301,L]
+  RewriteRule ^danh-muc$ / [R=301,L]
+  RewriteRule ^categories$ / [R=301,L]
+  RewriteRule ^home$ / [R=301,L]
+  RewriteRule ^index$ / [R=301,L]
+  RewriteRule ^index\.html$ / [R=301,L]
+  RewriteRule ^seller$ /seller-guide [R=301,L]
+  RewriteRule ^become-seller$ /seller-signup [R=301,L]
+  RewriteRule ^tro-thanh-nguoi-ban$ /seller-signup [R=301,L]
+
+  # Vietnamese SEO redirects
+  RewriteRule ^san-pham/(.+)$ /product/$1 [R=301,L]
+  RewriteRule ^danh-muc/(.+)$ /category/$1 [R=301,L]
+  RewriteRule ^nguoi-ban/([^/]+)$ /seller/$1 [R=301,L]
+  RewriteRule ^nguoi-ban$ /sellers [R=301,L]
+
+  # Product slug normalization redirects
+  RewriteRule ^product/tai-lieu-on-thi-tuyen-sinh-vao-lop-10-mon-tieng-anhpdf$ /product/tai-lieu-on-thi-tuyen-sinh-vao-lop-10-mon-tieng-anh [R=301,L]
+  RewriteRule ^product/de-thi-thu-vao-lop-10-thpt-chuyen-hung-vuong-2023-2024pdf$ /product/de-thi-thu-vao-lop-10-thpt-chuyen-hung-vuong-2023-2024 [R=301,L]
+  RewriteRule ^product/de-thi-vao-lop-10-nam-dinh-mon-toan-2024-2025pdf$ /product/de-thi-vao-lop-10-nam-dinh-mon-toan-2024-2025 [R=301,L]
+  RewriteRule ^product/de-thi-vao-lop-10-nam-dinh-mon-tieng-anh-2024-2025pdf$ /product/de-thi-vao-lop-10-nam-dinh-mon-tieng-anh-2024-2025 [R=301,L]
+  RewriteRule ^product/de-thi-tuyen-sinh-vao-lop-10-tinh-quang-tri-mon-toan-2024-2025pdf$ /product/de-thi-tuyen-sinh-vao-lop-10-tinh-quang-tri-mon-toan-2024-2025 [R=301,L]
+  RewriteRule ^product/de-thi-tuyen-sinh-vao-lop-10-tinh-quang-tri-mon-tieng-anh-2024-2025pdf$ /product/de-thi-tuyen-sinh-vao-lop-10-tinh-quang-tri-mon-tieng-anh-2024-2025 [R=301,L]
+  RewriteRule ^product/de-thi-hoc-ky-2-tieng-anh-6-global-success-2024-2025--de-so-4$ /product/de-thi-hoc-ky-2-tieng-anh-6-global-success-2024-2025-de-so-4 [R=301,L]
+  RewriteRule ^product/de-thi-hoc-ky-2-tieng-anh-6-global-success-2024-2025--de-so-3$ /product/de-thi-hoc-ky-2-tieng-anh-6-global-success-2024-2025-de-so-3 [R=301,L]
+  RewriteRule ^product/de-thi-hoc-ky-2-tieng-anh-6-global-success-2024-2025--de-so-2$ /product/de-thi-hoc-ky-2-tieng-anh-6-global-success-2024-2025-de-so-2 [R=301,L]
+  RewriteRule ^product/de-thi-hoc-ky-2-tieng-anh-6-global-success-2024-2025--de-so-1$ /product/de-thi-hoc-ky-2-tieng-anh-6-global-success-2024-2025-de-so-1 [R=301,L]
+
+  RewriteRule ^san-pham/tai-lieu-on-thi-tuyen-sinh-vao-lop-10-mon-tieng-anhpdf$ /product/tai-lieu-on-thi-tuyen-sinh-vao-lop-10-mon-tieng-anh [R=301,L]
+  RewriteRule ^san-pham/de-thi-thu-vao-lop-10-thpt-chuyen-hung-vuong-2023-2024pdf$ /product/de-thi-thu-vao-lop-10-thpt-chuyen-hung-vuong-2023-2024 [R=301,L]
+  RewriteRule ^san-pham/de-thi-vao-lop-10-nam-dinh-mon-toan-2024-2025pdf$ /product/de-thi-vao-lop-10-nam-dinh-mon-toan-2024-2025 [R=301,L]
+  RewriteRule ^san-pham/de-thi-vao-lop-10-nam-dinh-mon-tieng-anh-2024-2025pdf$ /product/de-thi-vao-lop-10-nam-dinh-mon-tieng-anh-2024-2025 [R=301,L]
+  RewriteRule ^san-pham/de-thi-tuyen-sinh-vao-lop-10-tinh-quang-tri-mon-toan-2024-2025pdf$ /product/de-thi-tuyen-sinh-vao-lop-10-tinh-quang-tri-mon-toan-2024-2025 [R=301,L]
+  RewriteRule ^san-pham/de-thi-tuyen-sinh-vao-lop-10-tinh-quang-tri-mon-tieng-anh-2024-2025pdf$ /product/de-thi-tuyen-sinh-vao-lop-10-tinh-quang-tri-mon-tieng-anh-2024-2025 [R=301,L]
+  RewriteRule ^san-pham/de-thi-hoc-ky-2-tieng-anh-6-global-success-2024-2025--de-so-4$ /product/de-thi-hoc-ky-2-tieng-anh-6-global-success-2024-2025-de-so-4 [R=301,L]
+  RewriteRule ^san-pham/de-thi-hoc-ky-2-tieng-anh-6-global-success-2024-2025--de-so-3$ /product/de-thi-hoc-ky-2-tieng-anh-6-global-success-2024-2025-de-so-3 [R=301,L]
+  RewriteRule ^san-pham/de-thi-hoc-ky-2-tieng-anh-6-global-success-2024-2025--de-so-2$ /product/de-thi-hoc-ky-2-tieng-anh-6-global-success-2024-2025-de-so-2 [R=301,L]
+  RewriteRule ^san-pham/de-thi-hoc-ky-2-tieng-anh-6-global-success-2024-2025--de-so-1$ /product/de-thi-hoc-ky-2-tieng-anh-6-global-success-2024-2025-de-so-1 [R=301,L]
+
+  # Serve existing files/directories directly
+  RewriteCond %{REQUEST_FILENAME} -f [OR]
+  RewriteCond %{REQUEST_FILENAME} -d
+  RewriteRule ^ - [L]
+
+  # SPA fallback for React Router
+  RewriteRule . /index.html [L]
+</IfModule>
+
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/plain text/html text/xml text/css text/javascript application/javascript application/json application/xml image/svg+xml
+</IfModule>
+
+<IfModule mod_expires.c>
+  ExpiresActive On
+  ExpiresByType text/html "access plus 0 seconds"
+  ExpiresByType text/css "access plus 1 month"
+  ExpiresByType application/javascript "access plus 1 month"
+  ExpiresByType text/javascript "access plus 1 month"
+  ExpiresByType application/json "access plus 0 seconds"
+  ExpiresByType image/svg+xml "access plus 1 month"
+  ExpiresByType image/x-icon "access plus 1 month"
+  ExpiresByType image/webp "access plus 1 year"
+  ExpiresByType image/png "access plus 1 year"
+  ExpiresByType image/jpeg "access plus 1 year"
+  ExpiresByType font/woff2 "access plus 1 year"
+</IfModule>
+
+<IfModule mod_headers.c>
+  <FilesMatch "\.(js|css|png|jpg|jpeg|webp|svg|woff2)$">
+    Header set Cache-Control "public, max-age=31536000, immutable"
+  </FilesMatch>
+  <FilesMatch "\.(html)$">
+    Header set Cache-Control "no-cache, no-store, must-revalidate"
+  </FilesMatch>
+</IfModule>

@@ -15,6 +15,7 @@ import { SEO } from "@/components/SEO";
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { ProductFAQ } from "@/components/ProductFAQ";
 import { RelatedCategories } from "@/components/RelatedCategories";
+import { FreeDownloadButton } from "@/components/FreeDownloadButton";
 import { TableOfContents, injectHeadingIds } from "@/components/TableOfContents";
 import { getProductDownloadUrl, isFreeProduct } from "@/lib/productAccess";
 
@@ -174,22 +175,6 @@ export default function ProductDetail() {
     }
   };
 
-  const handleFreeDownload = () => {
-    if (!product) return;
-
-    const downloadUrl = getProductDownloadUrl(product.google_drive_link, product.download_only_link);
-    if (!downloadUrl) {
-      toast({
-        title: "Thiếu link tải",
-        description: "Tài liệu miễn phí này hiện chưa có link tải hợp lệ",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    window.open(downloadUrl, '_blank', 'noopener,noreferrer');
-  };
-
   const handleShare = async () => {
     const url = window.location.href;
     
@@ -286,6 +271,7 @@ export default function ProductDetail() {
   const dateModified = new Date(product.updated_at).toISOString();
   const priceValidUntil = new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString().split('T')[0];
   const isFree = isFreeProduct(product.price);
+  const freeDownloadUrl = getProductDownloadUrl(product.google_drive_link, product.download_only_link);
 
   // Build structured data using @graph pattern (Google recommended - avoids duplicate @context)
   const graphNodes: Record<string, any>[] = [];
@@ -763,14 +749,17 @@ export default function ProductDetail() {
             {/* Action Buttons */}
             <div className="space-y-3">
               {isFree ? (
-                <Button 
+                <FreeDownloadButton
                   size="lg"
-                  className="w-full"
-                  onClick={handleFreeDownload}
-                >
-                  <Download className="h-4 w-4 mr-2" />
-                  Tải miễn phí
-                </Button>
+                  downloadUrl={freeDownloadUrl}
+                  onMissingUrl={() => {
+                    toast({
+                      title: "Thiếu link tải",
+                      description: "Tài liệu miễn phí này hiện chưa có link tải hợp lệ",
+                      variant: "destructive",
+                    });
+                  }}
+                />
               ) : (
                 <div className="grid grid-cols-2 gap-3">
                   <Button 

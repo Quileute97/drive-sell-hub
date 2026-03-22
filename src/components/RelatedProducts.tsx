@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Star, Download, Eye, ShoppingCart, ArrowRight } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useCart } from "@/hooks/useCart";
+import { FreeDownloadButton } from "@/components/FreeDownloadButton";
 import { getGoogleDriveThumbnail } from "@/lib/utils";
 import { getProductDownloadUrl, isFreeProduct } from "@/lib/productAccess";
 
@@ -43,11 +44,6 @@ export const RelatedProducts = ({ categoryId, currentProductId, categorySlug }: 
   const [products, setProducts] = useState<RelatedProduct[]>([]);
   const [loading, setLoading] = useState(true);
   const { addToCart } = useCart();
-
-  const handleFreeDownload = (downloadUrl: string | null) => {
-    if (!downloadUrl) return;
-    window.open(downloadUrl, "_blank", "noopener,noreferrer");
-  };
 
   useEffect(() => {
     fetchRelatedProducts();
@@ -208,20 +204,18 @@ export const RelatedProducts = ({ categoryId, currentProductId, categorySlug }: 
               </Card>
             </Link>
             <CardFooter className="p-4 pt-2">
-              <Button 
-                className="w-full" 
-                size="sm"
-                onClick={() => {
-                  if (isFree) {
-                    handleFreeDownload(downloadUrl);
-                    return;
-                  }
-                  addToCart(product.id);
-                }}
-              >
-                {isFree ? <Download className="h-4 w-4 mr-2" /> : <ShoppingCart className="h-4 w-4 mr-2" />}
-                {isFree ? 'Tải miễn phí' : 'Thêm vào giỏ'}
-              </Button>
+              {isFree ? (
+                <FreeDownloadButton size="sm" downloadUrl={downloadUrl} />
+              ) : (
+                <Button 
+                  className="w-full" 
+                  size="sm"
+                  onClick={() => addToCart(product.id)}
+                >
+                  <ShoppingCart className="h-4 w-4 mr-2" />
+                  Thêm vào giỏ
+                </Button>
+              )}
             </CardFooter>
           </article>;
         })}

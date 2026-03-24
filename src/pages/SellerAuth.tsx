@@ -145,6 +145,14 @@ const SellerAuth = () => {
   // Logged-in user who is not yet a seller
   if (user && !isSeller) {
     return (
+      <>
+      <SEO
+        title="Đăng ký trở thành Người bán - Kiếm tiền từ sản phẩm digital"
+        description="Đăng ký làm seller trên Salemylink.com. Bán ebook, tài liệu, khóa học online với hoa hồng chỉ từ 5%. Thanh toán nhanh, quản lý dễ dàng."
+        keywords="đăng ký seller, bán hàng online, kiếm tiền digital, đăng ký người bán, salemylink seller"
+        url="https://salemylink.com/seller-auth"
+        noindex={true}
+      />
       <div className="min-h-screen bg-gradient-to-br from-primary/10 via-background to-secondary/10 flex items-center justify-center p-4">
         <div className="w-full max-w-md">
           <div className="mb-8 text-center">

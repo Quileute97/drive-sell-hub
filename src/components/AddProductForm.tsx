@@ -209,7 +209,7 @@ const AddProductForm = ({ onClose, onSuccess }: AddProductFormProps) => {
       if (error) throw error;
 
       // Notify IndexNow for faster search engine indexing
-      notifyProductChange(slug);
+      notifyProductChange(uniqueSlug);
 
       toast.success('Sản phẩm đã được tạo thành công!');
       onSuccess();

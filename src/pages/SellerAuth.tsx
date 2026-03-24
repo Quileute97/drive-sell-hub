@@ -9,6 +9,7 @@ import { Eye, EyeOff, ArrowLeft, Store, CheckCircle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useUserRole } from '@/hooks/useUserRole';
+import { SEO } from '@/components/SEO';
 
 const SellerAuth = () => {
   const [email, setEmail] = useState('');

@@ -232,6 +232,14 @@ const SellerAuth = () => {
   }
 
   return (
+    <>
+    <SEO
+      title="Đăng ký Người bán - Bắt đầu kinh doanh sản phẩm digital"
+      description="Tạo tài khoản seller trên Salemylink.com để bán ebook, tài liệu, khóa học online. Hoa hồng thấp chỉ 5%, hỗ trợ thanh toán PayOS, quản lý đơn hàng tự động."
+      keywords="đăng ký bán hàng, tạo tài khoản seller, bán sản phẩm digital, kiếm tiền online, salemylink"
+      url="https://salemylink.com/seller-auth"
+      noindex={true}
+    />
     <div className="min-h-screen bg-gradient-to-br from-primary/10 via-background to-secondary/10 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         <div className="mb-8 text-center">

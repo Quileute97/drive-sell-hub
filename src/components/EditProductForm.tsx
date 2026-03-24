@@ -232,6 +232,9 @@ const EditProductForm = ({ product, onClose, onSuccess, onDelete }: EditProductF
 
       if (error) throw error;
 
+      // Notify IndexNow for faster search engine indexing
+      notifyProductChange(normalizeSlug(formData.slug.trim()));
+
       toast.success('Sản phẩm đã được cập nhật thành công!');
       onSuccess();
       onClose();

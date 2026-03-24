@@ -17,6 +17,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useQuery } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { isFreeProduct } from '@/lib/productAccess';
+import { notifyProductChange } from '@/lib/indexNow';
 import { 
   Link, 
   Tags, 
@@ -230,6 +231,9 @@ const EditProductForm = ({ product, onClose, onSuccess, onDelete }: EditProductF
         .eq('seller_id', user.id);
 
       if (error) throw error;
+
+      // Notify IndexNow for faster search engine indexing
+      notifyProductChange(normalizeSlug(formData.slug.trim()));
 
       toast.success('Sản phẩm đã được cập nhật thành công!');
       onSuccess();

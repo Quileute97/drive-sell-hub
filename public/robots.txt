@@ -41,3 +41,6 @@ Allow: /
 
 # Sitemap location (served from your domain via proxy)
 Sitemap: https://salemylink.com/sitemap.xml
+
+# IndexNow verification
+# Key file: https://salemylink.com/04307b9c3b8f10fb48243d7ba088c9c5.txt

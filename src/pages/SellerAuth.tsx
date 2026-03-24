@@ -357,6 +357,7 @@ const SellerAuth = () => {
         </p>
       </div>
     </div>
+  </>
   );
 };
 

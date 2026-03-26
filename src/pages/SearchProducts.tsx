@@ -16,7 +16,8 @@ import { SEO } from "@/components/SEO";
 import { ProductThumbnail } from "@/components/ProductThumbnail";
 import { RelatedCategories } from "@/components/RelatedCategories";
 import { FreeDownloadButton } from "@/components/FreeDownloadButton";
-import { getProductDownloadUrl, isFreeProduct } from "@/lib/productAccess";
+import { ReadOnlyButton } from "@/components/ReadOnlyButton";
+import { getProductDownloadUrl, isFreeProduct, getGoogleDrivePreviewUrl } from "@/lib/productAccess";
 
 interface Product {
   id: string;

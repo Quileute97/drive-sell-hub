@@ -10,7 +10,8 @@ import { useToast } from "@/hooks/use-toast";
 import { useCart } from "@/hooks/useCart";
 import { ProductThumbnail } from "@/components/ProductThumbnail";
 import { FreeDownloadButton } from "@/components/FreeDownloadButton";
-import { getProductDownloadUrl, isFreeProduct } from "@/lib/productAccess";
+import { ReadOnlyButton } from "@/components/ReadOnlyButton";
+import { getProductDownloadUrl, isFreeProduct, getGoogleDrivePreviewUrl } from "@/lib/productAccess";
 
 interface Product {
   id: string;

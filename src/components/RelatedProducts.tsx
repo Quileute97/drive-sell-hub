@@ -7,8 +7,9 @@ import { Star, Download, Eye, ShoppingCart, ArrowRight } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useCart } from "@/hooks/useCart";
 import { FreeDownloadButton } from "@/components/FreeDownloadButton";
+import { ReadOnlyButton } from "@/components/ReadOnlyButton";
 import { getGoogleDriveThumbnail } from "@/lib/utils";
-import { getProductDownloadUrl, isFreeProduct } from "@/lib/productAccess";
+import { getProductDownloadUrl, isFreeProduct, getGoogleDrivePreviewUrl } from "@/lib/productAccess";
 
 interface RelatedProduct {
   id: string;

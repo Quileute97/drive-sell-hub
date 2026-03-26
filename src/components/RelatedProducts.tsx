@@ -7,8 +7,9 @@ import { Star, Download, Eye, ShoppingCart, ArrowRight } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useCart } from "@/hooks/useCart";
 import { FreeDownloadButton } from "@/components/FreeDownloadButton";
+import { ReadOnlyButton } from "@/components/ReadOnlyButton";
 import { getGoogleDriveThumbnail } from "@/lib/utils";
-import { getProductDownloadUrl, isFreeProduct } from "@/lib/productAccess";
+import { getProductDownloadUrl, isFreeProduct, getGoogleDrivePreviewUrl } from "@/lib/productAccess";
 
 interface RelatedProduct {
   id: string;
@@ -205,7 +206,10 @@ export const RelatedProducts = ({ categoryId, currentProductId, categorySlug }: 
             </Link>
             <CardFooter className="p-4 pt-2">
               {isFree ? (
-                <FreeDownloadButton size="sm" downloadUrl={downloadUrl} />
+                <div className="grid grid-cols-2 gap-2 w-full">
+                  <FreeDownloadButton size="sm" downloadUrl={downloadUrl} />
+                  <ReadOnlyButton size="sm" previewUrl={getGoogleDrivePreviewUrl(product.google_drive_link)} />
+                </div>
               ) : (
                 <Button 
                   className="w-full" 

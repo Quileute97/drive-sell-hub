@@ -545,12 +545,19 @@ export default function SearchProducts() {
 
                   <CardFooter className="p-4 pt-0">
                     {isFree ? (
-                      <FreeDownloadButton
-                        size="sm"
-                        downloadUrl={downloadUrl}
-                        onMissingUrl={handleMissingFreeDownload}
-                        onClick={(e) => e.stopPropagation()}
-                      />
+                      <div className="grid grid-cols-2 gap-2 w-full">
+                        <FreeDownloadButton
+                          size="sm"
+                          downloadUrl={downloadUrl}
+                          onMissingUrl={handleMissingFreeDownload}
+                          onClick={(e) => e.stopPropagation()}
+                        />
+                        <ReadOnlyButton
+                          size="sm"
+                          previewUrl={getGoogleDrivePreviewUrl(product.google_drive_link)}
+                          onClick={(e) => e.stopPropagation()}
+                        />
+                      </div>
                     ) : (
                       <Button 
                         className="w-full" 

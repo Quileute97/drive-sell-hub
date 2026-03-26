@@ -206,7 +206,10 @@ export const RelatedProducts = ({ categoryId, currentProductId, categorySlug }: 
             </Link>
             <CardFooter className="p-4 pt-2">
               {isFree ? (
-                <FreeDownloadButton size="sm" downloadUrl={downloadUrl} />
+                <div className="grid grid-cols-2 gap-2 w-full">
+                  <FreeDownloadButton size="sm" downloadUrl={downloadUrl} />
+                  <ReadOnlyButton size="sm" previewUrl={getGoogleDrivePreviewUrl(product.google_drive_link)} />
+                </div>
               ) : (
                 <Button 
                   className="w-full" 

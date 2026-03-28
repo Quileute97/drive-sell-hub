@@ -467,6 +467,19 @@ const AddProductForm = ({ onClose, onSuccess }: AddProductFormProps) => {
                       {isFreeEnabled && (
                         <p className="mt-1 text-xs text-muted-foreground">Sản phẩm này sẽ cho phép tải trực tiếp thay vì thêm vào giỏ.</p>
                       )}
+                      {isFreeEnabled && (
+                        <div className="mt-3 flex items-center justify-between rounded-lg border bg-muted/40 px-3 py-2">
+                          <div>
+                            <Label htmlFor="read-only" className="text-sm font-medium">Chỉ cho phép đọc</Label>
+                            <p className="text-xs text-muted-foreground">Ẩn nút tải, chỉ hiển thị nút đọc trực tuyến</p>
+                          </div>
+                          <Switch
+                            id="read-only"
+                            checked={isReadOnly}
+                            onCheckedChange={setIsReadOnly}
+                          />
+                        </div>
+                      )}
                     </div>
                     <div>
                       <Label htmlFor="original_price">Giá gốc (tùy chọn)</Label>

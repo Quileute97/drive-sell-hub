@@ -226,6 +226,7 @@ const EditProductForm = ({ product, onClose, onSuccess, onDelete }: EditProductF
           images: images.length > 0 ? images : null,
           status: formData.status,
           thumbnail_url: images[0] || null,
+          read_only: isReadOnly,
           updated_at: new Date().toISOString()
         })
         .eq('id', product.id)

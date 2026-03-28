@@ -204,7 +204,8 @@ const AddProductForm = ({ onClose, onSuccess }: AddProductFormProps) => {
           tags: tags.length > 0 ? tags : null,
           images: images.length > 0 ? images : null,
           status: formData.status,
-          thumbnail_url: images[0] || null
+          thumbnail_url: images[0] || null,
+          read_only: isReadOnly
         });
 
       if (error) throw error;

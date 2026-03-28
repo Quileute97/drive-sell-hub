@@ -65,6 +65,7 @@ const AddProductForm = ({ onClose, onSuccess }: AddProductFormProps) => {
     status: 'active' as 'draft' | 'active'
   });
   const [isFreeEnabled, setIsFreeEnabled] = useState(false);
+  const [isReadOnly, setIsReadOnly] = useState(false);
 
   // Fetch categories
   const { data: categories = [] } = useQuery({

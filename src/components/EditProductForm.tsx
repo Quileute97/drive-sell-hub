@@ -98,6 +98,7 @@ const EditProductForm = ({ product, onClose, onSuccess, onDelete }: EditProductF
     status: product.status as 'draft' | 'active'
   });
   const [isFreeEnabled, setIsFreeEnabled] = useState(isFreeProduct(product.price));
+  const [isReadOnly, setIsReadOnly] = useState((product as any).read_only ?? false);
 
   const { data: categories = [] } = useQuery({
     queryKey: ['categories'],

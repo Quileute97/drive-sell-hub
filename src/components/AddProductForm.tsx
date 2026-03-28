@@ -65,6 +65,7 @@ const AddProductForm = ({ onClose, onSuccess }: AddProductFormProps) => {
     status: 'active' as 'draft' | 'active'
   });
   const [isFreeEnabled, setIsFreeEnabled] = useState(false);
+  const [isReadOnly, setIsReadOnly] = useState(false);
 
   // Fetch categories
   const { data: categories = [] } = useQuery({
@@ -203,7 +204,8 @@ const AddProductForm = ({ onClose, onSuccess }: AddProductFormProps) => {
           tags: tags.length > 0 ? tags : null,
           images: images.length > 0 ? images : null,
           status: formData.status,
-          thumbnail_url: images[0] || null
+          thumbnail_url: images[0] || null,
+          read_only: isReadOnly
         });
 
       if (error) throw error;
@@ -465,6 +467,19 @@ const AddProductForm = ({ onClose, onSuccess }: AddProductFormProps) => {
                       />
                       {isFreeEnabled && (
                         <p className="mt-1 text-xs text-muted-foreground">Sản phẩm này sẽ cho phép tải trực tiếp thay vì thêm vào giỏ.</p>
+                      )}
+                      {isFreeEnabled && (
+                        <div className="mt-3 flex items-center justify-between rounded-lg border bg-muted/40 px-3 py-2">
+                          <div>
+                            <Label htmlFor="read-only" className="text-sm font-medium">Chỉ cho phép đọc</Label>
+                            <p className="text-xs text-muted-foreground">Ẩn nút tải, chỉ hiển thị nút đọc trực tuyến</p>
+                          </div>
+                          <Switch
+                            id="read-only"
+                            checked={isReadOnly}
+                            onCheckedChange={setIsReadOnly}
+                          />
+                        </div>
                       )}
                     </div>
                     <div>

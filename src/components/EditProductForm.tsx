@@ -98,6 +98,7 @@ const EditProductForm = ({ product, onClose, onSuccess, onDelete }: EditProductF
     status: product.status as 'draft' | 'active'
   });
   const [isFreeEnabled, setIsFreeEnabled] = useState(isFreeProduct(product.price));
+  const [isReadOnly, setIsReadOnly] = useState((product as any).read_only ?? false);
 
   const { data: categories = [] } = useQuery({
     queryKey: ['categories'],
@@ -225,6 +226,7 @@ const EditProductForm = ({ product, onClose, onSuccess, onDelete }: EditProductF
           images: images.length > 0 ? images : null,
           status: formData.status,
           thumbnail_url: images[0] || null,
+          read_only: isReadOnly,
           updated_at: new Date().toISOString()
         })
         .eq('id', product.id)
@@ -543,6 +545,19 @@ const EditProductForm = ({ product, onClose, onSuccess, onDelete }: EditProductF
                       />
                       {isFreeEnabled && (
                         <p className="mt-1 text-xs text-muted-foreground">Người dùng sẽ thấy nút tải trực tiếp cho sản phẩm này.</p>
+                      )}
+                      {isFreeEnabled && (
+                        <div className="mt-3 flex items-center justify-between rounded-lg border bg-muted/40 px-3 py-2">
+                          <div>
+                            <Label htmlFor="read-only" className="text-sm font-medium">Chỉ cho phép đọc</Label>
+                            <p className="text-xs text-muted-foreground">Ẩn nút tải, chỉ hiển thị nút đọc trực tuyến</p>
+                          </div>
+                          <Switch
+                            id="read-only"
+                            checked={isReadOnly}
+                            onCheckedChange={setIsReadOnly}
+                          />
+                        </div>
                       )}
                     </div>
                     <div>

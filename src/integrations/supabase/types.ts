@@ -368,6 +368,7 @@ export type Database = {
           price: number
           rating_average: number | null
           rating_count: number | null
+          read_only: boolean
           seller_id: string
           short_description: string | null
           slug: string
@@ -397,6 +398,7 @@ export type Database = {
           price: number
           rating_average?: number | null
           rating_count?: number | null
+          read_only?: boolean
           seller_id: string
           short_description?: string | null
           slug: string
@@ -426,6 +428,7 @@ export type Database = {
           price?: number
           rating_average?: number | null
           rating_count?: number | null
+          read_only?: boolean
           seller_id?: string
           short_description?: string | null
           slug?: string

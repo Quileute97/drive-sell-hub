@@ -1,0 +1,1 @@
+ALTER TABLE public.products ADD COLUMN IF NOT EXISTS read_only boolean NOT NULL DEFAULT false;

@@ -16,7 +16,7 @@ import { Breadcrumb } from "@/components/Breadcrumb";
 import { ProductFAQ } from "@/components/ProductFAQ";
 import { RelatedCategories } from "@/components/RelatedCategories";
 import { FreeDownloadButton } from "@/components/FreeDownloadButton";
-import { ReadOnlyButton } from "@/components/ReadOnlyButton";
+
 import { TableOfContents, injectHeadingIds } from "@/components/TableOfContents";
 import { getProductDownloadUrl, isFreeProduct, getGoogleDrivePreviewUrl } from "@/lib/productAccess";
 

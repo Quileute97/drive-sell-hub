@@ -16,7 +16,7 @@ import { Breadcrumb } from "@/components/Breadcrumb";
 import { ProductFAQ } from "@/components/ProductFAQ";
 import { RelatedCategories } from "@/components/RelatedCategories";
 import { FreeDownloadButton } from "@/components/FreeDownloadButton";
-import { ReadOnlyButton } from "@/components/ReadOnlyButton";
+
 import { TableOfContents, injectHeadingIds } from "@/components/TableOfContents";
 import { getProductDownloadUrl, isFreeProduct, getGoogleDrivePreviewUrl } from "@/lib/productAccess";
 
@@ -750,45 +750,18 @@ export default function ProductDetail() {
             {/* Action Buttons */}
             <div className="space-y-3">
               {isFree ? (
-                (product as any).read_only ? (
-                  <ReadOnlyButton
-                    size="lg"
-                    className="w-full"
-                    previewUrl={getGoogleDrivePreviewUrl(product.google_drive_link)}
-                    onMissingUrl={() => {
-                      toast({
-                        title: "Không có link xem",
-                        description: "Tài liệu này hiện chưa hỗ trợ đọc trực tuyến",
-                        variant: "destructive",
-                      });
-                    }}
-                  />
-                ) : (
-                  <div className="grid grid-cols-2 gap-3">
-                    <FreeDownloadButton
-                      size="lg"
-                      downloadUrl={freeDownloadUrl}
-                      onMissingUrl={() => {
-                        toast({
-                          title: "Thiếu link tải",
-                          description: "Tài liệu miễn phí này hiện chưa có link tải hợp lệ",
-                          variant: "destructive",
-                        });
-                      }}
-                    />
-                    <ReadOnlyButton
-                      size="lg"
-                      previewUrl={getGoogleDrivePreviewUrl(product.google_drive_link)}
-                      onMissingUrl={() => {
-                        toast({
-                          title: "Không có link xem",
-                          description: "Tài liệu này hiện chưa hỗ trợ đọc trực tuyến",
-                          variant: "destructive",
-                        });
-                      }}
-                    />
-                  </div>
-                )
+                <FreeDownloadButton
+                  size="lg"
+                  className="w-full"
+                  downloadUrl={freeDownloadUrl}
+                  onMissingUrl={() => {
+                    toast({
+                      title: "Thiếu link tải",
+                      description: "Tài liệu miễn phí này hiện chưa có link tải hợp lệ",
+                      variant: "destructive",
+                    });
+                  }}
+                />
               ) : (
                 <div className="grid grid-cols-2 gap-3">
                   <Button 

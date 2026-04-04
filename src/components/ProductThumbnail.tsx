@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { getGoogleDriveThumbnail } from "@/lib/utils";
+import { useState, useCallback } from "react";
+import { getGoogleDriveThumbnail, getGoogleDriveThumbnailFallback } from "@/lib/utils";
 import { 
   FileText, 
   FileSpreadsheet, 
@@ -104,22 +104,53 @@ export const ProductThumbnail = ({
   loading = "lazy",
   fetchPriority = "auto",
 }: ProductThumbnailProps) => {
-  const [imageError, setImageError] = useState(false);
+  const [currentSrcIndex, setCurrentSrcIndex] = useState(0);
   const [imageLoaded, setImageLoaded] = useState(false);
+  const [allFailed, setAllFailed] = useState(false);
   
   const config = getFileTypeConfig(fileFormat);
   const IconComponent = config.icon;
   
-  // Get the image source - check if it's a valid URL (not placeholder)
-  const rawImageSrc = thumbnailUrl || getGoogleDriveThumbnail(googleDriveLink, size);
-  const hasValidImage = rawImageSrc && rawImageSrc !== "/placeholder.svg";
+  // Build a list of image sources to try in order
+  const imageSources: string[] = [];
+  
+  // 1. Custom thumbnail URL (highest priority)
+  if (thumbnailUrl && thumbnailUrl !== "/placeholder.svg") {
+    imageSources.push(thumbnailUrl);
+  }
+  
   const canPreview = canShowPreview(fileFormat);
   
-  // Show default icon if: no valid image, or image failed, or format can't preview
-  const shouldShowIcon = !hasValidImage || imageError || !canPreview;
+  if (canPreview && googleDriveLink) {
+    // 2. Google Drive thumbnail API
+    const primaryThumb = getGoogleDriveThumbnail(googleDriveLink, size);
+    if (primaryThumb !== "/placeholder.svg") {
+      imageSources.push(primaryThumb);
+    }
+    
+    // 3. lh3.googleusercontent.com fallback (more reliable for DOCX, PPTX, XLSX)
+    const fallbackThumb = getGoogleDriveThumbnailFallback(googleDriveLink, size);
+    if (fallbackThumb) {
+      imageSources.push(fallbackThumb);
+    }
+  }
   
-  if (shouldShowIcon) {
-    // Show default thumbnail based on file format
+  // Deduplicate
+  const uniqueSources = [...new Set(imageSources)];
+  
+  const handleError = useCallback(() => {
+    const nextIndex = currentSrcIndex + 1;
+    if (nextIndex < uniqueSources.length) {
+      setCurrentSrcIndex(nextIndex);
+      setImageLoaded(false);
+    } else {
+      setAllFailed(true);
+      setImageLoaded(true);
+    }
+  }, [currentSrcIndex, uniqueSources.length]);
+  
+  // Show icon fallback if no sources available or all failed
+  if (uniqueSources.length === 0 || allFailed || !canPreview) {
     return (
       <div className={`w-full h-full flex flex-col items-center justify-center ${config.bgColor} ${className}`}>
         <IconComponent className={`w-16 h-16 md:w-20 md:h-20 ${config.color} mb-3`} strokeWidth={1.5} />
@@ -140,7 +171,7 @@ export const ProductThumbnail = ({
       )}
       
       <img
-        src={rawImageSrc}
+        src={uniqueSources[currentSrcIndex]}
         alt={`Hình ảnh sản phẩm ${title}`}
         className={`w-full h-full object-cover transition-opacity duration-300 ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
         loading={loading}
@@ -149,10 +180,7 @@ export const ProductThumbnail = ({
         width={size}
         height={Math.round(size * 0.75)}
         onLoad={() => setImageLoaded(true)}
-        onError={() => {
-          setImageError(true);
-          setImageLoaded(true);
-        }}
+        onError={handleError}
       />
     </div>
   );

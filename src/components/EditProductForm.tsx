@@ -511,26 +511,42 @@ const EditProductForm = ({ product, onClose, onSuccess, onDelete }: EditProductF
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
+                  <div className="flex items-center justify-between rounded-lg border bg-muted/40 px-3 py-2">
+                    <div>
+                      <Label htmlFor="free-product" className="text-sm font-medium">Tài liệu miễn phí</Label>
+                      <p className="text-xs text-muted-foreground">Bật để đổi CTA sang tải miễn phí</p>
+                    </div>
+                    <Switch
+                      id="free-product"
+                      checked={isFreeEnabled}
+                      onCheckedChange={(checked) => {
+                        setIsFreeEnabled(checked);
+                        setFormData((prev) => ({
+                          ...prev,
+                          price: checked ? '0' : '',
+                          original_price: checked ? '' : prev.original_price,
+                        }));
+                        if (!checked) setIsReadOnly(false);
+                      }}
+                    />
+                  </div>
+
+                  {isFreeEnabled && (
+                    <div className="flex items-center justify-between rounded-lg border border-primary/30 bg-primary/5 px-3 py-2">
+                      <div>
+                        <Label htmlFor="read-only" className="text-sm font-medium">Chỉ cho phép đọc (Read Only)</Label>
+                        <p className="text-xs text-muted-foreground">Ẩn nút tải xuống, chỉ hiển thị nút đọc trực tuyến</p>
+                      </div>
+                      <Switch
+                        id="read-only"
+                        checked={isReadOnly}
+                        onCheckedChange={setIsReadOnly}
+                      />
+                    </div>
+                  )}
+
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <div className="mb-3 flex items-center justify-between rounded-lg border bg-muted/40 px-3 py-2">
-                        <div>
-                          <Label htmlFor="free-product">Tài liệu miễn phí</Label>
-                          <p className="text-xs text-muted-foreground">Bật để đổi CTA sang tải miễn phí</p>
-                        </div>
-                        <Switch
-                          id="free-product"
-                          checked={isFreeEnabled}
-                          onCheckedChange={(checked) => {
-                            setIsFreeEnabled(checked);
-                            setFormData((prev) => ({
-                              ...prev,
-                              price: checked ? '0' : '',
-                              original_price: checked ? '' : prev.original_price,
-                            }));
-                          }}
-                        />
-                      </div>
                       <Label htmlFor="price">Giá bán *</Label>
                       <Input
                         id="price"
@@ -545,19 +561,6 @@ const EditProductForm = ({ product, onClose, onSuccess, onDelete }: EditProductF
                       />
                       {isFreeEnabled && (
                         <p className="mt-1 text-xs text-muted-foreground">Người dùng sẽ thấy nút tải trực tiếp cho sản phẩm này.</p>
-                      )}
-                      {isFreeEnabled && (
-                        <div className="mt-3 flex items-center justify-between rounded-lg border bg-muted/40 px-3 py-2">
-                          <div>
-                            <Label htmlFor="read-only" className="text-sm font-medium">Chỉ cho phép đọc</Label>
-                            <p className="text-xs text-muted-foreground">Ẩn nút tải, chỉ hiển thị nút đọc trực tuyến</p>
-                          </div>
-                          <Switch
-                            id="read-only"
-                            checked={isReadOnly}
-                            onCheckedChange={setIsReadOnly}
-                          />
-                        </div>
                       )}
                     </div>
                     <div>

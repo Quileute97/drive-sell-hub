@@ -398,76 +398,106 @@ const EditProductForm = ({ product, onClose, onSuccess, onDelete }: EditProductF
 
             {/* Media & Links */}
             <TabsContent value="media" className="space-y-6">
+              {/* Section 1: Link xem trước */}
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                    <Link className="h-5 w-5" />
-                    Google Drive & Media
+                    <Eye className="h-5 w-5" />
+                    Link hiển thị xem trước sản phẩm
                   </CardTitle>
                   <CardDescription>
-                    Link sản phẩm sẽ được bảo mật và chỉ gửi cho khách hàng sau khi thanh toán
+                    Link Google Drive để nhúng bản xem trước trên trang sản phẩm (PDF, DOCX, PPTX, hình ảnh, video)
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="bg-muted/50 p-4 rounded-lg border border-dashed">
                     <Label htmlFor="google_drive_link" className="text-base font-medium">
-                      Link tải sản phẩm (Google Drive, OneDrive, Dropbox...)
+                      Link Google Drive (xem trước) *
                     </Label>
                     <Input
                       id="google_drive_link"
                       value={formData.google_drive_link}
                       onChange={(e) => handleInputChange('google_drive_link', e.target.value)}
-                      placeholder="https://drive.google.com/... hoặc link tải khác"
+                      placeholder="https://drive.google.com/file/d/.../view"
                       className="mt-2"
                     />
                     <div className="mt-2 space-y-1">
                       <p className="text-sm text-muted-foreground">
-                        ✅ Hỗ trợ: <span className="font-medium">Google Drive, OneDrive, Dropbox, Mediafire, MEGA...</span>
+                        📄 Dùng để nhúng xem trước: <span className="font-medium">PDF, DOCX, PPTX, hình ảnh, video</span>
                       </p>
                       <p className="text-xs text-muted-foreground">
-                        💡 Link sẽ mở trong tab mới sau khi khách thanh toán để họ tự tải xuống
+                        💡 Cũng dùng để tạo thumbnail tự động cho sản phẩm
                       </p>
                     </div>
                   </div>
 
                   <div>
-                    <Label htmlFor="preview_link">Link xem trước (tùy chọn)</Label>
+                    <Label htmlFor="preview_link">Link xem trước thay thế (tùy chọn)</Label>
                     <Input
                       id="preview_link"
                       value={formData.preview_link}
                       onChange={(e) => handleInputChange('preview_link', e.target.value)}
-                      placeholder="https://... (link xem trước an toàn cho khách hàng)"
+                      placeholder="https://... (nếu muốn dùng link xem trước khác thay cho Google Drive)"
                     />
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Nếu để trống, hệ thống sẽ dùng link Google Drive ở trên để hiển thị xem trước
+                    </p>
                   </div>
+                </CardContent>
+              </Card>
 
-                  <Separator />
-
+              {/* Section 2: Link tải xuống */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Link className="h-5 w-5" />
+                    Link tải xuống sản phẩm
+                  </CardTitle>
+                  <CardDescription>
+                    Link khách hàng nhận được sau khi thanh toán hoặc bấm tải miễn phí. Có thể là link affiliate, quảng cáo, hoặc bất kỳ link nào.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
                   <div className="bg-primary/5 p-4 rounded-lg border border-dashed border-primary/30">
                     <Label htmlFor="download_only_link" className="text-base font-medium">
-                      Link tải trực tiếp (tùy chọn - cho EXE, Video, ZIP...)
+                      Link tải xuống
                     </Label>
                     <Input
                       id="download_only_link"
                       value={formData.download_only_link}
                       onChange={(e) => handleInputChange('download_only_link', e.target.value)}
-                      placeholder="https://... (link bất kỳ)"
+                      placeholder="https://... (Google Drive, affiliate, quảng cáo, link bất kỳ)"
                       className="mt-2"
                     />
-                    <p className="text-sm text-muted-foreground mt-2">
-                      Dùng khi muốn hiển thị riêng nút "Tải xuống" cho file không xem trước được
-                    </p>
+                    <div className="mt-2 space-y-1">
+                      <p className="text-sm text-muted-foreground">
+                        ✅ Hỗ trợ: <span className="font-medium">Google Drive, OneDrive, Dropbox, Mediafire, link affiliate, link quảng cáo...</span>
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        💡 Link sẽ mở trong tab mới khi khách bấm nút tải xuống
+                      </p>
+                    </div>
                   </div>
-                  
+
                   <div className="bg-amber-500/10 p-3 rounded-lg border border-amber-500/30">
                     <p className="text-sm text-amber-700 dark:text-amber-400">
-                      ⚠️ <strong>Lưu ý:</strong> Bạn cần nhập ít nhất một link ở trên. Link sẽ mở trong tab mới sau khi khách thanh toán.
+                      ⚠️ <strong>Lưu ý:</strong> Nếu không nhập link tải riêng, hệ thống sẽ dùng link Google Drive xem trước ở trên làm link tải.
                     </p>
                   </div>
+                </CardContent>
+              </Card>
 
-                  <Separator />
-
+              {/* Section 3: Hình ảnh */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Globe className="h-5 w-5" />
+                    Hình ảnh sản phẩm
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
                   <div>
-                    <Label>Hình ảnh sản phẩm</Label>
+                    <Label>URL hình ảnh</Label>
                     <div className="flex gap-2">
                       <Input
                         value={currentImage}

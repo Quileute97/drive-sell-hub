@@ -7,7 +7,7 @@ import { Star, Download, Eye, ShoppingCart, ArrowRight } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useCart } from "@/hooks/useCart";
 import { FreeDownloadButton } from "@/components/FreeDownloadButton";
-import { getGoogleDriveThumbnail } from "@/lib/utils";
+import { ProductThumbnail } from "@/components/ProductThumbnail";
 import { getProductDownloadUrl, isFreeProduct } from "@/lib/productAccess";
 
 interface RelatedProduct {
@@ -130,14 +130,18 @@ export const RelatedProducts = ({ categoryId, currentProductId, categorySlug }: 
             <Link to={`/product/${product.slug}`} className="block" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
               <Card className="hover:shadow-lg transition-all duration-300 hover:-translate-y-1 flex flex-col h-full">
                 <div className="relative overflow-hidden rounded-t-lg aspect-[4/3] bg-muted">
-                  <img
-                    src={getGoogleDriveThumbnail(product.google_drive_link, 600)}
-                    alt={`Hình ảnh sản phẩm ${product.title}`}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                    loading="lazy"
-                  />
+                  <div className="w-full h-full group-hover:scale-105 transition-transform duration-300">
+                    <ProductThumbnail
+                      googleDriveLink={product.google_drive_link}
+                      thumbnailUrl={null}
+                      fileFormat={product.file_format}
+                      title={product.title}
+                      size={600}
+                      loading="lazy"
+                    />
+                  </div>
                   {product.original_price > product.price && (
-                    <Badge className="absolute top-3 left-3 bg-destructive text-destructive-foreground shadow-md">
+                    <Badge className="absolute top-3 left-3 bg-destructive text-destructive-foreground shadow-md z-10">
                       -{Math.round(((product.original_price - product.price) / product.original_price) * 100)}%
                     </Badge>
                   )}

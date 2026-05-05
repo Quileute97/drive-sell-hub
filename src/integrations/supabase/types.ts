@@ -53,6 +53,13 @@ export type Database = {
             referencedRelation: "profiles"
             referencedColumns: ["user_id"]
           },
+          {
+            foreignKeyName: "analytics_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["user_id"]
+          },
         ]
       }
       bank_accounts: {
@@ -125,6 +132,13 @@ export type Database = {
             columns: ["product_id"]
             isOneToOne: false
             referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cart_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "public_products"
             referencedColumns: ["id"]
           },
         ]
@@ -283,6 +297,13 @@ export type Database = {
             referencedColumns: ["user_id"]
           },
           {
+            foreignKeyName: "orders_buyer_id_fkey"
+            columns: ["buyer_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
             foreignKeyName: "orders_product_id_fkey"
             columns: ["product_id"]
             isOneToOne: false
@@ -290,10 +311,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "orders_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "public_products"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "orders_seller_id_fkey"
             columns: ["seller_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "orders_seller_id_fkey"
+            columns: ["seller_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
             referencedColumns: ["user_id"]
           },
         ]
@@ -454,6 +489,13 @@ export type Database = {
             referencedRelation: "profiles"
             referencedColumns: ["user_id"]
           },
+          {
+            foreignKeyName: "products_seller_id_fkey"
+            columns: ["seller_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["user_id"]
+          },
         ]
       }
       profiles: {
@@ -553,6 +595,13 @@ export type Database = {
             referencedColumns: ["user_id"]
           },
           {
+            foreignKeyName: "reviews_buyer_id_fkey"
+            columns: ["buyer_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
             foreignKeyName: "reviews_order_id_fkey"
             columns: ["order_id"]
             isOneToOne: false
@@ -564,6 +613,13 @@ export type Database = {
             columns: ["product_id"]
             isOneToOne: false
             referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reviews_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "public_products"
             referencedColumns: ["id"]
           },
         ]
@@ -668,10 +724,158 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      public_products: {
+        Row: {
+          category_id: string | null
+          created_at: string | null
+          description: string | null
+          download_count: number | null
+          download_only_link: string | null
+          file_format: string | null
+          file_size: string | null
+          id: string | null
+          images: string[] | null
+          is_featured: boolean | null
+          meta_description: string | null
+          meta_title: string | null
+          original_price: number | null
+          preview_link: string | null
+          price: number | null
+          rating_average: number | null
+          rating_count: number | null
+          read_only: boolean | null
+          seller_id: string | null
+          short_description: string | null
+          slug: string | null
+          status: Database["public"]["Enums"]["product_status"] | null
+          tags: string[] | null
+          thumbnail_url: string | null
+          title: string | null
+          updated_at: string | null
+          view_count: number | null
+        }
+        Insert: {
+          category_id?: string | null
+          created_at?: string | null
+          description?: string | null
+          download_count?: number | null
+          download_only_link?: string | null
+          file_format?: string | null
+          file_size?: string | null
+          id?: string | null
+          images?: string[] | null
+          is_featured?: boolean | null
+          meta_description?: string | null
+          meta_title?: string | null
+          original_price?: number | null
+          preview_link?: string | null
+          price?: number | null
+          rating_average?: number | null
+          rating_count?: number | null
+          read_only?: boolean | null
+          seller_id?: string | null
+          short_description?: string | null
+          slug?: string | null
+          status?: Database["public"]["Enums"]["product_status"] | null
+          tags?: string[] | null
+          thumbnail_url?: string | null
+          title?: string | null
+          updated_at?: string | null
+          view_count?: number | null
+        }
+        Update: {
+          category_id?: string | null
+          created_at?: string | null
+          description?: string | null
+          download_count?: number | null
+          download_only_link?: string | null
+          file_format?: string | null
+          file_size?: string | null
+          id?: string | null
+          images?: string[] | null
+          is_featured?: boolean | null
+          meta_description?: string | null
+          meta_title?: string | null
+          original_price?: number | null
+          preview_link?: string | null
+          price?: number | null
+          rating_average?: number | null
+          rating_count?: number | null
+          read_only?: boolean | null
+          seller_id?: string | null
+          short_description?: string | null
+          slug?: string | null
+          status?: Database["public"]["Enums"]["product_status"] | null
+          tags?: string[] | null
+          thumbnail_url?: string | null
+          title?: string | null
+          updated_at?: string | null
+          view_count?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "products_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "products_seller_id_fkey"
+            columns: ["seller_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "products_seller_id_fkey"
+            columns: ["seller_id"]
+            isOneToOne: false
+            referencedRelation: "public_profiles"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
+      public_profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string | null
+          full_name: string | null
+          id: string | null
+          is_verified: boolean | null
+          role: Database["public"]["Enums"]["user_role"] | null
+          total_sales: number | null
+          user_id: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string | null
+          full_name?: string | null
+          id?: string | null
+          is_verified?: boolean | null
+          role?: Database["public"]["Enums"]["user_role"] | null
+          total_sales?: number | null
+          user_id?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string | null
+          full_name?: string | null
+          id?: string | null
+          is_verified?: boolean | null
+          role?: Database["public"]["Enums"]["user_role"] | null
+          total_sales?: number | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       generate_order_number: { Args: never; Returns: string }
+      get_product_download_link: {
+        Args: { _product_id: string }
+        Returns: string
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

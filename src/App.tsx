@@ -5,9 +5,11 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { AffiliateTracker } from "@/components/AffiliateTracker";
 
 // Eagerly load homepage (LCP critical path)
 import Index from "./pages/Index";
+const Affiliate = lazy(() => import("./pages/Affiliate"));
 
 // Lazy load all other routes (reduces initial JS bundle ~60%)
 const Auth = lazy(() => import("./pages/Auth"));
@@ -48,6 +50,7 @@ const App = () => (
         <Toaster />
         <Sonner />
         <BrowserRouter>
+          <AffiliateTracker />
           <Suspense fallback={<PageLoader />}>
             <Routes>
               <Route path="/" element={<Index />} />
@@ -72,6 +75,7 @@ const App = () => (
               <Route path="/sellers" element={<Sellers />} />
               <Route path="/withdrawal" element={<Withdrawal />} />
               <Route path="/tag/:tag" element={<TagProducts />} />
+              <Route path="/affiliate" element={<Affiliate />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>

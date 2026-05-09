@@ -84,7 +84,7 @@ serve(async (req) => {
     const requestBody = await req.json();
     console.log("Request body received:", requestBody);
     
-    const { cartItems } = requestBody;
+    const { cartItems, affiliateCode } = requestBody;
 
     if (!cartItems || cartItems.length === 0) {
       throw new Error("Cart is empty");
@@ -196,6 +196,20 @@ serve(async (req) => {
       throw new Error("Product seller information not found");
     }
 
+    // Resolve affiliate code to id (skip if buyer is the affiliate themselves)
+    let affiliateId: string | null = null;
+    if (affiliateCode) {
+      const { data: affRow } = await supabaseClient
+        .from("affiliates")
+        .select("id, user_id")
+        .eq("code", affiliateCode)
+        .eq("status", "active")
+        .maybeSingle();
+      if (affRow && affRow.user_id !== user.id) {
+        affiliateId = affRow.id;
+      }
+    }
+
     // Create order in database
     const { data: order, error: orderError } = await supabaseClient
       .from("orders")
@@ -212,7 +226,8 @@ serve(async (req) => {
         status: 'pending',
         order_number: `ORD${orderCode}`,
         buyer_email: user.email,
-        buyer_name: profile.full_name
+        buyer_name: profile.full_name,
+        affiliate_id: affiliateId
       })
       .select()
       .single();

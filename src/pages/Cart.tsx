@@ -66,9 +66,13 @@ export const Cart = () => {
     try {
       console.log('Calling payos-create-payment function...');
       
+      const { getAffiliateRefCode } = await import("@/lib/affiliate");
+      const affiliateCode = getAffiliateRefCode();
+
       const { data, error } = await supabase.functions.invoke('payos-create-payment', {
         body: {
-          cartItems: cartItems
+          cartItems: cartItems,
+          affiliateCode
         }
       });
 

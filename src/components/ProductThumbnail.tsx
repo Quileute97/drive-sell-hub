@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import { getGoogleDriveThumbnail, getGoogleDriveThumbnailFallback } from "@/lib/utils";
+import { getGoogleDriveThumbnailSources } from "@/lib/utils";
 import { 
   FileText, 
   FileSpreadsheet, 

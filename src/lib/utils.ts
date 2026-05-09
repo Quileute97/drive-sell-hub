@@ -40,3 +40,25 @@ export function getGoogleDriveThumbnailFallback(driveUrl: string | null, size: n
   if (!fileId) return null;
   return `https://lh3.googleusercontent.com/d/${fileId}=w${size}`;
 }
+
+/**
+ * Get all possible Google Drive thumbnail URLs in priority order.
+ * Office formats (DOCX, PPTX, XLSX) often need multiple fallbacks because
+ * Google generates previews lazily and serves them from different hosts.
+ */
+export function getGoogleDriveThumbnailSources(driveUrl: string | null, size: number = 400): string[] {
+  const fileId = extractGoogleDriveFileId(driveUrl);
+  if (!fileId) return [];
+  return [
+    // 1. Standard Drive thumbnail API (works best for PDF)
+    `https://drive.google.com/thumbnail?id=${fileId}&sz=w${size}`,
+    // 2. Drive thumbnail with explicit width+height (often works better for PPTX/DOCX)
+    `https://drive.google.com/thumbnail?id=${fileId}&sz=w${size}-h${Math.round(size * 0.75)}`,
+    // 3. lh3 host with width param
+    `https://lh3.googleusercontent.com/d/${fileId}=w${size}`,
+    // 4. lh3 host with size param (different rendering pipeline)
+    `https://lh3.googleusercontent.com/d/${fileId}=s${size}`,
+    // 5. lh3 host with width+height
+    `https://lh3.googleusercontent.com/d/${fileId}=w${size}-h${Math.round(size * 0.75)}`,
+  ];
+}

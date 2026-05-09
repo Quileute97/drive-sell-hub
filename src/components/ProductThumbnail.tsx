@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import { getGoogleDriveThumbnail, getGoogleDriveThumbnailFallback } from "@/lib/utils";
+import { getGoogleDriveThumbnailSources } from "@/lib/utils";
 import { 
   FileText, 
   FileSpreadsheet, 
@@ -122,17 +122,9 @@ export const ProductThumbnail = ({
   const canPreview = canShowPreview(fileFormat);
   
   if (canPreview && googleDriveLink) {
-    // 2. Google Drive thumbnail API
-    const primaryThumb = getGoogleDriveThumbnail(googleDriveLink, size);
-    if (primaryThumb !== "/placeholder.svg") {
-      imageSources.push(primaryThumb);
-    }
-    
-    // 3. lh3.googleusercontent.com fallback (more reliable for DOCX, PPTX, XLSX)
-    const fallbackThumb = getGoogleDriveThumbnailFallback(googleDriveLink, size);
-    if (fallbackThumb) {
-      imageSources.push(fallbackThumb);
-    }
+    // Add all Google Drive thumbnail variants as fallbacks
+    // Office formats (DOCX, PPTX, XLSX) often require trying multiple URL patterns
+    imageSources.push(...getGoogleDriveThumbnailSources(googleDriveLink, size));
   }
   
   // Deduplicate

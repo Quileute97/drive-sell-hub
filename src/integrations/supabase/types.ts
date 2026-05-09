@@ -666,6 +666,86 @@ export type Database = {
         }
         Relationships: []
       }
+      webtoon_chapters: {
+        Row: {
+          created_at: string
+          drive_file_id: string
+          id: string
+          number: number
+          title: string
+          webtoon_id: string
+        }
+        Insert: {
+          created_at?: string
+          drive_file_id: string
+          id?: string
+          number: number
+          title?: string
+          webtoon_id: string
+        }
+        Update: {
+          created_at?: string
+          drive_file_id?: string
+          id?: string
+          number?: number
+          title?: string
+          webtoon_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "webtoon_chapters_webtoon_id_fkey"
+            columns: ["webtoon_id"]
+            isOneToOne: false
+            referencedRelation: "webtoons"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      webtoons: {
+        Row: {
+          author: string
+          cover_url: string | null
+          created_at: string
+          created_by: string | null
+          description: string
+          genres: string[]
+          id: string
+          is_featured: boolean
+          slug: string
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          author?: string
+          cover_url?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string
+          genres?: string[]
+          id?: string
+          is_featured?: boolean
+          slug: string
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          author?: string
+          cover_url?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string
+          genres?: string[]
+          id?: string
+          is_featured?: boolean
+          slug?: string
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       withdrawal_requests: {
         Row: {
           admin_notes: string | null

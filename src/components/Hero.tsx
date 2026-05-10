@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Play, Download, Users } from "lucide-react";
+import { ArrowRight, Play, Download, Users, Share2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Link } from "react-router-dom";
 import heroImage from "@/assets/hero-digital-marketplace.jpg";
@@ -79,6 +79,13 @@ export const Hero = () => {
                 <Link to="/how-it-works">
                   <Play className="mr-2 h-5 w-5" />
                   Xem hướng dẫn
+                </Link>
+              </Button>
+
+              <Button variant="secondary" size="lg" className="group" asChild>
+                <Link to="/affiliate">
+                  <Share2 className="mr-2 h-5 w-5" />
+                  Affiliate 5%
                 </Link>
               </Button>
             </div>

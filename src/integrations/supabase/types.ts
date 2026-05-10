@@ -65,6 +65,7 @@ export type Database = {
           order_amount: number
           order_id: string
           product_id: string | null
+          source: string
           status: string
           updated_at: string
         }
@@ -77,6 +78,7 @@ export type Database = {
           order_amount: number
           order_id: string
           product_id?: string | null
+          source?: string
           status?: string
           updated_at?: string
         }
@@ -89,6 +91,7 @@ export type Database = {
           order_amount?: number
           order_id?: string
           product_id?: string | null
+          source?: string
           status?: string
           updated_at?: string
         }
@@ -365,6 +368,7 @@ export type Database = {
           quantity: number
           seller_amount: number
           seller_id: string
+          seller_referrer_affiliate_id: string | null
           status: Database["public"]["Enums"]["order_status"] | null
           total_amount: number
           unit_price: number
@@ -389,6 +393,7 @@ export type Database = {
           quantity?: number
           seller_amount: number
           seller_id: string
+          seller_referrer_affiliate_id?: string | null
           status?: Database["public"]["Enums"]["order_status"] | null
           total_amount: number
           unit_price: number
@@ -413,6 +418,7 @@ export type Database = {
           quantity?: number
           seller_amount?: number
           seller_id?: string
+          seller_referrer_affiliate_id?: string | null
           status?: Database["public"]["Enums"]["order_status"] | null
           total_amount?: number
           unit_price?: number
@@ -638,6 +644,7 @@ export type Database = {
           id: string
           is_verified: boolean | null
           phone: string | null
+          referred_by_affiliate_id: string | null
           role: Database["public"]["Enums"]["user_role"]
           seller_commission_rate: number | null
           total_purchases: number | null
@@ -654,6 +661,7 @@ export type Database = {
           id?: string
           is_verified?: boolean | null
           phone?: string | null
+          referred_by_affiliate_id?: string | null
           role?: Database["public"]["Enums"]["user_role"]
           seller_commission_rate?: number | null
           total_purchases?: number | null
@@ -670,6 +678,7 @@ export type Database = {
           id?: string
           is_verified?: boolean | null
           phone?: string | null
+          referred_by_affiliate_id?: string | null
           role?: Database["public"]["Enums"]["user_role"]
           seller_commission_rate?: number | null
           total_purchases?: number | null
@@ -1104,6 +1113,7 @@ export type Database = {
         Returns: string
       }
       resolve_affiliate_code: { Args: { _code: string }; Returns: string }
+      set_seller_referrer: { Args: { _code: string }; Returns: string }
     }
     Enums: {
       app_role: "admin" | "seller" | "buyer"

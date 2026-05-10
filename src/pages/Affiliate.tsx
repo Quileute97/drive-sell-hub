@@ -60,7 +60,7 @@ export default function Affiliate() {
       if (data) {
         const { data: cs } = await supabase
           .from("affiliate_commissions")
-          .select("id, order_amount, commission_amount, status, created_at")
+          .select("id, order_amount, commission_amount, status, source, created_at")
           .eq("affiliate_id", (data as any).id)
           .order("created_at", { ascending: false })
           .limit(50);

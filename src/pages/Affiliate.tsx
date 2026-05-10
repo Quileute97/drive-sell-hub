@@ -26,6 +26,7 @@ interface Commission {
   order_amount: number;
   commission_amount: number;
   status: string;
+  source?: string;
   created_at: string;
 }
 

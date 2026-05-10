@@ -10,6 +10,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useUserRole } from '@/hooks/useUserRole';
 import { SEO } from '@/components/SEO';
+import { getAffiliateRefCode } from '@/lib/affiliate';
 
 const SellerAuth = () => {
   const [email, setEmail] = useState('');

@@ -198,7 +198,12 @@ export default function Affiliate() {
                     {commissions.map((c) => (
                       <div key={c.id} className="flex items-center justify-between border-b pb-2 text-sm">
                         <div>
-                          <div className="font-medium">{Number(c.commission_amount).toLocaleString()}đ</div>
+                          <div className="font-medium flex items-center gap-2">
+                            {Number(c.commission_amount).toLocaleString()}đ
+                            <span className="text-[10px] px-1.5 py-0.5 rounded bg-primary/10 text-primary">
+                              {c.source === 'seller_referral' ? 'Giới thiệu seller' : 'Đơn hàng'}
+                            </span>
+                          </div>
                           <div className="text-muted-foreground text-xs">
                             Đơn {Number(c.order_amount).toLocaleString()}đ · {new Date(c.created_at).toLocaleString("vi-VN")}
                           </div>

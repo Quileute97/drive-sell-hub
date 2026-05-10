@@ -118,14 +118,15 @@ export default function Affiliate() {
       <Header />
       <main className="flex-1 container mx-auto px-4 py-8 max-w-5xl">
         <h1 className="text-3xl font-bold mb-2">Chương trình Affiliate</h1>
-        <p className="text-muted-foreground mb-6">Nhận 5% hoa hồng cho mỗi đơn hàng phát sinh từ link giới thiệu của bạn (cookie 30 ngày).</p>
+        <p className="text-muted-foreground mb-6">Nhận 5% hoa hồng cho mỗi đơn hàng từ link giới thiệu, và 5% doanh thu từ các seller bạn giới thiệu tham gia (cookie 30 ngày).</p>
 
         {!affiliate ? (
           <Card>
             <CardHeader><CardTitle>Đăng ký làm Affiliate</CardTitle></CardHeader>
             <CardContent className="space-y-4">
               <ul className="text-sm text-muted-foreground list-disc pl-5 space-y-1">
-                <li>Hoa hồng cố định 5% trên giá trị đơn hàng</li>
+                <li>5% hoa hồng trên mỗi đơn hàng phát sinh từ link giới thiệu</li>
+                <li>5% doanh thu của seller mới đăng ký qua link của bạn (lifetime)</li>
                 <li>Cookie tracking 30 ngày</li>
                 <li>Rút tiền qua hệ thống ngân hàng đã có</li>
               </ul>

@@ -88,7 +88,7 @@ export default function Affiliate() {
     toast({ title: "Đăng ký thành công", description: `Mã affiliate: ${code}` });
   };
 
-  const baseUrl = window.location.origin;
+  const baseUrl = "https://salemylink.com";
   const refLink = affiliate ? `${baseUrl}/?ref=${affiliate.code}` : "";
   const customLink =
     affiliate && productUrl

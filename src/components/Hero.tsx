@@ -81,6 +81,13 @@ export const Hero = () => {
                   Xem hướng dẫn
                 </Link>
               </Button>
+
+              <Button variant="secondary" size="lg" className="group" asChild>
+                <Link to="/affiliate">
+                  <Share2 className="mr-2 h-5 w-5" />
+                  Affiliate 5%
+                </Link>
+              </Button>
             </div>
 
             {/* Stats */}

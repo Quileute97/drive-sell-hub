@@ -82,9 +82,13 @@ export const Hero = () => {
                 </Link>
               </Button>
 
-              <Button variant="secondary" size="lg" className="group" asChild>
+              <Button
+                size="lg"
+                asChild
+                className="group gradient-accent text-accent-foreground shadow-[var(--shadow-accent)] transition-smooth hover:scale-105 hover:shadow-[0_15px_50px_-10px_hsl(var(--accent)/0.55)] hover:brightness-110"
+              >
                 <Link to="/affiliate">
-                  <Share2 className="mr-2 h-5 w-5" />
+                  <Share2 className="mr-2 h-5 w-5 transition-transform group-hover:rotate-12" />
                   Affiliate 5%
                 </Link>
               </Button>

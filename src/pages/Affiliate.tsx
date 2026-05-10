@@ -26,6 +26,7 @@ interface Commission {
   order_amount: number;
   commission_amount: number;
   status: string;
+  source?: string;
   created_at: string;
 }
 
@@ -59,7 +60,7 @@ export default function Affiliate() {
       if (data) {
         const { data: cs } = await supabase
           .from("affiliate_commissions")
-          .select("id, order_amount, commission_amount, status, created_at")
+          .select("id, order_amount, commission_amount, status, source, created_at")
           .eq("affiliate_id", (data as any).id)
           .order("created_at", { ascending: false })
           .limit(50);
@@ -117,14 +118,15 @@ export default function Affiliate() {
       <Header />
       <main className="flex-1 container mx-auto px-4 py-8 max-w-5xl">
         <h1 className="text-3xl font-bold mb-2">Chương trình Affiliate</h1>
-        <p className="text-muted-foreground mb-6">Nhận 5% hoa hồng cho mỗi đơn hàng phát sinh từ link giới thiệu của bạn (cookie 30 ngày).</p>
+        <p className="text-muted-foreground mb-6">Nhận 5% hoa hồng cho mỗi đơn hàng từ link giới thiệu, và 5% doanh thu từ các seller bạn giới thiệu tham gia (cookie 30 ngày).</p>
 
         {!affiliate ? (
           <Card>
             <CardHeader><CardTitle>Đăng ký làm Affiliate</CardTitle></CardHeader>
             <CardContent className="space-y-4">
               <ul className="text-sm text-muted-foreground list-disc pl-5 space-y-1">
-                <li>Hoa hồng cố định 5% trên giá trị đơn hàng</li>
+                <li>5% hoa hồng trên mỗi đơn hàng phát sinh từ link giới thiệu</li>
+                <li>5% doanh thu của seller mới đăng ký qua link của bạn (lifetime)</li>
                 <li>Cookie tracking 30 ngày</li>
                 <li>Rút tiền qua hệ thống ngân hàng đã có</li>
               </ul>
@@ -196,7 +198,12 @@ export default function Affiliate() {
                     {commissions.map((c) => (
                       <div key={c.id} className="flex items-center justify-between border-b pb-2 text-sm">
                         <div>
-                          <div className="font-medium">{Number(c.commission_amount).toLocaleString()}đ</div>
+                          <div className="font-medium flex items-center gap-2">
+                            {Number(c.commission_amount).toLocaleString()}đ
+                            <span className="text-[10px] px-1.5 py-0.5 rounded bg-primary/10 text-primary">
+                              {c.source === 'seller_referral' ? 'Giới thiệu seller' : 'Đơn hàng'}
+                            </span>
+                          </div>
                           <div className="text-muted-foreground text-xs">
                             Đơn {Number(c.order_amount).toLocaleString()}đ · {new Date(c.created_at).toLocaleString("vi-VN")}
                           </div>

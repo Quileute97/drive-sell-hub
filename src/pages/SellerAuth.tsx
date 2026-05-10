@@ -10,6 +10,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useUserRole } from '@/hooks/useUserRole';
 import { SEO } from '@/components/SEO';
+import { getAffiliateRefCode } from '@/lib/affiliate';
 
 const SellerAuth = () => {
   const [email, setEmail] = useState('');
@@ -63,6 +64,12 @@ const SellerAuth = () => {
         .from('profiles')
         .update({ role: 'seller' })
         .eq('user_id', user.id);
+
+      // Attribute seller signup to referring affiliate (cookie 30 days)
+      const refCode = getAffiliateRefCode();
+      if (refCode) {
+        await supabase.rpc('set_seller_referrer', { _code: refCode });
+      }
 
       toast({
         title: "Đăng ký thành công",

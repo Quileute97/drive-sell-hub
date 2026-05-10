@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Play, Download, Users } from "lucide-react";
+import { ArrowRight, Play, Download, Users, Share2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Link } from "react-router-dom";
 import heroImage from "@/assets/hero-digital-marketplace.jpg";

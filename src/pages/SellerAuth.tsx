@@ -65,6 +65,12 @@ const SellerAuth = () => {
         .update({ role: 'seller' })
         .eq('user_id', user.id);
 
+      // Attribute seller signup to referring affiliate (cookie 30 days)
+      const refCode = getAffiliateRefCode();
+      if (refCode) {
+        await supabase.rpc('set_seller_referrer', { _code: refCode });
+      }
+
       toast({
         title: "Đăng ký thành công",
         description: "Bạn đã trở thành người bán! Đang chuyển đến trang quản lý..."

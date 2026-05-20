@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Star, Eye, Download, ChevronRight } from "lucide-react";
 import { getGoogleDriveThumbnail } from "@/lib/utils";
+import { ProductThumbnail } from "@/components/ProductThumbnail";
 import { SEO } from "@/components/SEO";
 import { RelatedCategories } from "@/components/RelatedCategories";
 
@@ -362,15 +363,18 @@ export default function Category() {
                     className="cursor-pointer hover:shadow-xl transition-all duration-300 hover:-translate-y-2 h-full"
                     onClick={() => navigate(`/product/${product.slug}`)}
                   >
-                    <div className="aspect-square overflow-hidden rounded-t-lg">
-                      <img
-                        src={getGoogleDriveThumbnail(product.google_drive_link) || product.thumbnail_url || "/placeholder.svg"}
-                        alt={`${product.title} - ${category.name}`}
-                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-                        loading={index < 4 ? "eager" : "lazy"}
-                        width="400"
-                        height="400"
-                      />
+                    <div className="relative overflow-hidden rounded-t-lg aspect-[4/3] bg-muted">
+                      <div className="w-full h-full group-hover:scale-105 transition-transform duration-300">
+                        <ProductThumbnail
+                          googleDriveLink={product.google_drive_link}
+                          thumbnailUrl={product.thumbnail_url}
+                          fileFormat={product.file_format}
+                          title={product.title}
+                          size={600}
+                          loading={index < 4 ? "eager" : "lazy"}
+                          fetchPriority={index < 4 ? "high" : "auto"}
+                        />
+                      </div>
                     </div>
                     <CardContent className="p-4">
                       <h2 className="font-semibold mb-2 line-clamp-2 group-hover:text-primary transition-colors text-base">

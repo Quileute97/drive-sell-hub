@@ -27,6 +27,7 @@ interface ProductItem {
   original_price: number | null;
   thumbnail_url: string | null;
   google_drive_link: string;
+  file_format: string | null;
   rating_average: number;
   rating_count: number;
   download_count: number;

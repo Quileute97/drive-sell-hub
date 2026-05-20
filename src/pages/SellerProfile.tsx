@@ -9,6 +9,7 @@ import { Footer } from "@/components/Footer";
 import { SEO } from "@/components/SEO";
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { FollowButton } from "@/components/FollowButton";
+import { ProductThumbnail } from "@/components/ProductThumbnail";
 
 interface SellerInfo {
   user_id: string;

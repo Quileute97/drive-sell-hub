@@ -73,7 +73,7 @@ export default function SellerProfile() {
         .from('products')
         .select(`
           id, slug, title, short_description, price, original_price,
-          thumbnail_url, google_drive_link, rating_average, rating_count,
+          thumbnail_url, google_drive_link, file_format, rating_average, rating_count,
           download_count, view_count,
           categories(name, slug)
         `)

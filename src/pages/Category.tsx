@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Star, Eye, Download, ChevronRight } from "lucide-react";
 import { getGoogleDriveThumbnail } from "@/lib/utils";
+import { ProductThumbnail } from "@/components/ProductThumbnail";
 import { SEO } from "@/components/SEO";
 import { RelatedCategories } from "@/components/RelatedCategories";
 

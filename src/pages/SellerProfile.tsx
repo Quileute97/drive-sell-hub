@@ -337,11 +337,7 @@ export default function SellerProfile() {
             </Card>
           ) : (
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-              {products.map((product) => {
-                const thumbnailUrl = product.thumbnail_url || 
-                  (product.google_drive_link ? getGoogleDriveThumbnail(product.google_drive_link) : null) || 
-                  "/placeholder.svg";
-
+              {products.map((product, index) => {
                 return (
                   <Link 
                     key={product.id} 
@@ -349,15 +345,19 @@ export default function SellerProfile() {
                     className="group"
                   >
                     <Card className="overflow-hidden h-full transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
-                      <div className="aspect-[4/3] relative overflow-hidden bg-muted">
-                        <img
-                          src={thumbnailUrl}
-                          alt={product.title}
-                          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                          loading="lazy"
-                        />
+                      <div className="relative overflow-hidden rounded-t-lg aspect-[4/3] bg-muted">
+                        <div className="w-full h-full transition-transform duration-300 group-hover:scale-105">
+                          <ProductThumbnail
+                            googleDriveLink={product.google_drive_link}
+                            thumbnailUrl={product.thumbnail_url}
+                            fileFormat={product.file_format}
+                            title={product.title}
+                            size={600}
+                            loading={index < 4 ? "eager" : "lazy"}
+                          />
+                        </div>
                         {product.original_price && product.original_price > product.price && (
-                          <Badge className="absolute top-2 left-2 bg-red-500">
+                          <Badge className="absolute top-2 left-2 bg-destructive text-destructive-foreground z-10">
                             -{Math.round(((product.original_price - product.price) / product.original_price) * 100)}%
                           </Badge>
                         )}

@@ -30,6 +30,7 @@ import {
   Globe,
   Trash2
 } from 'lucide-react';
+import { TagInput } from '@/components/TagInput';
 import {
   AlertDialog,
   AlertDialogAction,

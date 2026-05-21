@@ -30,6 +30,7 @@ import {
   Eye,
   Globe
 } from 'lucide-react';
+import { TagInput } from '@/components/TagInput';
 
 interface AddProductFormProps {
   onClose: () => void;

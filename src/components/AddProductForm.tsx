@@ -570,40 +570,12 @@ const AddProductForm = ({ onClose, onSuccess }: AddProductFormProps) => {
 
                   <div>
                     <Label>Tags</Label>
-                    <div className="flex gap-2">
-                      <Input
-                        value={currentTag}
-                        onChange={(e) => setCurrentTag(e.target.value)}
-                        placeholder="Nhập tag và ấn thêm"
-                        onKeyPress={(e) => {
-                          if (e.key === 'Enter') {
-                            e.preventDefault();
-                            addTag();
-                          }
-                        }}
-                      />
-                      <Button type="button" variant="outline" onClick={addTag}>
-                        <Tags className="h-4 w-4" />
-                      </Button>
-                    </div>
-                    {tags.length > 0 && (
-                      <div className="flex flex-wrap gap-2 mt-2">
-                        {tags.map((tag) => (
-                          <Badge key={tag} variant="secondary" className="gap-1">
-                            {tag}
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="sm"
-                              className="h-auto p-0 hover:bg-transparent"
-                              onClick={() => removeTag(tag)}
-                            >
-                              <X className="h-3 w-3" />
-                            </Button>
-                          </Badge>
-                        ))}
-                      </div>
-                    )}
+                    <TagInput
+                      value={tags}
+                      onChange={setTags}
+                      categoryId={formData.category_id || null}
+                      title={formData.title}
+                    />
                   </div>
                 </CardContent>
               </Card>

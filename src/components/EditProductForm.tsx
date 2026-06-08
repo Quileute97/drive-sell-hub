@@ -101,6 +101,19 @@ const EditProductForm = ({ product, onClose, onSuccess, onDelete }: EditProductF
   const [isFreeEnabled, setIsFreeEnabled] = useState(isFreeProduct(product.price));
   const [isReadOnly, setIsReadOnly] = useState((product as any).read_only ?? false);
 
+  // download_only_link is no longer returned by public product reads; fetch via secure RPC.
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase.rpc('get_seller_download_only_link', { _product_id: product.id });
+      if (!cancelled && typeof data === 'string') {
+        setFormData(prev => ({ ...prev, download_only_link: data }));
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [product.id]);
+
+
   const { data: categories = [] } = useQuery({
     queryKey: ['categories'],
     queryFn: async () => {

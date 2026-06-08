@@ -1091,7 +1091,37 @@ export type Database = {
     }
     Functions: {
       generate_order_number: { Args: never; Returns: string }
+      get_my_profile: {
+        Args: never
+        Returns: {
+          address: string | null
+          avatar_url: string | null
+          created_at: string
+          email: string
+          full_name: string | null
+          id: string
+          is_verified: boolean | null
+          phone: string | null
+          referred_by_affiliate_id: string | null
+          role: Database["public"]["Enums"]["user_role"]
+          seller_commission_rate: number | null
+          total_purchases: number | null
+          total_sales: number | null
+          updated_at: string
+          user_id: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "profiles"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
       get_product_download_link: {
+        Args: { _product_id: string }
+        Returns: string
+      }
+      get_seller_download_only_link: {
         Args: { _product_id: string }
         Returns: string
       }

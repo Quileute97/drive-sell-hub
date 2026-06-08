@@ -825,7 +825,7 @@ export default function ProductDetail() {
               <div 
                 className="prose prose-sm sm:prose-base max-w-none prose-headings:font-bold prose-a:text-primary prose-img:rounded-lg prose-img:mx-auto prose-headings:scroll-mt-20" 
                 itemProp="description"
-                dangerouslySetInnerHTML={{ __html: injectHeadingIds(product.description || '') }}
+                dangerouslySetInnerHTML={{ __html: sanitizeProductHtml(injectHeadingIds(product.description || '')) }}
               />
             </CardContent>
           </Card>

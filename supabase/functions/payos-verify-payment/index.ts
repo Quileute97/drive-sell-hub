@@ -45,10 +45,14 @@ serve(async (req) => {
       const webhookData = await req.json();
       console.log("PayOS Webhook received:", webhookData);
 
-      // Verify signature if present
+      // Verify signature — REQUIRED. Reject if missing or invalid.
       const signature = req.headers.get('x-payos-signature');
-      if (signature && !verifyPayOSSignature(webhookData.data, signature)) {
-        throw new Error("Invalid webhook signature");
+      if (!signature || !verifyPayOSSignature(webhookData.data, signature)) {
+        console.warn("Rejected PayOS webhook: missing/invalid signature");
+        return new Response(JSON.stringify({ error: "Unauthorized" }), {
+          status: 401,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
       }
 
       const { orderCode, code, desc, success } = webhookData.data || webhookData;

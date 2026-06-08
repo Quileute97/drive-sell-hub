@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { normalizeSlug, generateSlugFromTitle } from '@/lib/slugUtils';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -88,7 +88,7 @@ const EditProductForm = ({ product, onClose, onSuccess, onDelete }: EditProductF
     short_description: product.short_description || '',
     google_drive_link: product.google_drive_link || '',
     preview_link: product.preview_link || '',
-    download_only_link: product.download_only_link || '',
+    download_only_link: '',
     category_id: product.category_id,
     price: product.price.toString(),
     original_price: product.original_price?.toString() || '',

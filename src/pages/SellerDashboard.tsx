@@ -83,17 +83,9 @@ const SellerDashboard = () => {
     queryKey: ['seller-orders', user?.id],
     queryFn: async () => {
       if (!user?.id) return [];
-      const { data, error } = await supabase
-        .from('orders')
-        .select(`
-          *,
-          products(title, price)
-        `)
-        .eq('seller_id', user.id)
-        .order('created_at', { ascending: false });
-      
+      const { data, error } = await (supabase as any).rpc('get_seller_orders');
       if (error) throw error;
-      return data;
+      return data || [];
     },
     enabled: !!user?.id
   });

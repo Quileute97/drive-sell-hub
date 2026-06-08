@@ -1125,6 +1125,44 @@ export type Database = {
         Args: { _product_id: string }
         Returns: string
       }
+      get_seller_order_amounts: {
+        Args: never
+        Returns: {
+          seller_amount: number
+          status: Database["public"]["Enums"]["order_status"]
+        }[]
+      }
+      get_seller_orders: {
+        Args: never
+        Returns: {
+          affiliate_id: string
+          buyer_id: string
+          buyer_name: string
+          commission_amount: number
+          commission_rate: number
+          created_at: string
+          download_count: number
+          download_expires_at: string
+          download_link: string
+          id: string
+          max_downloads: number
+          notes: string
+          order_number: string
+          product_id: string
+          product_price: number
+          product_slug: string
+          product_thumbnail: string
+          product_title: string
+          quantity: number
+          seller_amount: number
+          seller_id: string
+          seller_referrer_affiliate_id: string
+          status: Database["public"]["Enums"]["order_status"]
+          total_amount: number
+          unit_price: number
+          updated_at: string
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

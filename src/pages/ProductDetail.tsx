@@ -19,6 +19,29 @@ import { FreeDownloadButton } from "@/components/FreeDownloadButton";
 
 import { TableOfContents, injectHeadingIds } from "@/components/TableOfContents";
 import { getProductDownloadUrl, isFreeProduct, getGoogleDrivePreviewUrl } from "@/lib/productAccess";
+import DOMPurify from "dompurify";
+
+// Sanitize seller-provided HTML. Allow common rich-text + trusted iframes only.
+const sanitizeProductHtml = (html: string) => {
+  if (typeof window === "undefined") return "";
+  // Restrict iframes to trusted embed domains (YouTube, Google Drive/Docs, Vimeo).
+  DOMPurify.removeAllHooks();
+  DOMPurify.addHook("uponSanitizeElement", (node, data) => {
+    if (data.tagName === "iframe") {
+      const src = (node as HTMLIFrameElement).getAttribute("src") || "";
+      const allowed = /^https:\/\/(www\.)?(youtube\.com|youtube-nocookie\.com|youtu\.be|drive\.google\.com|docs\.google\.com|player\.vimeo\.com)\//i;
+      if (!allowed.test(src)) {
+        node.parentNode?.removeChild(node);
+      }
+    }
+  });
+  return DOMPurify.sanitize(html, {
+    ADD_TAGS: ["iframe"],
+    ADD_ATTR: ["allow", "allowfullscreen", "frameborder", "scrolling", "target"],
+    FORBID_TAGS: ["script", "style", "object", "embed", "form", "input", "button"],
+    FORBID_ATTR: ["onerror", "onload", "onclick", "onmouseover", "onfocus", "onblur", "onchange", "onsubmit"],
+  });
+};
 
 interface ProductDetail {
   id: string;
@@ -802,7 +825,7 @@ export default function ProductDetail() {
               <div 
                 className="prose prose-sm sm:prose-base max-w-none prose-headings:font-bold prose-a:text-primary prose-img:rounded-lg prose-img:mx-auto prose-headings:scroll-mt-20" 
                 itemProp="description"
-                dangerouslySetInnerHTML={{ __html: injectHeadingIds(product.description || '') }}
+                dangerouslySetInnerHTML={{ __html: sanitizeProductHtml(injectHeadingIds(product.description || '')) }}
               />
             </CardContent>
           </Card>

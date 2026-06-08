@@ -45,10 +45,14 @@ serve(async (req) => {
       const webhookData = await req.json();
       console.log("PayOS Webhook received:", webhookData);
 
-      // Verify signature if present
+      // Verify signature — REQUIRED. Reject if missing or invalid.
       const signature = req.headers.get('x-payos-signature');
-      if (signature && !verifyPayOSSignature(webhookData.data, signature)) {
-        throw new Error("Invalid webhook signature");
+      if (!signature || !verifyPayOSSignature(webhookData.data, signature)) {
+        console.warn("Rejected PayOS webhook: missing/invalid signature");
+        return new Response(JSON.stringify({ error: "Unauthorized" }), {
+          status: 401,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
       }
 
       const { orderCode, code, desc, success } = webhookData.data || webhookData;
@@ -96,12 +100,39 @@ serve(async (req) => {
       });
     }
 
-    // Handle GET request to check payment status
+    // Handle GET request to check payment status — require authenticated buyer who owns the order
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    const token = authHeader.replace('Bearer ', '');
+    const { data: userData } = await supabaseClient.auth.getUser(token);
+    const user = userData.user;
+    if (!user) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     const url = new URL(req.url);
     const orderCode = url.searchParams.get('orderCode');
-    
+
     if (!orderCode) {
       throw new Error("Order code is required");
+    }
+
+    // Verify the order code maps to a payment whose order belongs to this user
+    const { data: ownership } = await supabaseClient
+      .from("payments")
+      .select("order_id, orders!inner(buyer_id)")
+      .eq("payment_id", orderCode)
+      .single();
+    if (!ownership || (ownership as any).orders?.buyer_id !== user.id) {
+      return new Response(JSON.stringify({ error: "Forbidden" }), {
+        status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
     // Get payment status from PayOS

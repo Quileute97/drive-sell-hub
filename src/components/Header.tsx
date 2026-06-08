@@ -49,6 +49,7 @@ export const Header = () => {
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
               <input
                 type="text"
+                aria-label="Tìm kiếm sản phẩm digital"
                 placeholder="Tìm kiếm sản phẩm digital..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}

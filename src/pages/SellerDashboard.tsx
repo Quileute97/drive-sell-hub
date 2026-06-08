@@ -448,7 +448,7 @@ const SellerDashboard = () => {
                       <div>
                         <h3 className="font-semibold">#{order.order_number}</h3>
                         <p className="text-muted-foreground text-sm">
-                          {order.products?.title}
+                          {order.product_title}
                         </p>
                         <div className="flex items-center gap-4 mt-2">
                           <span>Khách hàng: {order.buyer_name}</span>

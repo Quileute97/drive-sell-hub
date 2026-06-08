@@ -127,10 +127,7 @@ export default function Withdrawal() {
     queryFn: async () => {
       if (!user?.id) return { available: 0, pending: 0, total: 0 };
       
-      const { data: orders, error } = await supabase
-        .from('orders')
-        .select('seller_amount, status')
-        .eq('seller_id', user.id);
+      const { data: orders, error } = await (supabase as any).rpc('get_seller_order_amounts');
 
       if (error) throw error;
 

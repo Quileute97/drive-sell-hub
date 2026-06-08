@@ -1,0 +1,23 @@
+# Salemylink.com
+
+> Marketplace sản phẩm số Việt Nam: mua bán ebook, tài liệu, khóa học, mẫu thiết kế… giao hàng tự động qua Google Drive, thanh toán PayOS, hoa hồng người bán chỉ 5%.
+
+Salemylink.com kết nối người mua và người bán sản phẩm digital tại Việt Nam. Người bán đăng sản phẩm với link Google Drive (preview hoặc download-only); người mua thanh toán bằng PayOS và nhận link tải tự động ngay sau khi giao dịch hoàn tất.
+
+## Pages
+
+- [Trang chủ](/): Sản phẩm nổi bật, danh mục và người bán mới.
+- [Tìm kiếm sản phẩm](/search): Tìm kiếm theo từ khoá, danh mục, tag.
+- [Danh mục](/category/ebook): Ví dụ — duyệt sản phẩm theo danh mục (ebook, khoá học, mẫu thiết kế…).
+- [Sản phẩm chi tiết](/product/sample-product): Trang chi tiết một sản phẩm (mô tả, đánh giá, link Google Drive).
+- [Tag](/tag/seo): Duyệt sản phẩm theo thẻ (tag).
+- [Người bán](/sellers): Danh sách người bán đã xác thực.
+- [Affiliate](/affiliate): Chương trình cộng tác viên — kiếm hoa hồng 5%.
+- [Giới thiệu](/about): Về Salemylink.com.
+- [Cách hoạt động](/how-it-works): Hướng dẫn mua hàng.
+- [Hướng dẫn người bán](/seller-guide): Cách trở thành seller và đăng sản phẩm.
+
+## Optional
+
+- [Chính sách bảo mật](/privacy-policy): Privacy policy.
+- [Điều khoản dịch vụ](/terms-of-service): Terms of service.

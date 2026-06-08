@@ -711,7 +711,7 @@ export default function ProductDetail() {
             {/* Product Details */}
             <Card>
               <CardContent className="p-4">
-                <h3 className="font-semibold mb-3">Thông tin sản phẩm</h3>
+                <h2 className="text-lg font-semibold mb-3">Thông tin sản phẩm</h2>
                 <div className="space-y-2 text-sm">
                   {product.file_size && (
                     <div className="flex justify-between">
@@ -757,7 +757,7 @@ export default function ProductDetail() {
             {/* Tags */}
             {product.tags && product.tags.length > 0 && (
               <div>
-                <h3 className="font-semibold mb-3">Tags</h3>
+                <h2 className="text-lg font-semibold mb-3">Tags</h2>
                 <div className="flex flex-wrap gap-2">
                   {product.tags.map((tag, index) => (
                     <Link key={index} to={`/tag/${encodeURIComponent(tag)}`}>

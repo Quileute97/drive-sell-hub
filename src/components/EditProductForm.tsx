@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { normalizeSlug, generateSlugFromTitle } from '@/lib/slugUtils';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -88,7 +88,7 @@ const EditProductForm = ({ product, onClose, onSuccess, onDelete }: EditProductF
     short_description: product.short_description || '',
     google_drive_link: product.google_drive_link || '',
     preview_link: product.preview_link || '',
-    download_only_link: product.download_only_link || '',
+    download_only_link: '',
     category_id: product.category_id,
     price: product.price.toString(),
     original_price: product.original_price?.toString() || '',
@@ -100,6 +100,19 @@ const EditProductForm = ({ product, onClose, onSuccess, onDelete }: EditProductF
   });
   const [isFreeEnabled, setIsFreeEnabled] = useState(isFreeProduct(product.price));
   const [isReadOnly, setIsReadOnly] = useState((product as any).read_only ?? false);
+
+  // download_only_link is no longer returned by public product reads; fetch via secure RPC.
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase.rpc('get_seller_download_only_link', { _product_id: product.id });
+      if (!cancelled && typeof data === 'string') {
+        setFormData(prev => ({ ...prev, download_only_link: data }));
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [product.id]);
+
 
   const { data: categories = [] } = useQuery({
     queryKey: ['categories'],

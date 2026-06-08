@@ -81,18 +81,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const fetchProfile = async (userId: string) => {
     try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('user_id', userId)
-        .single();
+      // Use SECURITY DEFINER RPC so the row owner can read sensitive columns
+      // (email, phone, address, etc.) that are revoked from the authenticated role.
+      const { data, error } = await supabase.rpc('get_my_profile');
 
       if (error) {
         console.error('Error fetching profile:', error);
         return;
       }
 
-      setProfile(data);
+      const row = Array.isArray(data) ? data[0] : data;
+      if (row) setProfile(row as any);
     } catch (error) {
       console.error('Error fetching profile:', error);
     }

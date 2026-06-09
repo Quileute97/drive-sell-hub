@@ -156,23 +156,24 @@ export default function Affiliate() {
               <CardHeader><CardTitle>Link giới thiệu</CardTitle></CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <label className="text-sm font-medium">Mã của bạn</label>
+                  <label htmlFor="affiliate-code" className="text-sm font-medium">Mã của bạn</label>
                   <div className="flex gap-2 mt-1">
-                    <Input value={affiliate.code} readOnly />
-                    <Button variant="outline" size="icon" onClick={() => copy(affiliate.code)}><Copy className="h-4 w-4" /></Button>
+                    <Input id="affiliate-code" value={affiliate.code} readOnly />
+                    <Button variant="outline" size="icon" aria-label="Sao chép mã affiliate" onClick={() => copy(affiliate.code)}><Copy className="h-4 w-4" /></Button>
                   </div>
                 </div>
                 <div>
-                  <label className="text-sm font-medium">Link trang chủ</label>
+                  <label htmlFor="affiliate-ref-link" className="text-sm font-medium">Link trang chủ</label>
                   <div className="flex gap-2 mt-1">
-                    <Input value={refLink} readOnly />
-                    <Button variant="outline" size="icon" onClick={() => copy(refLink)}><Copy className="h-4 w-4" /></Button>
+                    <Input id="affiliate-ref-link" value={refLink} readOnly />
+                    <Button variant="outline" size="icon" aria-label="Sao chép link giới thiệu" onClick={() => copy(refLink)}><Copy className="h-4 w-4" /></Button>
                   </div>
                 </div>
                 <div>
-                  <label className="text-sm font-medium">Tạo link cho sản phẩm cụ thể</label>
+                  <label htmlFor="affiliate-product-url" className="text-sm font-medium">Tạo link cho sản phẩm cụ thể</label>
                   <div className="flex gap-2 mt-1">
                     <Input
+                      id="affiliate-product-url"
                       placeholder="Dán URL sản phẩm vào đây"
                       value={productUrl}
                       onChange={(e) => setProductUrl(e.target.value)}
@@ -180,8 +181,8 @@ export default function Affiliate() {
                   </div>
                   {customLink && (
                     <div className="flex gap-2 mt-2">
-                      <Input value={customLink} readOnly />
-                      <Button variant="outline" size="icon" onClick={() => copy(customLink)}><Copy className="h-4 w-4" /></Button>
+                      <Input id="affiliate-custom-link" value={customLink} readOnly />
+                      <Button variant="outline" size="icon" aria-label="Sao chép link sản phẩm" onClick={() => copy(customLink)}><Copy className="h-4 w-4" /></Button>
                     </div>
                   )}
                 </div>

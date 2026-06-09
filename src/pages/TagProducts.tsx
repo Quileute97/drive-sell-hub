@@ -266,7 +266,7 @@ export default function TagProducts() {
                       <span className="text-xs text-muted-foreground line-through ml-2">{formatPrice(product.original_price)}</span>
                     )}
                   </div>
-                  <Button size="sm" variant="outline" onClick={() => addToCart(product.id)}>
+                  <Button size="sm" variant="outline" aria-label="Thêm vào giỏ hàng" onClick={() => addToCart(product.id)}>
                     <ShoppingCart className="h-4 w-4" />
                   </Button>
                 </CardFooter>

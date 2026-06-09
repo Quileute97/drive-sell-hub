@@ -156,10 +156,10 @@ export default function Affiliate() {
               <CardHeader><CardTitle>Link giới thiệu</CardTitle></CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <label className="text-sm font-medium">Mã của bạn</label>
+                  <label htmlFor="affiliate-code" className="text-sm font-medium">Mã của bạn</label>
                   <div className="flex gap-2 mt-1">
-                    <Input value={affiliate.code} readOnly />
-                    <Button variant="outline" size="icon" onClick={() => copy(affiliate.code)}><Copy className="h-4 w-4" /></Button>
+                    <Input id="affiliate-code" value={affiliate.code} readOnly />
+                    <Button variant="outline" size="icon" aria-label="Sao chép mã affiliate" onClick={() => copy(affiliate.code)}><Copy className="h-4 w-4" /></Button>
                   </div>
                 </div>
                 <div>

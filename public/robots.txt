@@ -1,4 +1,4 @@
-# Robots.txt for Salemylink.com
+# Robots.txt for drive-sell-hub.lovable.app
 # Nền tảng bán sản phẩm Digital hàng đầu Việt Nam
 
 # Allow all search engines to crawl
@@ -40,7 +40,7 @@ User-agent: LinkedInBot
 Allow: /
 
 # Sitemap location (served from your domain via proxy)
-Sitemap: https://salemylink.com/sitemap.xml
+Sitemap: https://drive-sell-hub.lovable.app/sitemap.xml
 
 # IndexNow verification
-# Key file: https://salemylink.com/04307b9c3b8f10fb48243d7ba088c9c5.txt
+# Key file: https://drive-sell-hub.lovable.app/04307b9c3b8f10fb48243d7ba088c9c5.txt

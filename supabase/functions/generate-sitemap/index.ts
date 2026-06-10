@@ -7,7 +7,7 @@ const corsHeaders = {
   'Cache-Control': 'public, max-age=3600, s-maxage=3600'
 }
 
-const SITE_URL = 'https://salemylink.com'
+const SITE_URL = 'https://drive-sell-hub.lovable.app'
 
 // Helper to escape XML special characters
 function escapeXml(str: string): string {

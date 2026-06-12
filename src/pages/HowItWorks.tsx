@@ -17,17 +17,17 @@ export default function HowItWorks() {
   return (
     <div className="min-h-screen">
       <SEO 
-        title="Cách thức hoạt động - Hướng dẫn mua bán sản phẩm digital"
-        description="Tìm hiểu cách mua và bán sản phẩm digital trên Salemylink.com. Quy trình đơn giản chỉ với 4 bước cho người bán và 3 bước cho người mua."
+        title="Cách thức hoạt động - Mua bán sản phẩm digital"
+        description="Tìm hiểu cách mua và bán sản phẩm digital trên Salemylink. Quy trình đơn giản chỉ với 4 bước cho người bán và 3 bước cho người mua."
         keywords="hướng dẫn bán hàng, cách thức hoạt động, mua bán digital, quy trình thanh toán, bán tài liệu online"
-        url="https://salemylink.com/how-it-works"
+        url="https://drive-sell-hub.lovable.app/how-it-works"
         structuredData={[
           {
             "@context": "https://schema.org",
             "@type": "Article",
-            "headline": "Cách thức hoạt động - Hướng dẫn mua bán sản phẩm digital",
-            "description": "Tìm hiểu cách mua và bán sản phẩm digital trên Salemylink.com. Quy trình đơn giản chỉ với 4 bước cho người bán và 3 bước cho người mua.",
-            "image": "https://salemylink.com/og-image.png",
+            "headline": "Cách thức hoạt động - Mua bán sản phẩm digital",
+            "description": "Tìm hiểu cách mua và bán sản phẩm digital trên Salemylink. Quy trình đơn giản chỉ với 4 bước cho người bán và 3 bước cho người mua.",
+            "image": "https://drive-sell-hub.lovable.app/og-image.png",
             "datePublished": "2024-01-01T00:00:00+07:00",
             "dateModified": "2025-01-01T00:00:00+07:00",
             "author": {

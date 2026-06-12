@@ -18,17 +18,17 @@ export default function SellerGuide() {
   return (
     <div className="min-h-screen">
       <SEO 
-        title="Hướng dẫn bán hàng - Bí quyết thành công với sản phẩm digital"
-        description="Hướng dẫn chi tiết cách bán sản phẩm digital trên Salemylink.com. Từ chuẩn bị sản phẩm, upload lên Drive, tạo listing đến tăng doanh số hiệu quả."
+        title="Hướng dẫn bán hàng sản phẩm digital"
+        description="Hướng dẫn chi tiết cách bán sản phẩm digital trên Salemylink. Từ chuẩn bị sản phẩm, upload lên Drive, tạo listing đến tăng doanh số hiệu quả."
         keywords="hướng dẫn seller, bán hàng online, kiếm tiền digital, bán ebook, bán tài liệu, google drive, tăng doanh số"
-        url="https://salemylink.com/seller-guide"
+        url="https://drive-sell-hub.lovable.app/seller-guide"
         structuredData={[
           {
             "@context": "https://schema.org",
             "@type": "Article",
-            "headline": "Hướng dẫn bán hàng - Bí quyết thành công với sản phẩm digital",
-            "description": "Hướng dẫn chi tiết cách bán sản phẩm digital trên Salemylink.com. Từ chuẩn bị sản phẩm, upload lên Drive, tạo listing đến tăng doanh số hiệu quả.",
-            "image": "https://salemylink.com/og-image.png",
+            "headline": "Hướng dẫn bán hàng sản phẩm digital",
+            "description": "Hướng dẫn chi tiết cách bán sản phẩm digital trên Salemylink. Từ chuẩn bị sản phẩm, upload lên Drive, tạo listing đến tăng doanh số hiệu quả.",
+            "image": "https://drive-sell-hub.lovable.app/og-image.png",
             "datePublished": "2024-01-01T00:00:00+07:00",
             "dateModified": "2025-01-01T00:00:00+07:00",
             "author": {

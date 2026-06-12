@@ -8,17 +8,17 @@ export default function About() {
   return (
     <div className="min-h-screen">
       <SEO 
-        title="Về Salemylink.com - Nền tảng bán sản phẩm digital hàng đầu"
-        description="Tìm hiểu về Salemylink.com - nền tảng thương mại điện tử hàng đầu cho sản phẩm digital tại Việt Nam. Sứ mệnh, tầm nhìn và giá trị cốt lõi của chúng tôi."
+        title="Về Salemylink - Nền tảng sản phẩm digital"
+        description="Tìm hiểu về Salemylink - nền tảng thương mại điện tử hàng đầu cho sản phẩm digital tại Việt Nam. Sứ mệnh, tầm nhìn và giá trị cốt lõi của chúng tôi."
         keywords="về salemylink, giới thiệu, sứ mệnh, tầm nhìn, nền tảng digital, thương mại điện tử việt nam"
-        url="https://salemylink.com/about"
+        url="https://drive-sell-hub.lovable.app/about"
         structuredData={[
           {
             "@context": "https://schema.org",
             "@type": "Article",
-            "headline": "Về Salemylink.com - Nền tảng bán sản phẩm digital hàng đầu Việt Nam",
-            "description": "Tìm hiểu về Salemylink.com - nền tảng thương mại điện tử hàng đầu cho sản phẩm digital tại Việt Nam. Sứ mệnh, tầm nhìn và giá trị cốt lõi của chúng tôi.",
-            "image": "https://salemylink.com/og-image.png",
+            "headline": "Về Salemylink - Nền tảng sản phẩm digital",
+            "description": "Tìm hiểu về Salemylink - nền tảng thương mại điện tử hàng đầu cho sản phẩm digital tại Việt Nam. Sứ mệnh, tầm nhìn và giá trị cốt lõi của chúng tôi.",
+            "image": "https://drive-sell-hub.lovable.app/og-image.png",
             "datePublished": "2024-01-01T00:00:00+07:00",
             "dateModified": "2025-01-01T00:00:00+07:00",
             "author": {

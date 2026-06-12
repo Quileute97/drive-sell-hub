@@ -34,19 +34,19 @@ export default function SellerGuide() {
             "author": {
               "@type": "Organization",
               "name": "Salemylink.com",
-              "url": "https://salemylink.com"
+              "url": "https://drive-sell-hub.lovable.app"
             },
             "publisher": {
               "@type": "Organization",
               "name": "Salemylink.com",
               "logo": {
                 "@type": "ImageObject",
-                "url": "https://salemylink.com/logo.png"
+                "url": "https://drive-sell-hub.lovable.app/logo.png"
               }
             },
             "mainEntityOfPage": {
               "@type": "WebPage",
-              "@id": "https://salemylink.com/seller-guide"
+              "@id": "https://drive-sell-hub.lovable.app/seller-guide"
             },
             "articleSection": "Hướng dẫn",
             "wordCount": 1500
@@ -59,13 +59,13 @@ export default function SellerGuide() {
                 "@type": "ListItem",
                 "position": 1,
                 "name": "Trang chủ",
-                "item": "https://salemylink.com"
+                "item": "https://drive-sell-hub.lovable.app"
               },
               {
                 "@type": "ListItem",
                 "position": 2,
                 "name": "Hướng dẫn bán hàng",
-                "item": "https://salemylink.com/seller-guide"
+                "item": "https://drive-sell-hub.lovable.app/seller-guide"
               }
             ]
           }

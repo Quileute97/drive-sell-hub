@@ -24,27 +24,27 @@ export default function About() {
             "author": {
               "@type": "Organization",
               "name": "Salemylink.com",
-              "url": "https://salemylink.com"
+              "url": "https://drive-sell-hub.lovable.app"
             },
             "publisher": {
               "@type": "Organization",
               "name": "Salemylink.com",
               "logo": {
                 "@type": "ImageObject",
-                "url": "https://salemylink.com/logo.png"
+                "url": "https://drive-sell-hub.lovable.app/logo.png"
               }
             },
             "mainEntityOfPage": {
               "@type": "WebPage",
-              "@id": "https://salemylink.com/about"
+              "@id": "https://drive-sell-hub.lovable.app/about"
             }
           },
           {
             "@context": "https://schema.org",
             "@type": "Organization",
             "name": "Salemylink.com",
-            "url": "https://salemylink.com",
-            "logo": "https://salemylink.com/logo.png",
+            "url": "https://drive-sell-hub.lovable.app",
+            "logo": "https://drive-sell-hub.lovable.app/logo.png",
             "description": "Nền tảng thương mại điện tử hàng đầu cho sản phẩm digital tại Việt Nam",
             "foundingDate": "2024",
             "sameAs": [],
@@ -62,13 +62,13 @@ export default function About() {
                 "@type": "ListItem",
                 "position": 1,
                 "name": "Trang chủ",
-                "item": "https://salemylink.com"
+                "item": "https://drive-sell-hub.lovable.app"
               },
               {
                 "@type": "ListItem",
                 "position": 2,
                 "name": "Về chúng tôi",
-                "item": "https://salemylink.com/about"
+                "item": "https://drive-sell-hub.lovable.app/about"
               }
             ]
           }

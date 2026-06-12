@@ -33,19 +33,19 @@ export default function HowItWorks() {
             "author": {
               "@type": "Organization",
               "name": "Salemylink.com",
-              "url": "https://salemylink.com"
+              "url": "https://drive-sell-hub.lovable.app"
             },
             "publisher": {
               "@type": "Organization",
               "name": "Salemylink.com",
               "logo": {
                 "@type": "ImageObject",
-                "url": "https://salemylink.com/logo.png"
+                "url": "https://drive-sell-hub.lovable.app/logo.png"
               }
             },
             "mainEntityOfPage": {
               "@type": "WebPage",
-              "@id": "https://salemylink.com/how-it-works"
+              "@id": "https://drive-sell-hub.lovable.app/how-it-works"
             }
           },
           {
@@ -89,13 +89,13 @@ export default function HowItWorks() {
                 "@type": "ListItem",
                 "position": 1,
                 "name": "Trang chủ",
-                "item": "https://salemylink.com"
+                "item": "https://drive-sell-hub.lovable.app"
               },
               {
                 "@type": "ListItem",
                 "position": 2,
                 "name": "Cách thức hoạt động",
-                "item": "https://salemylink.com/how-it-works"
+                "item": "https://drive-sell-hub.lovable.app/how-it-works"
               }
             ]
           }

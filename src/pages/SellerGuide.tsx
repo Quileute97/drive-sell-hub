@@ -18,35 +18,35 @@ export default function SellerGuide() {
   return (
     <div className="min-h-screen">
       <SEO 
-        title="Hướng dẫn bán hàng - Bí quyết thành công với sản phẩm digital"
-        description="Hướng dẫn chi tiết cách bán sản phẩm digital trên Salemylink.com. Từ chuẩn bị sản phẩm, upload lên Drive, tạo listing đến tăng doanh số hiệu quả."
+        title="Hướng dẫn bán hàng sản phẩm digital"
+        description="Hướng dẫn chi tiết cách bán sản phẩm digital trên Salemylink. Từ chuẩn bị sản phẩm, upload lên Drive, tạo listing đến tăng doanh số hiệu quả."
         keywords="hướng dẫn seller, bán hàng online, kiếm tiền digital, bán ebook, bán tài liệu, google drive, tăng doanh số"
-        url="https://salemylink.com/seller-guide"
+        url="https://drive-sell-hub.lovable.app/seller-guide"
         structuredData={[
           {
             "@context": "https://schema.org",
             "@type": "Article",
-            "headline": "Hướng dẫn bán hàng - Bí quyết thành công với sản phẩm digital",
-            "description": "Hướng dẫn chi tiết cách bán sản phẩm digital trên Salemylink.com. Từ chuẩn bị sản phẩm, upload lên Drive, tạo listing đến tăng doanh số hiệu quả.",
-            "image": "https://salemylink.com/og-image.png",
+            "headline": "Hướng dẫn bán hàng sản phẩm digital",
+            "description": "Hướng dẫn chi tiết cách bán sản phẩm digital trên Salemylink. Từ chuẩn bị sản phẩm, upload lên Drive, tạo listing đến tăng doanh số hiệu quả.",
+            "image": "https://drive-sell-hub.lovable.app/og-image.png",
             "datePublished": "2024-01-01T00:00:00+07:00",
             "dateModified": "2025-01-01T00:00:00+07:00",
             "author": {
               "@type": "Organization",
               "name": "Salemylink.com",
-              "url": "https://salemylink.com"
+              "url": "https://drive-sell-hub.lovable.app"
             },
             "publisher": {
               "@type": "Organization",
               "name": "Salemylink.com",
               "logo": {
                 "@type": "ImageObject",
-                "url": "https://salemylink.com/logo.png"
+                "url": "https://drive-sell-hub.lovable.app/logo.png"
               }
             },
             "mainEntityOfPage": {
               "@type": "WebPage",
-              "@id": "https://salemylink.com/seller-guide"
+              "@id": "https://drive-sell-hub.lovable.app/seller-guide"
             },
             "articleSection": "Hướng dẫn",
             "wordCount": 1500
@@ -59,13 +59,13 @@ export default function SellerGuide() {
                 "@type": "ListItem",
                 "position": 1,
                 "name": "Trang chủ",
-                "item": "https://salemylink.com"
+                "item": "https://drive-sell-hub.lovable.app"
               },
               {
                 "@type": "ListItem",
                 "position": 2,
                 "name": "Hướng dẫn bán hàng",
-                "item": "https://salemylink.com/seller-guide"
+                "item": "https://drive-sell-hub.lovable.app/seller-guide"
               }
             ]
           }

@@ -10,20 +10,20 @@ export default function PrivacyPolicy() {
     {
       "@context": "https://schema.org",
       "@type": "WebPage",
-      "@id": "https://salemylink.com/privacy-policy",
-      "name": "Chính sách bảo mật - Salemylink.com",
-      "description": "Chính sách bảo mật của Salemylink.com. Tìm hiểu cách chúng tôi thu thập, sử dụng và bảo vệ thông tin cá nhân của bạn.",
-      "url": "https://salemylink.com/privacy-policy",
+      "@id": "https://drive-sell-hub.lovable.app/privacy-policy",
+      "name": "Chính sách bảo mật - Salemylink",
+      "description": "Chính sách bảo mật của Salemylink. Tìm hiểu cách chúng tôi bảo vệ thông tin cá nhân của bạn.",
+      "url": "https://drive-sell-hub.lovable.app/privacy-policy",
       "datePublished": "2024-01-01T00:00:00+07:00",
       "dateModified": `${lastUpdated}T00:00:00+07:00`,
       "inLanguage": "vi-VN",
       "isPartOf": {
-        "@id": "https://salemylink.com/#website"
+        "@id": "https://drive-sell-hub.lovable.app/#website"
       },
       "publisher": {
         "@type": "Organization",
-        "name": "Salemylink.com",
-        "url": "https://salemylink.com"
+        "name": "Salemylink",
+        "url": "https://drive-sell-hub.lovable.app"
       }
     },
     {
@@ -34,13 +34,13 @@ export default function PrivacyPolicy() {
           "@type": "ListItem",
           "position": 1,
           "name": "Trang chủ",
-          "item": "https://salemylink.com"
+          "item": "https://drive-sell-hub.lovable.app"
         },
         {
           "@type": "ListItem",
           "position": 2,
           "name": "Chính sách bảo mật",
-          "item": "https://salemylink.com/privacy-policy"
+          "item": "https://drive-sell-hub.lovable.app/privacy-policy"
         }
       ]
     }
@@ -50,9 +50,9 @@ export default function PrivacyPolicy() {
     <div className="min-h-screen">
       <SEO 
         title="Chính sách bảo mật"
-        description="Chính sách bảo mật của Salemylink.com. Tìm hiểu cách chúng tôi thu thập, sử dụng và bảo vệ thông tin cá nhân của bạn khi sử dụng nền tảng mua bán sản phẩm digital."
+        description="Chính sách bảo mật Salemylink. Tìm hiểu cách chúng tôi bảo vệ thông tin cá nhân của bạn."
         keywords="chính sách bảo mật, privacy policy, bảo mật thông tin, salemylink, quyền riêng tư, dữ liệu cá nhân"
-        url="https://salemylink.com/privacy-policy"
+        url="https://drive-sell-hub.lovable.app/privacy-policy"
         structuredData={structuredData}
       />
       <Header />

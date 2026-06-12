@@ -17,35 +17,35 @@ export default function HowItWorks() {
   return (
     <div className="min-h-screen">
       <SEO 
-        title="Cách thức hoạt động - Hướng dẫn mua bán sản phẩm digital"
-        description="Tìm hiểu cách mua và bán sản phẩm digital trên Salemylink.com. Quy trình đơn giản chỉ với 4 bước cho người bán và 3 bước cho người mua."
+        title="Cách thức hoạt động - Mua bán sản phẩm digital"
+        description="Tìm hiểu cách mua và bán sản phẩm digital trên Salemylink. Quy trình đơn giản chỉ với 4 bước cho người bán và 3 bước cho người mua."
         keywords="hướng dẫn bán hàng, cách thức hoạt động, mua bán digital, quy trình thanh toán, bán tài liệu online"
-        url="https://salemylink.com/how-it-works"
+        url="https://drive-sell-hub.lovable.app/how-it-works"
         structuredData={[
           {
             "@context": "https://schema.org",
             "@type": "Article",
-            "headline": "Cách thức hoạt động - Hướng dẫn mua bán sản phẩm digital",
-            "description": "Tìm hiểu cách mua và bán sản phẩm digital trên Salemylink.com. Quy trình đơn giản chỉ với 4 bước cho người bán và 3 bước cho người mua.",
-            "image": "https://salemylink.com/og-image.png",
+            "headline": "Cách thức hoạt động - Mua bán sản phẩm digital",
+            "description": "Tìm hiểu cách mua và bán sản phẩm digital trên Salemylink. Quy trình đơn giản chỉ với 4 bước cho người bán và 3 bước cho người mua.",
+            "image": "https://drive-sell-hub.lovable.app/og-image.png",
             "datePublished": "2024-01-01T00:00:00+07:00",
             "dateModified": "2025-01-01T00:00:00+07:00",
             "author": {
               "@type": "Organization",
               "name": "Salemylink.com",
-              "url": "https://salemylink.com"
+              "url": "https://drive-sell-hub.lovable.app"
             },
             "publisher": {
               "@type": "Organization",
               "name": "Salemylink.com",
               "logo": {
                 "@type": "ImageObject",
-                "url": "https://salemylink.com/logo.png"
+                "url": "https://drive-sell-hub.lovable.app/logo.png"
               }
             },
             "mainEntityOfPage": {
               "@type": "WebPage",
-              "@id": "https://salemylink.com/how-it-works"
+              "@id": "https://drive-sell-hub.lovable.app/how-it-works"
             }
           },
           {
@@ -89,13 +89,13 @@ export default function HowItWorks() {
                 "@type": "ListItem",
                 "position": 1,
                 "name": "Trang chủ",
-                "item": "https://salemylink.com"
+                "item": "https://drive-sell-hub.lovable.app"
               },
               {
                 "@type": "ListItem",
                 "position": 2,
                 "name": "Cách thức hoạt động",
-                "item": "https://salemylink.com/how-it-works"
+                "item": "https://drive-sell-hub.lovable.app/how-it-works"
               }
             ]
           }

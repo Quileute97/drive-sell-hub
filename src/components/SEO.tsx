@@ -23,11 +23,11 @@ interface SEOProps {
 }
 
 export const SEO = ({
-  title = "Salemylink.com - Nền tảng bán sản phẩm Digital hàng đầu Việt Nam",
-  description = "Kết nối người mua và người bán sản phẩm digital. Bán tài liệu, ebook, khóa học qua Google Drive một cách an toàn và hiệu quả. Hoa hồng chỉ 5%, thanh toán nhanh chóng.",
+  title = "Salemylink - Marketplace sản phẩm Digital Việt Nam",
+  description = "Marketplace sản phẩm digital Việt Nam. Mua bán ebook, tài liệu, khóa học qua Google Drive an toàn, nhanh chóng.",
   keywords = "bán sản phẩm digital, ebook việt nam, tài liệu digital, khóa học online, google drive, thương mại điện tử, marketplace digital, bán tài liệu online",
-  image = "https://salemylink.com/og-image.png",
-  url = "https://salemylink.com/",
+  image = "https://drive-sell-hub.lovable.app/og-image.png",
+  url = "https://drive-sell-hub.lovable.app/",
   type = "website",
   structuredData,
   noindex = false,
@@ -42,7 +42,7 @@ export const SEO = ({
   productRating,
   productReviewCount
 }: SEOProps) => {
-  const fullTitle = title.includes('Salemylink') ? title : `${title} | Salemylink.com`;
+  const fullTitle = title.includes('Salemylink') ? title : `${title} | Salemylink`;
   
   // Ensure description is within optimal length (150-160 chars)
   const optimizedDescription = description.length > 160 

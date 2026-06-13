@@ -77,7 +77,7 @@ export const Header = () => {
             {user ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="sm">
+                  <Button variant="outline" size="sm" aria-label="Tài khoản">
                     <User className="h-4 w-4" />
                     <span className="ml-2 hidden sm:inline">
                       {profile?.full_name || 'Tài khoản'}
@@ -125,7 +125,7 @@ export const Header = () => {
               </DropdownMenu>
             ) : (
               <Link to="/auth">
-                <Button variant="outline" size="sm">
+                <Button variant="outline" size="sm" aria-label="Đăng nhập">
                   <User className="h-4 w-4" />
                   <span className="ml-2 hidden sm:inline">Đăng nhập</span>
                 </Button>

@@ -146,11 +146,15 @@ export const ProductThumbnail = ({
   
   // Show icon fallback if no sources available or all failed
   if (uniqueSources.length === 0 || allFailed || !canPreview) {
-    // For Office documents, try Google Docs Viewer as an iframe preview
+    // For Office documents / Google Workspace files, try iframe preview
     const normalizedFormat = (fileFormat || '').toLowerCase().trim();
     const fileId = extractGoogleDriveFileId(googleDriveLink);
-    if (fileId && OFFICE_PREVIEW_FORMATS.includes(normalizedFormat)) {
-      const previewUrl = `https://drive.google.com/file/d/${fileId}/preview`;
+    const isWorkspace = googleDriveLink?.includes('/presentation/d/') || googleDriveLink?.includes('/document/d/') || googleDriveLink?.includes('/spreadsheets/d/');
+    if (fileId && (OFFICE_PREVIEW_FORMATS.includes(normalizedFormat) || isWorkspace)) {
+      let previewUrl = `https://drive.google.com/file/d/${fileId}/preview`;
+      if (googleDriveLink?.includes('/presentation/d/')) previewUrl = `https://docs.google.com/presentation/d/${fileId}/preview`;
+      else if (googleDriveLink?.includes('/document/d/')) previewUrl = `https://docs.google.com/document/d/${fileId}/preview`;
+      else if (googleDriveLink?.includes('/spreadsheets/d/')) previewUrl = `https://docs.google.com/spreadsheets/d/${fileId}/preview`;
       return (
         <div className={`w-full h-full relative overflow-hidden ${config.bgColor} ${className}`}>
           <iframe

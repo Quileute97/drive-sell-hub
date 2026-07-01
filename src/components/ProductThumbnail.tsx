@@ -1,5 +1,8 @@
 import { useState, useCallback } from "react";
-import { getGoogleDriveThumbnailSources } from "@/lib/utils";
+import { getGoogleDriveThumbnailSources, extractGoogleDriveFileId } from "@/lib/utils";
+
+// File formats that render well inside Google Docs Viewer iframe as fallback preview
+const OFFICE_PREVIEW_FORMATS = ['doc', 'docx', 'ppt', 'pptx', 'xls', 'xlsx'];
 import { 
   FileText, 
   FileSpreadsheet, 

@@ -146,6 +146,30 @@ export const ProductThumbnail = ({
   
   // Show icon fallback if no sources available or all failed
   if (uniqueSources.length === 0 || allFailed || !canPreview) {
+    // For Office documents, try Google Docs Viewer as an iframe preview
+    const normalizedFormat = (fileFormat || '').toLowerCase().trim();
+    const fileId = extractGoogleDriveFileId(googleDriveLink);
+    if (fileId && OFFICE_PREVIEW_FORMATS.includes(normalizedFormat)) {
+      const previewUrl = `https://drive.google.com/file/d/${fileId}/preview`;
+      return (
+        <div className={`w-full h-full relative overflow-hidden ${config.bgColor} ${className}`}>
+          <iframe
+            src={previewUrl}
+            title={`Xem trước ${title}`}
+            className="absolute inset-0 w-full h-full pointer-events-none border-0"
+            loading="lazy"
+            scrolling="no"
+            aria-hidden="true"
+          />
+          {/* Overlay to prevent interaction and keep click going to parent link */}
+          <div className="absolute inset-0 bg-transparent" />
+          <span className={`absolute bottom-2 right-2 text-xs font-semibold ${config.color} px-2 py-0.5 rounded-full bg-white/90 dark:bg-black/60 shadow-sm`}>
+            {config.label}
+          </span>
+        </div>
+      );
+    }
+
     return (
       <div className={`w-full h-full flex flex-col items-center justify-center ${config.bgColor} ${className}`}>
         <IconComponent className={`w-16 h-16 md:w-20 md:h-20 ${config.color} mb-3`} strokeWidth={1.5} />

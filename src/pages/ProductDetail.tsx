@@ -804,6 +804,20 @@ export default function ProductDetail() {
                   </Button>
                 </div>
               )}
+              {product.read_only && product.google_drive_link && (
+                <Button
+                  variant="secondary"
+                  size="lg"
+                  className="w-full"
+                  onClick={() => {
+                    const url = getGoogleDrivePreviewUrl(product.google_drive_link);
+                    if (url) window.open(url, "_blank", "noopener,noreferrer");
+                  }}
+                >
+                  <BookOpen className="h-4 w-4 mr-2" />
+                  Đọc trực tuyến (Read Only)
+                </Button>
+              )}
               <Button 
                 variant="outline" 
                 size="lg" 
@@ -814,6 +828,7 @@ export default function ProductDetail() {
                 Chia sẻ
               </Button>
             </div>
+
           </div>
         </div>
 

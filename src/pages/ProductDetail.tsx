@@ -3,7 +3,7 @@ import { useParams, useNavigate, Link } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Star, Download, Eye, ArrowLeft, Share2, ShoppingCart } from "lucide-react";
+import { Star, Download, Eye, ArrowLeft, Share2, ShoppingCart, BookOpen } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Header } from "@/components/Header";

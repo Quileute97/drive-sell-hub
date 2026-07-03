@@ -254,7 +254,7 @@ export const ProductList = () => {
                   </div>
                 </CardContent>
 
-                <CardFooter className="p-4 pt-0">
+                <CardFooter className="p-4 pt-0 flex-col gap-2">
                   {isFree ? (
                     <FreeDownloadButton
                       size="sm"
@@ -275,7 +275,23 @@ export const ProductList = () => {
                       Thêm vào giỏ
                     </Button>
                   )}
+                  {product.read_only && product.google_drive_link && (
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      className="w-full"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        const url = getGoogleDrivePreviewUrl(product.google_drive_link);
+                        if (url) window.open(url, "_blank", "noopener,noreferrer");
+                      }}
+                    >
+                      <BookOpen className="h-4 w-4 mr-2" />
+                      Đọc trực tuyến
+                    </Button>
+                  )}
                 </CardFooter>
+
                 </Card>;
             })}
           </div>

@@ -33,6 +33,7 @@ const SellerProfile = lazy(() => import("./pages/SellerProfile"));
 const Sellers = lazy(() => import("./pages/Sellers"));
 const Withdrawal = lazy(() => import("./pages/Withdrawal"));
 const TagProducts = lazy(() => import("./pages/TagProducts"));
+const ReadOnline = lazy(() => import("./pages/ReadOnline"));
 
 const queryClient = new QueryClient();
 

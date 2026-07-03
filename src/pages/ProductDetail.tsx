@@ -809,10 +809,7 @@ export default function ProductDetail() {
                   variant="secondary"
                   size="lg"
                   className="w-full"
-                  onClick={() => {
-                    const url = getGoogleDrivePreviewUrl(product.google_drive_link);
-                    if (url) window.open(url, "_blank", "noopener,noreferrer");
-                  }}
+                  onClick={() => navigate(`/read/${product.slug}`)}
                 >
                   <BookOpen className="h-4 w-4 mr-2" />
                   Đọc trực tuyến (Read Only)

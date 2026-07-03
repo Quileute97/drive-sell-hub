@@ -4,13 +4,13 @@ import { useNavigate, Link } from "react-router-dom";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Star, Download, Eye, ShoppingCart, ArrowRight } from "lucide-react";
+import { Star, Download, Eye, ShoppingCart, ArrowRight, BookOpen } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useCart } from "@/hooks/useCart";
 import { ProductThumbnail } from "@/components/ProductThumbnail";
 import { FreeDownloadButton } from "@/components/FreeDownloadButton";
-import { getProductDownloadUrl, isFreeProduct } from "@/lib/productAccess";
+import { getProductDownloadUrl, isFreeProduct, getGoogleDrivePreviewUrl } from "@/lib/productAccess";
 
 interface Product {
   id: string;

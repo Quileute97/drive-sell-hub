@@ -64,6 +64,7 @@ interface ProductDetail {
   category_id: string;
   google_drive_link: string;
   download_only_link: string | null;
+  read_only: boolean | null;
   meta_title: string | null;
   meta_description: string | null;
   created_at: string;

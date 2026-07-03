@@ -77,6 +77,7 @@ const App = () => (
               <Route path="/withdrawal" element={<Withdrawal />} />
               <Route path="/tag/:tag" element={<TagProducts />} />
               <Route path="/affiliate" element={<Affiliate />} />
+              <Route path="/read/:slug" element={<ReadOnline />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>

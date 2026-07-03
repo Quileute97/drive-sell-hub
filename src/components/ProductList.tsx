@@ -282,8 +282,7 @@ export const ProductList = () => {
                       className="w-full"
                       onClick={(e) => {
                         e.stopPropagation();
-                        const url = getGoogleDrivePreviewUrl(product.google_drive_link);
-                        if (url) window.open(url, "_blank", "noopener,noreferrer");
+                        navigate(`/read/${product.slug}`);
                       }}
                     >
                       <BookOpen className="h-4 w-4 mr-2" />

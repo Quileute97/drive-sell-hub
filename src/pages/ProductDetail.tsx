@@ -3,7 +3,7 @@ import { useParams, useNavigate, Link } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Star, Download, Eye, ArrowLeft, Share2, ShoppingCart } from "lucide-react";
+import { Star, Download, Eye, ArrowLeft, Share2, ShoppingCart, BookOpen } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Header } from "@/components/Header";
@@ -64,6 +64,7 @@ interface ProductDetail {
   category_id: string;
   google_drive_link: string;
   download_only_link: string | null;
+  read_only: boolean | null;
   meta_title: string | null;
   meta_description: string | null;
   created_at: string;
@@ -803,6 +804,20 @@ export default function ProductDetail() {
                   </Button>
                 </div>
               )}
+              {product.read_only && product.google_drive_link && (
+                <Button
+                  variant="secondary"
+                  size="lg"
+                  className="w-full"
+                  onClick={() => {
+                    const url = getGoogleDrivePreviewUrl(product.google_drive_link);
+                    if (url) window.open(url, "_blank", "noopener,noreferrer");
+                  }}
+                >
+                  <BookOpen className="h-4 w-4 mr-2" />
+                  Đọc trực tuyến (Read Only)
+                </Button>
+              )}
               <Button 
                 variant="outline" 
                 size="lg" 
@@ -813,6 +828,7 @@ export default function ProductDetail() {
                 Chia sẻ
               </Button>
             </div>
+
           </div>
         </div>
 

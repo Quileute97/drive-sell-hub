@@ -4,13 +4,13 @@ import { useNavigate, Link } from "react-router-dom";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Star, Download, Eye, ShoppingCart, ArrowRight } from "lucide-react";
+import { Star, Download, Eye, ShoppingCart, ArrowRight, BookOpen } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useCart } from "@/hooks/useCart";
 import { ProductThumbnail } from "@/components/ProductThumbnail";
 import { FreeDownloadButton } from "@/components/FreeDownloadButton";
-import { getProductDownloadUrl, isFreeProduct } from "@/lib/productAccess";
+import { getProductDownloadUrl, isFreeProduct, getGoogleDrivePreviewUrl } from "@/lib/productAccess";
 
 interface Product {
   id: string;
@@ -23,6 +23,7 @@ interface Product {
   thumbnail_url: string;
   google_drive_link: string;
   download_only_link?: string | null;
+  read_only?: boolean | null;
   download_count: number;
   view_count: number;
   rating_average: number;
@@ -253,7 +254,7 @@ export const ProductList = () => {
                   </div>
                 </CardContent>
 
-                <CardFooter className="p-4 pt-0">
+                <CardFooter className="p-4 pt-0 flex-col gap-2">
                   {isFree ? (
                     <FreeDownloadButton
                       size="sm"
@@ -274,7 +275,23 @@ export const ProductList = () => {
                       Thêm vào giỏ
                     </Button>
                   )}
+                  {product.read_only && product.google_drive_link && (
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      className="w-full"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        const url = getGoogleDrivePreviewUrl(product.google_drive_link);
+                        if (url) window.open(url, "_blank", "noopener,noreferrer");
+                      }}
+                    >
+                      <BookOpen className="h-4 w-4 mr-2" />
+                      Đọc trực tuyến
+                    </Button>
+                  )}
                 </CardFooter>
+
                 </Card>;
             })}
           </div>

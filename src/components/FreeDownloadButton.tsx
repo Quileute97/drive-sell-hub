@@ -10,6 +10,7 @@ interface FreeDownloadButtonProps extends Omit<ButtonProps, "onClick"> {
   countdownSeconds?: number;
   onMissingUrl?: () => void;
   onClick?: ButtonProps["onClick"];
+  hideOnComplete?: boolean;
 }
 
 export const FreeDownloadButton = ({
@@ -17,6 +18,7 @@ export const FreeDownloadButton = ({
   countdownSeconds = 60,
   onMissingUrl,
   onClick,
+  hideOnComplete,
   className,
   disabled,
   ...props
@@ -24,6 +26,10 @@ export const FreeDownloadButton = ({
   const [secondsLeft, setSecondsLeft] = useState<number | null>(null);
   const isCounting = secondsLeft !== null && secondsLeft > 0;
   const isUnlocked = secondsLeft === 0;
+
+  if (hideOnComplete && isUnlocked) {
+    return null;
+  }
 
   useEffect(() => {
     if (!isCounting) return;

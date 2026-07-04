@@ -778,6 +778,7 @@ export default function ProductDetail() {
                   size="lg"
                   className="w-full"
                   downloadUrl={freeDownloadUrl}
+                  hideOnComplete={!!product.read_only}
                   onMissingUrl={() => {
                     toast({
                       title: "Thiếu link tải",

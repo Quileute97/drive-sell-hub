@@ -210,7 +210,17 @@ export const RelatedProducts = ({ categoryId, currentProductId, categorySlug }: 
               </Card>
             </Link>
             <CardFooter className="p-4 pt-2">
-              {isFree ? (
+              {product.read_only ? (
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  className="w-full"
+                  onClick={() => navigate(`/read/${product.slug}`)}
+                >
+                  <BookOpen className="h-4 w-4 mr-2" />
+                  Đọc trực tuyến
+                </Button>
+              ) : isFree ? (
                 <FreeDownloadButton size="sm" downloadUrl={downloadUrl} />
               ) : (
                 <Button 

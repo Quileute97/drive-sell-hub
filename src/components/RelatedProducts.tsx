@@ -45,6 +45,7 @@ export const RelatedProducts = ({ categoryId, currentProductId, categorySlug }: 
   const [products, setProducts] = useState<RelatedProduct[]>([]);
   const [loading, setLoading] = useState(true);
   const { addToCart } = useCart();
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchRelatedProducts();

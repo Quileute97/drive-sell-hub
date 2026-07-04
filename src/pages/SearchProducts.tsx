@@ -543,8 +543,21 @@ export default function SearchProducts() {
                     </div>
                   </CardContent>
 
-                  <CardFooter className="p-4 pt-0">
-                    {isFree ? (
+                  <CardFooter className="p-4 pt-0 flex-col gap-2">
+                    {product.read_only ? (
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        className="w-full"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigate(`/read/${product.slug}`);
+                        }}
+                      >
+                        <BookOpen className="h-4 w-4 mr-2" />
+                        Đọc trực tuyến
+                      </Button>
+                    ) : isFree ? (
                       <FreeDownloadButton
                         size="sm"
                         downloadUrl={downloadUrl}

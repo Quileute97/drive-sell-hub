@@ -259,6 +259,7 @@ export const ProductList = () => {
                     <FreeDownloadButton
                       size="sm"
                       downloadUrl={downloadUrl}
+                      hideOnComplete={!!product.read_only}
                       onMissingUrl={handleMissingFreeDownload}
                       onClick={(e) => e.stopPropagation()}
                     />

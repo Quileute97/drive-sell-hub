@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Star, Download, Eye, ShoppingCart, ArrowRight } from "lucide-react";
+import { Star, Download, Eye, ShoppingCart, ArrowRight, BookOpen } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useCart } from "@/hooks/useCart";
 import { FreeDownloadButton } from "@/components/FreeDownloadButton";
@@ -19,6 +19,7 @@ interface RelatedProduct {
   original_price: number;
   google_drive_link: string;
   download_only_link?: string | null;
+  read_only?: boolean | null;
   download_count: number;
   view_count: number;
   rating_average: number;
@@ -44,6 +45,7 @@ export const RelatedProducts = ({ categoryId, currentProductId, categorySlug }: 
   const [products, setProducts] = useState<RelatedProduct[]>([]);
   const [loading, setLoading] = useState(true);
   const { addToCart } = useCart();
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchRelatedProducts();
@@ -208,7 +210,17 @@ export const RelatedProducts = ({ categoryId, currentProductId, categorySlug }: 
               </Card>
             </Link>
             <CardFooter className="p-4 pt-2">
-              {isFree ? (
+              {product.read_only ? (
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  className="w-full"
+                  onClick={() => navigate(`/read/${product.slug}`)}
+                >
+                  <BookOpen className="h-4 w-4 mr-2" />
+                  Đọc trực tuyến
+                </Button>
+              ) : isFree ? (
                 <FreeDownloadButton size="sm" downloadUrl={downloadUrl} />
               ) : (
                 <Button 

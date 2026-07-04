@@ -466,8 +466,8 @@ const AddProductForm = ({ onClose, onSuccess }: AddProductFormProps) => {
                 <CardContent className="space-y-4">
                   <div className="flex items-center justify-between rounded-lg border bg-muted/40 px-3 py-2">
                     <div>
-                      <Label htmlFor="free-product" className="text-sm font-medium">Tài liệu miễn phí</Label>
-                      <p className="text-xs text-muted-foreground">Bật để hiển thị nút tải miễn phí cho khách</p>
+                      <Label htmlFor="free-product" className="text-sm font-medium">Tải miễn phí</Label>
+                      <p className="text-xs text-muted-foreground">Bật để cho phép tải miễn phí sau 60 giây</p>
                     </div>
                     <Switch
                       id="free-product"
@@ -479,24 +479,21 @@ const AddProductForm = ({ onClose, onSuccess }: AddProductFormProps) => {
                           price: checked ? '0' : '',
                           original_price: checked ? '' : prev.original_price,
                         }));
-                        if (!checked) setIsReadOnly(false);
                       }}
                     />
                   </div>
 
-                  {isFreeEnabled && (
-                    <div className="flex items-center justify-between rounded-lg border border-primary/30 bg-primary/5 px-3 py-2">
-                      <div>
-                        <Label htmlFor="read-only" className="text-sm font-medium">Chỉ cho phép đọc (Read Only)</Label>
-                        <p className="text-xs text-muted-foreground">Ẩn nút tải xuống, chỉ hiển thị nút đọc trực tuyến</p>
-                      </div>
-                      <Switch
-                        id="read-only"
-                        checked={isReadOnly}
-                        onCheckedChange={setIsReadOnly}
-                      />
+                  <div className="flex items-center justify-between rounded-lg border border-primary/30 bg-primary/5 px-3 py-2">
+                    <div>
+                      <Label htmlFor="read-only" className="text-sm font-medium">Chỉ cho phép đọc (Read Only)</Label>
+                      <p className="text-xs text-muted-foreground">Ẩn nút tải xuống, chỉ hiển thị nút đọc trực tuyến</p>
                     </div>
-                  )}
+                    <Switch
+                      id="read-only"
+                      checked={isReadOnly}
+                      onCheckedChange={setIsReadOnly}
+                    />
+                  </div>
 
                   <div className="grid grid-cols-2 gap-4">
                     <div>

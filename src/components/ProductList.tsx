@@ -255,11 +255,25 @@ export const ProductList = () => {
                 </CardContent>
 
                 <CardFooter className="p-4 pt-0 flex-col gap-2">
-                  {isFree ? (
+                  {product.read_only ? (
+                    product.google_drive_link && (
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        className="w-full"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigate(`/read/${product.slug}`);
+                        }}
+                      >
+                        <BookOpen className="h-4 w-4 mr-2" />
+                        Đọc trực tuyến
+                      </Button>
+                    )
+                  ) : isFree ? (
                     <FreeDownloadButton
                       size="sm"
                       downloadUrl={downloadUrl}
-                      hideOnComplete={!!product.read_only}
                       onMissingUrl={handleMissingFreeDownload}
                       onClick={(e) => e.stopPropagation()}
                     />
@@ -274,20 +288,6 @@ export const ProductList = () => {
                     >
                       <ShoppingCart className="h-4 w-4 mr-2" />
                       Thêm vào giỏ
-                    </Button>
-                  )}
-                  {product.read_only && product.google_drive_link && (
-                    <Button
-                      variant="secondary"
-                      size="sm"
-                      className="w-full"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        navigate(`/read/${product.slug}`);
-                      }}
-                    >
-                      <BookOpen className="h-4 w-4 mr-2" />
-                      Đọc trực tuyến
                     </Button>
                   )}
                 </CardFooter>

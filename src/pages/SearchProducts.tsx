@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Star, Download, Eye, ShoppingCart, Search, Filter } from "lucide-react";
+import { Star, Download, Eye, ShoppingCart, Search, Filter, BookOpen } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useCart } from "@/hooks/useCart";
@@ -29,6 +29,7 @@ interface Product {
   thumbnail_url: string;
   google_drive_link: string;
   download_only_link?: string | null;
+  read_only?: boolean | null;
   download_count: number;
   view_count: number;
   rating_average: number;
@@ -542,8 +543,21 @@ export default function SearchProducts() {
                     </div>
                   </CardContent>
 
-                  <CardFooter className="p-4 pt-0">
-                    {isFree ? (
+                  <CardFooter className="p-4 pt-0 flex-col gap-2">
+                    {product.read_only ? (
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        className="w-full"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigate(`/read/${product.slug}`);
+                        }}
+                      >
+                        <BookOpen className="h-4 w-4 mr-2" />
+                        Đọc trực tuyến
+                      </Button>
+                    ) : isFree ? (
                       <FreeDownloadButton
                         size="sm"
                         downloadUrl={downloadUrl}

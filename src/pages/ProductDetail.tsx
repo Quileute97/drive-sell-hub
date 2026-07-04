@@ -773,12 +773,23 @@ export default function ProductDetail() {
 
             {/* Action Buttons */}
             <div className="space-y-3">
-              {isFree ? (
+              {product.read_only ? (
+                product.google_drive_link && (
+                  <Button
+                    variant="secondary"
+                    size="lg"
+                    className="w-full"
+                    onClick={() => navigate(`/read/${product.slug}`)}
+                  >
+                    <BookOpen className="h-4 w-4 mr-2" />
+                    Đọc trực tuyến (Read Only)
+                  </Button>
+                )
+              ) : isFree ? (
                 <FreeDownloadButton
                   size="lg"
                   className="w-full"
                   downloadUrl={freeDownloadUrl}
-                  hideOnComplete={!!product.read_only}
                   onMissingUrl={() => {
                     toast({
                       title: "Thiếu link tải",
@@ -804,17 +815,6 @@ export default function ProductDetail() {
                     Mua ngay - {formatPrice(product.price)}
                   </Button>
                 </div>
-              )}
-              {product.read_only && product.google_drive_link && (
-                <Button
-                  variant="secondary"
-                  size="lg"
-                  className="w-full"
-                  onClick={() => navigate(`/read/${product.slug}`)}
-                >
-                  <BookOpen className="h-4 w-4 mr-2" />
-                  Đọc trực tuyến (Read Only)
-                </Button>
               )}
               <Button 
                 variant="outline" 

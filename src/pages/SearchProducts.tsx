@@ -29,6 +29,7 @@ interface Product {
   thumbnail_url: string;
   google_drive_link: string;
   download_only_link?: string | null;
+  read_only?: boolean | null;
   download_count: number;
   view_count: number;
   rating_average: number;

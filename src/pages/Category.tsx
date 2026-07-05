@@ -133,7 +133,7 @@ export default function Category() {
   const categoryImage = category.image_url || `${siteUrl}/og-image.png`;
 
   // SEO meta
-  const metaTitle = `${category.name} - Tài liệu & Sản phẩm Digital chất lượng cao`;
+  const metaTitle = `${category.name} - Salemylink`;
   const metaDescription = category.description 
     || `Tổng hợp ${products.length} sản phẩm ${category.name} chất lượng cao. Mua và tải xuống ngay ${category.name} giá tốt nhất tại Salemylink.com. An toàn, nhanh chóng.`;
   
@@ -400,16 +400,22 @@ export default function Category() {
                       )}
 
                       {/* Stats */}
-                      <div className="flex items-center space-x-4 mb-3 text-xs text-muted-foreground">
-                        <div className="flex items-center">
-                          <Download className="h-3 w-3 mr-1" />
-                          {product.download_count} lượt tải
+                      {(product.download_count > 0 || product.view_count > 0) && (
+                        <div className="flex items-center space-x-4 mb-3 text-xs text-muted-foreground">
+                          {product.download_count > 0 && (
+                            <div className="flex items-center">
+                              <Download className="h-3 w-3 mr-1" />
+                              {product.download_count} lượt tải
+                            </div>
+                          )}
+                          {product.view_count > 0 && (
+                            <div className="flex items-center">
+                              <Eye className="h-3 w-3 mr-1" />
+                              {product.view_count} lượt xem
+                            </div>
+                          )}
                         </div>
-                        <div className="flex items-center">
-                          <Eye className="h-3 w-3 mr-1" />
-                          {product.view_count} lượt xem
-                        </div>
-                      </div>
+                      )}
 
                       {/* Price */}
                       <div className="flex items-center justify-between">

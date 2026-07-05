@@ -500,24 +500,30 @@ export default function SearchProducts() {
                       {product.short_description || product.description}
                     </p>
 
-                    <div className="flex items-center mb-3">
-                      <div className="flex items-center mr-2">
-                        {renderStars(product.rating_average || 0)}
+                    {product.rating_count > 0 && (
+                      <div className="flex items-center mb-3">
+                        <div className="flex items-center mr-2">
+                          {renderStars(product.rating_average || 0)}
+                        </div>
+                        <span className="text-sm text-muted-foreground">
+                          ({product.rating_count})
+                        </span>
                       </div>
-                      <span className="text-sm text-muted-foreground">
-                        ({product.rating_count || 0})
-                      </span>
-                    </div>
+                    )}
 
                     <div className="flex items-center text-xs text-muted-foreground mb-3 gap-3 flex-wrap">
-                      <div className="flex items-center">
-                        <Download className="h-3.5 w-3.5 mr-1" />
-                        <span>{product.download_count}</span>
-                      </div>
-                      <div className="flex items-center">
-                        <Eye className="h-3.5 w-3.5 mr-1" />
-                        <span>{product.view_count}</span>
-                      </div>
+                      {product.download_count > 0 && (
+                        <div className="flex items-center">
+                          <Download className="h-3.5 w-3.5 mr-1" />
+                          <span>{product.download_count}</span>
+                        </div>
+                      )}
+                      {product.view_count > 0 && (
+                        <div className="flex items-center">
+                          <Eye className="h-3.5 w-3.5 mr-1" />
+                          <span>{product.view_count}</span>
+                        </div>
+                      )}
                       {product.file_size && (
                         <div className="flex items-center">
                           <span>📄 {product.file_size}</span>

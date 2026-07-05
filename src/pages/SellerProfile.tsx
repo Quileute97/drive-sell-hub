@@ -370,13 +370,23 @@ export default function SellerProfile() {
                         <h3 className="font-semibold text-sm line-clamp-2 min-h-[2.5rem] group-hover:text-primary transition-colors">
                           {product.title}
                         </h3>
-                        <div className="flex items-center gap-1 mt-2 text-xs text-muted-foreground">
-                          <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
-                          <span>{(product.rating_average || 0).toFixed(1)}</span>
-                          <span className="mx-1">•</span>
-                          <Download className="h-3 w-3" />
-                          <span>{product.download_count || 0}</span>
-                        </div>
+                        {(product.rating_count > 0 || product.download_count > 0) && (
+                          <div className="flex items-center gap-1 mt-2 text-xs text-muted-foreground">
+                            {product.rating_count > 0 && (
+                              <>
+                                <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
+                                <span>{(product.rating_average || 0).toFixed(1)}</span>
+                              </>
+                            )}
+                            {product.rating_count > 0 && product.download_count > 0 && <span className="mx-1">•</span>}
+                            {product.download_count > 0 && (
+                              <>
+                                <Download className="h-3 w-3" />
+                                <span>{product.download_count}</span>
+                              </>
+                            )}
+                          </div>
+                        )}
                         <div className="mt-2">
                           <span className="font-bold text-primary">
                             {formatPrice(product.price)}

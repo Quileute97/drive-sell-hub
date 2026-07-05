@@ -167,8 +167,8 @@ const Index = () => {
   return (
     <div className="min-h-screen">
       <SEO 
-        title="Salemylink - Marketplace sản phẩm Digital Việt Nam"
-        description="Marketplace sản phẩm digital Việt Nam. Mua bán ebook, tài liệu, khóa học qua Google Drive an toàn, nhanh chóng."
+        title="Salemylink – Mua bán tài liệu số, ebook, khóa học qua Google Drive"
+        description="Salemylink – Marketplace mua bán tài liệu số, ebook, khóa học online qua Google Drive. Giao dịch an toàn, tải xuống ngay sau khi thanh toán."
         keywords="bán sản phẩm digital, ebook việt nam, tài liệu digital, khóa học online, google drive, thương mại điện tử, marketplace digital, mua bán ebook, tài liệu số, khóa học trực tuyến"
         url="https://drive-sell-hub.lovable.app/"
         structuredData={homepageStructuredData}

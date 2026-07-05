@@ -250,14 +250,18 @@ export default function TagProducts() {
                       {product.categories.name}
                     </Link>
                   )}
-                  <div className="flex items-center gap-1 mt-2">
-                    {renderStars(product.rating_average)}
-                    <span className="text-xs text-muted-foreground ml-1">({product.rating_count})</span>
-                  </div>
-                  <div className="flex items-center gap-3 mt-2 text-xs text-muted-foreground">
-                    <span className="flex items-center gap-1"><Download className="h-3 w-3" />{product.download_count}</span>
-                    <span className="flex items-center gap-1"><Eye className="h-3 w-3" />{product.view_count}</span>
-                  </div>
+                  {product.rating_count > 0 && (
+                    <div className="flex items-center gap-1 mt-2">
+                      {renderStars(product.rating_average)}
+                      <span className="text-xs text-muted-foreground ml-1">({product.rating_count})</span>
+                    </div>
+                  )}
+                  {(product.download_count > 0 || product.view_count > 0) && (
+                    <div className="flex items-center gap-3 mt-2 text-xs text-muted-foreground">
+                      {product.download_count > 0 && <span className="flex items-center gap-1"><Download className="h-3 w-3" />{product.download_count}</span>}
+                      {product.view_count > 0 && <span className="flex items-center gap-1"><Eye className="h-3 w-3" />{product.view_count}</span>}
+                    </div>
+                  )}
                 </CardContent>
                 <CardFooter className="p-4 pt-0 flex items-center justify-between">
                   <div>

@@ -400,16 +400,22 @@ export default function Category() {
                       )}
 
                       {/* Stats */}
-                      <div className="flex items-center space-x-4 mb-3 text-xs text-muted-foreground">
-                        <div className="flex items-center">
-                          <Download className="h-3 w-3 mr-1" />
-                          {product.download_count} lượt tải
+                      {(product.download_count > 0 || product.view_count > 0) && (
+                        <div className="flex items-center space-x-4 mb-3 text-xs text-muted-foreground">
+                          {product.download_count > 0 && (
+                            <div className="flex items-center">
+                              <Download className="h-3 w-3 mr-1" />
+                              {product.download_count} lượt tải
+                            </div>
+                          )}
+                          {product.view_count > 0 && (
+                            <div className="flex items-center">
+                              <Eye className="h-3 w-3 mr-1" />
+                              {product.view_count} lượt xem
+                            </div>
+                          )}
                         </div>
-                        <div className="flex items-center">
-                          <Eye className="h-3 w-3 mr-1" />
-                          {product.view_count} lượt xem
-                        </div>
-                      </div>
+                      )}
 
                       {/* Price */}
                       <div className="flex items-center justify-between">

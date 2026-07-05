@@ -133,7 +133,7 @@ export default function Category() {
   const categoryImage = category.image_url || `${siteUrl}/og-image.png`;
 
   // SEO meta
-  const metaTitle = `${category.name} - Tài liệu & Sản phẩm Digital chất lượng cao`;
+  const metaTitle = `${category.name} - Salemylink`;
   const metaDescription = category.description 
     || `Tổng hợp ${products.length} sản phẩm ${category.name} chất lượng cao. Mua và tải xuống ngay ${category.name} giá tốt nhất tại Salemylink.com. An toàn, nhanh chóng.`;
   

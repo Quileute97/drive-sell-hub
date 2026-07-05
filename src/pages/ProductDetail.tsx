@@ -277,9 +277,8 @@ export default function ProductDetail() {
   const siteUrl = "https://salemylink.com";
   const productUrl = `${siteUrl}/product/${product.slug}`;
   
-  // SEO-optimized meta title: Include primary keyword + action word + brand
-  const metaTitle = product.meta_title || 
-    `${product.title} - Tải xuống ngay | ${product.categories?.name || 'Sản phẩm Digital'}`;
+  // SEO title: "Tên sản phẩm | Salemylink"
+  const metaTitle = product.meta_title || `${product.title} | Salemylink`;
   
   // SEO-optimized description with call-to-action
   const metaDescription =

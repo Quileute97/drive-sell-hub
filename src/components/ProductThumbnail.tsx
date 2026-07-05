@@ -195,7 +195,8 @@ export const ProductThumbnail = ({
       
       <img
         src={uniqueSources[currentSrcIndex]}
-        alt={`Hình ảnh sản phẩm ${title}`}
+        alt={`${title}${config.label && config.label !== 'FILE' ? ` - ${config.label}` : ''} | Tải xuống tại Salemylink`}
+        title={title}
         className={`w-full h-full object-cover transition-opacity duration-300 ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
         loading={loading}
         fetchPriority={fetchPriority}

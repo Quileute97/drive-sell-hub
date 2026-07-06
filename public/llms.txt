@@ -13,6 +13,10 @@ Salemylink.com kết nối người mua và người bán sản phẩm digital t
 - [Tag](/tag/seo): Duyệt sản phẩm theo thẻ (tag).
 - [Người bán](/sellers): Danh sách người bán đã xác thực.
 - [Affiliate](/affiliate): Chương trình cộng tác viên — kiếm hoa hồng 5%.
+- [Cẩm nang học tập](/guides): Hướng dẫn học Y khoa, luyện IELTS, viết luận văn kèm ví dụ sản phẩm.
+- [Hướng dẫn học Y khoa](/guides/hoc-y-khoa): Lộ trình học Y khoa & tài liệu.
+- [Luyện thi IELTS](/guides/luyen-thi-ielts): Lộ trình IELTS 0–7.0.
+- [Viết luận văn tốt nghiệp](/guides/viet-luan-van): Hướng dẫn viết & bảo vệ luận văn.
 - [Giới thiệu](/about): Về Salemylink.com.
 - [Cách hoạt động](/how-it-works): Hướng dẫn mua hàng.
 - [Hướng dẫn người bán](/seller-guide): Cách trở thành seller và đăng sản phẩm.

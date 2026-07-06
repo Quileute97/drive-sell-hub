@@ -34,6 +34,8 @@ const Sellers = lazy(() => import("./pages/Sellers"));
 const Withdrawal = lazy(() => import("./pages/Withdrawal"));
 const TagProducts = lazy(() => import("./pages/TagProducts"));
 const ReadOnline = lazy(() => import("./pages/ReadOnline"));
+const Guides = lazy(() => import("./pages/Guides"));
+const GuideDetail = lazy(() => import("./pages/GuideDetail"));
 
 const queryClient = new QueryClient();
 
@@ -78,6 +80,8 @@ const App = () => (
               <Route path="/tag/:tag" element={<TagProducts />} />
               <Route path="/affiliate" element={<Affiliate />} />
               <Route path="/read/:slug" element={<ReadOnline />} />
+              <Route path="/guides" element={<Guides />} />
+              <Route path="/guides/:slug" element={<GuideDetail />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>

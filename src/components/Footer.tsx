@@ -65,6 +65,7 @@ export const Footer = () => {
             <ul className="space-y-2">
               <li><a href="/about" className="text-muted-foreground hover:text-primary transition-colors">Về chúng tôi</a></li>
               <li><a href="/how-it-works" className="text-muted-foreground hover:text-primary transition-colors">Cách thức hoạt động</a></li>
+              <li><a href="/guides" className="text-muted-foreground hover:text-primary transition-colors">Cẩm nang học tập</a></li>
               <li><a href="/seller-guide" className="text-muted-foreground hover:text-primary transition-colors">Hướng dẫn bán hàng</a></li>
               <li><a href="/affiliate" className="text-muted-foreground hover:text-primary transition-colors">Affiliate - Kiếm 5% hoa hồng</a></li>
               <li><a href="/sellers" className="text-muted-foreground hover:text-primary transition-colors">Người bán</a></li>

@@ -14,6 +14,7 @@ import { SEO } from "@/components/SEO";
 import { ProductThumbnail } from "@/components/ProductThumbnail";
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { RelatedCategories } from "@/components/RelatedCategories";
+import { getTagSeo } from "@/data/seoOverrides";
 
 interface Product {
   id: string;

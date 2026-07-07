@@ -12,6 +12,7 @@ import { getGoogleDriveThumbnail } from "@/lib/utils";
 import { ProductThumbnail } from "@/components/ProductThumbnail";
 import { SEO } from "@/components/SEO";
 import { RelatedCategories } from "@/components/RelatedCategories";
+import { getCategorySeo } from "@/data/seoOverrides";
 
 interface Product {
   id: string;

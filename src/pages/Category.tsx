@@ -12,6 +12,7 @@ import { getGoogleDriveThumbnail } from "@/lib/utils";
 import { ProductThumbnail } from "@/components/ProductThumbnail";
 import { SEO } from "@/components/SEO";
 import { RelatedCategories } from "@/components/RelatedCategories";
+import { getCategorySeo } from "@/data/seoOverrides";
 
 interface Product {
   id: string;
@@ -132,23 +133,19 @@ export default function Category() {
   const categoryUrl = `${siteUrl}/category/${category.slug}`;
   const categoryImage = category.image_url || `${siteUrl}/og-image.png`;
 
-  // SEO meta
-  const metaTitle = `${category.name} - Salemylink`;
-  const metaDescription = category.description 
-    || `Tổng hợp ${products.length} sản phẩm ${category.name} chất lượng cao. Mua và tải xuống ngay ${category.name} giá tốt nhất tại Salemylink.com. An toàn, nhanh chóng.`;
-  
+  // SEO meta — per-slug overrides with generic fallback
+  const seoOverride = getCategorySeo(category.slug, category.name);
+  const metaTitle = seoOverride.title;
+  const metaDescription = category.description || seoOverride.description;
+
   // Long-tail keywords for category ranking
   const metaKeywords = [
+    ...(seoOverride.keywords || []),
     category.name,
     `${category.name} giá rẻ`,
     `mua ${category.name}`,
     `tải ${category.name}`,
-    `${category.name} online`,
-    `${category.name} chất lượng cao`,
-    `${category.name} việt nam`,
-    `download ${category.name}`,
     "sản phẩm digital",
-    "tài liệu digital",
     "salemylink",
   ].join(", ");
 

@@ -136,7 +136,10 @@ export default function Category() {
   // SEO meta — per-slug overrides with generic fallback
   const seoOverride = getCategorySeo(category.slug, category.name);
   const metaTitle = seoOverride.title;
-  const metaDescription = category.description || seoOverride.description;
+  const countPrefix = products.length > 0 ? `Khám phá ${products.length} ` : "";
+  const metaDescription = products.length > 0
+    ? `${countPrefix}${category.name.toLowerCase()}, tải nhanh qua Google Drive tại Salemylink. ${seoOverride.description}`.substring(0, 160)
+    : (category.description || seoOverride.description);
 
   // Long-tail keywords for category ranking
   const metaKeywords = [

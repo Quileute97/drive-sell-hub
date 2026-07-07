@@ -98,21 +98,39 @@ export default function TagProducts() {
   const siteUrl = "https://salemylink.com";
   const canonicalUrl = `${siteUrl}/tag/${encodeURIComponent(decodedTag)}`;
 
-  const metaTitle = `${decodedTag} - Sản phẩm Digital | Salemylink.com`;
-  const metaDescription = `Tìm thấy ${products.length} sản phẩm digital với tag "${decodedTag}" tại Salemylink.com. Khám phá ebook, tài liệu, khóa học chất lượng cao.`;
-  const metaKeywords = [decodedTag, "sản phẩm digital", "ebook", "tài liệu", "salemylink"].join(", ");
+  const tagSeo = getTagSeo(decodedTag);
+  const metaTitle = tagSeo.title;
+  const metaDescription = products.length > 0
+    ? `${tagSeo.description} Hiện có ${products.length} sản phẩm.`
+    : tagSeo.description;
+  const metaKeywords = [...(tagSeo.keywords || []), decodedTag, "sản phẩm digital", "salemylink"].join(", ");
 
   const structuredData = {
     "@context": "https://schema.org",
     "@graph": [
       {
+        "@type": "Organization",
+        "@id": `${siteUrl}/#organization`,
+        name: "Salemylink.com",
+        url: siteUrl,
+        logo: { "@type": "ImageObject", url: `${siteUrl}/logo.png` },
+      },
+      {
+        "@type": "WebSite",
+        "@id": `${siteUrl}/#website`,
+        url: siteUrl,
+        name: "Salemylink.com",
+        publisher: { "@id": `${siteUrl}/#organization` },
+      },
+      {
         "@type": "CollectionPage",
-        "@id": canonicalUrl,
+        "@id": `${canonicalUrl}#webpage`,
         name: metaTitle,
         url: canonicalUrl,
         description: metaDescription,
         isPartOf: { "@id": `${siteUrl}/#website` },
         breadcrumb: { "@id": `${canonicalUrl}#breadcrumb` },
+        inLanguage: "vi",
       },
       {
         "@type": "BreadcrumbList",
@@ -125,11 +143,38 @@ export default function TagProducts() {
       ...(products.length > 0
         ? [{
             "@type": "ItemList",
-            itemListElement: products.slice(0, 10).map((p, i) => ({
+            "@id": `${canonicalUrl}#itemlist`,
+            numberOfItems: products.length,
+            itemListElement: products.slice(0, 20).map((p, i) => ({
               "@type": "ListItem",
               position: i + 1,
               url: `${siteUrl}/product/${p.slug}`,
-              name: p.title,
+              item: {
+                "@type": "Product",
+                "@id": `${siteUrl}/product/${p.slug}#product`,
+                name: p.title,
+                url: `${siteUrl}/product/${p.slug}`,
+                ...(p.short_description ? { description: p.short_description } : {}),
+                image: p.thumbnail_url || `${siteUrl}/placeholder.svg`,
+                ...(p.categories ? { category: p.categories.name } : {}),
+                ...(p.profiles?.full_name ? { brand: { "@type": "Brand", name: p.profiles.full_name } } : {}),
+                offers: {
+                  "@type": "Offer",
+                  price: p.price.toString(),
+                  priceCurrency: "VND",
+                  availability: "https://schema.org/InStock",
+                  url: `${siteUrl}/product/${p.slug}`,
+                },
+                ...(p.rating_count > 0 ? {
+                  aggregateRating: {
+                    "@type": "AggregateRating",
+                    ratingValue: p.rating_average.toFixed(1),
+                    reviewCount: p.rating_count,
+                    bestRating: "5",
+                    worstRating: "1",
+                  },
+                } : {}),
+              },
             })),
           }]
         : []),

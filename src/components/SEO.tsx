@@ -35,14 +35,18 @@ export const SEO = ({
   title = "Salemylink - Marketplace sản phẩm Digital Việt Nam",
   description = "Marketplace sản phẩm digital Việt Nam. Mua bán ebook, tài liệu, khóa học qua Google Drive an toàn, nhanh chóng.",
   keywords = "bán sản phẩm digital, ebook việt nam, tài liệu digital, khóa học online, google drive, thương mại điện tử, marketplace digital, bán tài liệu online",
-  image = "https://salemylink.com/og-image.png",
-  url = "https://salemylink.com/",
+  image = `${SITE_URL}/og-image.png`,
+  url,
   type = "website",
   structuredData,
   noindex = false,
   publishedTime,
   modifiedTime,
   author,
+  ogTitle,
+  ogDescription,
+  twTitle,
+  twDescription,
   productPrice,
   productCurrency = "VND",
   productAvailability = "InStock",
@@ -51,15 +55,23 @@ export const SEO = ({
   productRating,
   productReviewCount
 }: SEOProps) => {
+  const location = useLocation();
+  // Canonical: explicit url, else current path on the production domain (query params stripped)
+  const canonicalUrl = url || `${SITE_URL}${location.pathname === '/' ? '/' : location.pathname.replace(/\/+$/, '')}`;
+
   const fullTitle = title.includes('Salemylink') ? title : `${title} | Salemylink`;
   
   // Ensure description is within optimal length (150-160 chars)
-  const optimizedDescription = description.length > 160 
-    ? description.substring(0, 157) + '...' 
-    : description;
+  const clamp = (s: string) => (s.length > 160 ? s.substring(0, 157) + '...' : s);
+  const optimizedDescription = clamp(description);
+  const socialTitle = ogTitle || fullTitle;
+  const socialDescription = clamp(ogDescription || description);
+  const twitterTitle = twTitle || socialTitle;
+  const twitterDescription = clamp(twDescription || ogDescription || description);
 
   // Format price for Open Graph
   const formattedPrice = productPrice ? productPrice.toString() : undefined;
+
 
   return (
     <Helmet>

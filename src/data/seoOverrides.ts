@@ -177,7 +177,20 @@ const TAG_OVERRIDES: Record<string, SeoOverride> = {
       "Tài liệu marketing: digital marketing, content, ads, template kế hoạch marketing. Tải tại Salemylink.",
     keywords: ["marketing", "digital marketing", "tài liệu marketing"],
   },
+  "sản khoa": {
+    title: "Tài liệu sản khoa, phụ khoa, bệnh án mẫu | Salemylink",
+    description:
+      "Tài liệu sản khoa và phụ khoa: bệnh án mẫu, phác đồ, slide bài giảng cho sinh viên y và bác sĩ. Tải tại Salemylink.",
+    keywords: ["sản khoa", "phụ khoa", "bệnh án sản khoa", "tài liệu y khoa"],
+  },
+  "đề thi": {
+    title: "Đề thi các môn, ôn thi đại học & THPT | Salemylink",
+    description:
+      "Kho đề thi các môn: ôn thi đại học, THPT quốc gia, học kỳ, có đáp án chi tiết. Tải nhanh tại Salemylink.",
+    keywords: ["đề thi", "ôn thi đại học", "đề thi thpt", "đề thi có đáp án"],
+  },
 };
+
 
 
 export function getCategorySeo(slug: string, name: string): SeoOverride {

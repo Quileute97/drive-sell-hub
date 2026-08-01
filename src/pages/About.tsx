@@ -11,40 +11,40 @@ export default function About() {
         title="Về Salemylink - Nền tảng sản phẩm digital"
         description="Tìm hiểu về Salemylink - nền tảng thương mại điện tử hàng đầu cho sản phẩm digital tại Việt Nam. Sứ mệnh, tầm nhìn và giá trị cốt lõi của chúng tôi."
         keywords="về salemylink, giới thiệu, sứ mệnh, tầm nhìn, nền tảng digital, thương mại điện tử việt nam"
-        url="https://drive-sell-hub.lovable.app/about"
+        url="https://salemylink.com/about"
         structuredData={[
           {
             "@context": "https://schema.org",
             "@type": "Article",
             "headline": "Về Salemylink - Nền tảng sản phẩm digital",
             "description": "Tìm hiểu về Salemylink - nền tảng thương mại điện tử hàng đầu cho sản phẩm digital tại Việt Nam. Sứ mệnh, tầm nhìn và giá trị cốt lõi của chúng tôi.",
-            "image": "https://drive-sell-hub.lovable.app/og-image.png",
+            "image": "https://salemylink.com/og-image.png",
             "datePublished": "2024-01-01T00:00:00+07:00",
             "dateModified": "2025-01-01T00:00:00+07:00",
             "author": {
               "@type": "Organization",
               "name": "Salemylink.com",
-              "url": "https://drive-sell-hub.lovable.app"
+              "url": "https://salemylink.com"
             },
             "publisher": {
               "@type": "Organization",
               "name": "Salemylink.com",
               "logo": {
                 "@type": "ImageObject",
-                "url": "https://drive-sell-hub.lovable.app/logo.png"
+                "url": "https://salemylink.com/logo.png"
               }
             },
             "mainEntityOfPage": {
               "@type": "WebPage",
-              "@id": "https://drive-sell-hub.lovable.app/about"
+              "@id": "https://salemylink.com/about"
             }
           },
           {
             "@context": "https://schema.org",
             "@type": "Organization",
             "name": "Salemylink.com",
-            "url": "https://drive-sell-hub.lovable.app",
-            "logo": "https://drive-sell-hub.lovable.app/logo.png",
+            "url": "https://salemylink.com",
+            "logo": "https://salemylink.com/logo.png",
             "description": "Nền tảng thương mại điện tử hàng đầu cho sản phẩm digital tại Việt Nam",
             "foundingDate": "2024",
             "sameAs": [],
@@ -62,13 +62,13 @@ export default function About() {
                 "@type": "ListItem",
                 "position": 1,
                 "name": "Trang chủ",
-                "item": "https://drive-sell-hub.lovable.app"
+                "item": "https://salemylink.com"
               },
               {
                 "@type": "ListItem",
                 "position": 2,
                 "name": "Về chúng tôi",
-                "item": "https://drive-sell-hub.lovable.app/about"
+                "item": "https://salemylink.com/about"
               }
             ]
           }

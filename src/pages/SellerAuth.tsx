@@ -157,7 +157,7 @@ const SellerAuth = () => {
         title="Đăng ký bán hàng - Kiếm tiền từ digital"
         description="Đăng ký làm seller trên Salemylink. Bán ebook, tài liệu, khóa học online với hoa hồng chỉ từ 5%. Thanh toán nhanh, quản lý dễ dàng."
         keywords="đăng ký seller, bán hàng online, kiếm tiền digital, đăng ký người bán, salemylink seller"
-        url="https://drive-sell-hub.lovable.app/seller-auth"
+        url="https://salemylink.com/seller-auth"
         noindex={true}
       />
       <div className="min-h-screen bg-gradient-to-br from-primary/10 via-background to-secondary/10 flex items-center justify-center p-4">
@@ -244,7 +244,7 @@ const SellerAuth = () => {
       title="Đăng ký bán hàng - Bắt đầu kinh doanh digital"
       description="Tạo tài khoản seller trên Salemylink để bán ebook, tài liệu, khóa học online. Hoa hồng thấp chỉ 5%, hỗ trợ thanh toán PayOS, quản lý đơn hàng tự động."
       keywords="đăng ký bán hàng, tạo tài khoản seller, bán sản phẩm digital, kiếm tiền online, salemylink"
-      url="https://drive-sell-hub.lovable.app/seller-auth"
+      url="https://salemylink.com/seller-auth"
       noindex={true}
     />
     <div className="min-h-screen bg-gradient-to-br from-primary/10 via-background to-secondary/10 flex items-center justify-center p-4">

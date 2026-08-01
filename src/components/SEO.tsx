@@ -1,4 +1,7 @@
 import { Helmet } from 'react-helmet-async';
+import { useLocation } from 'react-router-dom';
+
+export const SITE_URL = 'https://salemylink.com';
 
 interface SEOProps {
   title?: string;
@@ -12,6 +15,11 @@ interface SEOProps {
   publishedTime?: string;
   modifiedTime?: string;
   author?: string;
+  // Social overrides
+  ogTitle?: string;
+  ogDescription?: string;
+  twTitle?: string;
+  twDescription?: string;
   // Product-specific props
   productPrice?: number;
   productCurrency?: string;
@@ -22,18 +30,23 @@ interface SEOProps {
   productReviewCount?: number;
 }
 
+
 export const SEO = ({
   title = "Salemylink - Marketplace sản phẩm Digital Việt Nam",
   description = "Marketplace sản phẩm digital Việt Nam. Mua bán ebook, tài liệu, khóa học qua Google Drive an toàn, nhanh chóng.",
   keywords = "bán sản phẩm digital, ebook việt nam, tài liệu digital, khóa học online, google drive, thương mại điện tử, marketplace digital, bán tài liệu online",
-  image = "https://drive-sell-hub.lovable.app/og-image.png",
-  url = "https://drive-sell-hub.lovable.app/",
+  image = `${SITE_URL}/og-image.png`,
+  url,
   type = "website",
   structuredData,
   noindex = false,
   publishedTime,
   modifiedTime,
   author,
+  ogTitle,
+  ogDescription,
+  twTitle,
+  twDescription,
   productPrice,
   productCurrency = "VND",
   productAvailability = "InStock",
@@ -42,15 +55,23 @@ export const SEO = ({
   productRating,
   productReviewCount
 }: SEOProps) => {
+  const location = useLocation();
+  // Canonical: explicit url, else current path on the production domain (query params stripped)
+  const canonicalUrl = url || `${SITE_URL}${location.pathname === '/' ? '/' : location.pathname.replace(/\/+$/, '')}`;
+
   const fullTitle = title.includes('Salemylink') ? title : `${title} | Salemylink`;
   
   // Ensure description is within optimal length (150-160 chars)
-  const optimizedDescription = description.length > 160 
-    ? description.substring(0, 157) + '...' 
-    : description;
+  const clamp = (s: string) => (s.length > 160 ? s.substring(0, 157) + '...' : s);
+  const optimizedDescription = clamp(description);
+  const socialTitle = ogTitle || fullTitle;
+  const socialDescription = clamp(ogDescription || description);
+  const twitterTitle = twTitle || socialTitle;
+  const twitterDescription = clamp(twDescription || ogDescription || description);
 
   // Format price for Open Graph
   const formattedPrice = productPrice ? productPrice.toString() : undefined;
+
 
   return (
     <Helmet>
@@ -58,7 +79,7 @@ export const SEO = ({
       <title>{fullTitle}</title>
       <meta name="description" content={optimizedDescription} />
       <meta name="keywords" content={keywords} />
-      <link rel="canonical" href={url} />
+      <link rel="canonical" href={canonicalUrl} />
       
       {/* Robots */}
       <meta name="robots" content={noindex ? "noindex, nofollow" : "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"} />
@@ -66,9 +87,9 @@ export const SEO = ({
 
       {/* Open Graph / Facebook */}
       <meta property="og:type" content={type === 'product' ? 'product' : type} />
-      <meta property="og:url" content={url} />
-      <meta property="og:title" content={fullTitle} />
-      <meta property="og:description" content={optimizedDescription} />
+      <meta property="og:url" content={canonicalUrl} />
+      <meta property="og:title" content={socialTitle} />
+      <meta property="og:description" content={socialDescription} />
       <meta property="og:image" content={image} />
       <meta property="og:image:width" content="1200" />
       <meta property="og:image:height" content="630" />
@@ -94,9 +115,9 @@ export const SEO = ({
 
       {/* Twitter */}
       <meta name="twitter:card" content="summary_large_image" />
-      <meta name="twitter:url" content={url} />
-      <meta name="twitter:title" content={fullTitle} />
-      <meta name="twitter:description" content={optimizedDescription} />
+      <meta name="twitter:url" content={canonicalUrl} />
+      <meta name="twitter:title" content={twitterTitle} />
+      <meta name="twitter:description" content={twitterDescription} />
       <meta name="twitter:image" content={image} />
       <meta name="twitter:image:alt" content={title} />
       <meta name="twitter:site" content="@salemylink" />

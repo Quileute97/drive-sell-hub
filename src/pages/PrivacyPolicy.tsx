@@ -10,20 +10,20 @@ export default function PrivacyPolicy() {
     {
       "@context": "https://schema.org",
       "@type": "WebPage",
-      "@id": "https://drive-sell-hub.lovable.app/privacy-policy",
+      "@id": "https://salemylink.com/privacy-policy",
       "name": "Chính sách bảo mật - Salemylink",
       "description": "Chính sách bảo mật của Salemylink. Tìm hiểu cách chúng tôi bảo vệ thông tin cá nhân của bạn.",
-      "url": "https://drive-sell-hub.lovable.app/privacy-policy",
+      "url": "https://salemylink.com/privacy-policy",
       "datePublished": "2024-01-01T00:00:00+07:00",
       "dateModified": `${lastUpdated}T00:00:00+07:00`,
       "inLanguage": "vi-VN",
       "isPartOf": {
-        "@id": "https://drive-sell-hub.lovable.app/#website"
+        "@id": "https://salemylink.com/#website"
       },
       "publisher": {
         "@type": "Organization",
         "name": "Salemylink",
-        "url": "https://drive-sell-hub.lovable.app"
+        "url": "https://salemylink.com"
       }
     },
     {
@@ -34,13 +34,13 @@ export default function PrivacyPolicy() {
           "@type": "ListItem",
           "position": 1,
           "name": "Trang chủ",
-          "item": "https://drive-sell-hub.lovable.app"
+          "item": "https://salemylink.com"
         },
         {
           "@type": "ListItem",
           "position": 2,
           "name": "Chính sách bảo mật",
-          "item": "https://drive-sell-hub.lovable.app/privacy-policy"
+          "item": "https://salemylink.com/privacy-policy"
         }
       ]
     }
@@ -52,7 +52,7 @@ export default function PrivacyPolicy() {
         title="Chính sách bảo mật"
         description="Chính sách bảo mật Salemylink. Tìm hiểu cách chúng tôi bảo vệ thông tin cá nhân của bạn."
         keywords="chính sách bảo mật, privacy policy, bảo mật thông tin, salemylink, quyền riêng tư, dữ liệu cá nhân"
-        url="https://drive-sell-hub.lovable.app/privacy-policy"
+        url="https://salemylink.com/privacy-policy"
         structuredData={structuredData}
       />
       <Header />

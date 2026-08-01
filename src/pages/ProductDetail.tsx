@@ -281,7 +281,13 @@ export default function ProductDetail() {
   const cleanText = (s?: string | null) =>
     (s || '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
   const customTitle = cleanText(product.meta_title);
-  const metaTitle = customTitle.length >= 10 ? customTitle : `${product.title} | Salemylink`;
+  const rawTitle = cleanText(product.title);
+  // Titles that are too thin get enriched with the category so SERP snippets stay descriptive
+  const enrichedTitle =
+    rawTitle.length >= 20
+      ? rawTitle
+      : `${rawTitle} - ${product.categories?.name || 'Tài liệu digital'}`;
+  const metaTitle = customTitle.length >= 20 ? customTitle : `${enrichedTitle} | Salemylink`;
 
   // SEO-optimized description with call-to-action
   const categoryName = product.categories?.name || 'Sản phẩm digital';

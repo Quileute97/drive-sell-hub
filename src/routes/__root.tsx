@@ -134,6 +134,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "preconnect", href: "https://drive.google.com" },
       { rel: "dns-prefetch", href: "https://drive.google.com" },
       { rel: "dns-prefetch", href: "https://lh3.googleusercontent.com" },
+      { rel: "manifest", href: "/manifest.webmanifest" },
       { rel: "apple-touch-icon", href: "/logo.png" },
       { rel: "icon", href: "/favicon.ico" },
     ],

@@ -1,0 +1,32 @@
+{
+  "name": "Salemylink – Mua bán tài liệu số qua Google Drive",
+  "short_name": "Salemylink",
+  "description": "Marketplace mua bán tài liệu số, ebook, khóa học online qua Google Drive.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#ffffff",
+  "theme_color": "#0f3a7e",
+  "lang": "vi",
+  "categories": ["shopping", "education", "productivity"],
+  "icons": [
+    {
+      "src": "/logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    { "name": "Yêu thích", "url": "/wishlist" },
+    { "name": "Giỏ hàng", "url": "/cart" },
+    { "name": "Tìm kiếm", "url": "/search" }
+  ]
+}

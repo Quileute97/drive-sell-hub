@@ -10,6 +10,8 @@ import { useToast } from "@/hooks/use-toast";
 import { useCart } from "@/hooks/useCart";
 import { ProductThumbnail } from "@/components/ProductThumbnail";
 import { FreeDownloadButton } from "@/components/FreeDownloadButton";
+import { WishlistButton } from "@/components/WishlistButton";
+import { ProductGridSkeleton } from "@/components/States";
 import { getProductDownloadUrl, isFreeProduct, getGoogleDrivePreviewUrl } from "@/lib/productAccess";
 
 interface Product {
@@ -118,20 +120,7 @@ export const ProductList = () => {
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold mb-4">Đang tải sản phẩm...</h2>
           </div>
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {Array.from({ length: 8 }).map((_, index) => (
-              <Card key={index} className="animate-pulse flex flex-col h-full">
-                <div className="aspect-[4/3] bg-muted rounded-t-lg"></div>
-                <CardContent className="p-4 flex-grow">
-                  <div className="h-4 bg-muted rounded mb-2 w-1/2"></div>
-                  <div className="h-5 bg-muted rounded mb-2"></div>
-                  <div className="h-4 bg-muted rounded mb-4 w-3/4"></div>
-                  <div className="h-4 bg-muted rounded mb-2 w-1/3"></div>
-                  <div className="h-6 bg-muted rounded w-1/2"></div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+          <ProductGridSkeleton count={8} />
         </div>
       </section>
     );
@@ -184,6 +173,7 @@ export const ProductList = () => {
                       -{Math.round(((product.original_price - product.price) / product.original_price) * 100)}%
                     </Badge>
                   )}
+                  <WishlistButton productId={product.id} />
                 </div>
 
                 <CardContent className="p-4 flex-grow flex flex-col">

@@ -9,6 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { RelatedProducts } from "@/components/RelatedProducts";
+import { RecommendedProducts } from "@/components/RecommendedProducts";
 import { ProductReviews } from "@/components/ProductReviews";
 import { useCart } from "@/hooks/useCart";
 import { SEO } from "@/components/SEO";
@@ -887,6 +888,11 @@ export default function ProductDetail() {
           currentProductId={product.id}
           categorySlug={product.categories?.slug}
         />
+
+        {/* Personalized recommendations */}
+        <RecommendedProducts excludeIds={[product.id]} />
+
+
 
         {/* Related Categories — internal linking for SEO */}
         <RelatedCategories 

@@ -11,7 +11,7 @@ function setCookie(name: string, value: string, days: number) {
 
 function getCookie(name: string): string | null {
   const match = document.cookie.match(new RegExp("(^|; )" + name + "=([^;]+)"));
-  return match ? decodeURIComponent(match[2]) : null;
+  return match && match[2] ? decodeURIComponent(match[2]) : null;
 }
 
 function getVisitorId(): string {
@@ -37,9 +37,9 @@ export async function captureAffiliateRef(productId?: string) {
   try {
     await supabase.rpc("log_affiliate_click", {
       _code: code,
-      _product_id: productId ?? null,
+      ...(productId ? { _product_id: productId } : {}),
       _visitor_id: getVisitorId(),
-      _referrer: document.referrer || null,
+      ...(document.referrer ? { _referrer: document.referrer } : {}),
       _user_agent: navigator.userAgent,
     });
   } catch (e) {

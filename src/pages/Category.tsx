@@ -311,10 +311,10 @@ export default function Category() {
         keywords={metaKeywords}
         url={categoryUrl}
         image={categoryImage}
-        ogTitle={`${category.name} | Salemylink`}
-        ogDescription={`${(category.description || seoOverride.description).replace(/[.\s]*$/, '')}.${products.length > 0 ? ` Hiện có ${products.length} sản phẩm digital.` : ''}`}
-        twTitle={`${category.name} - Sản phẩm Digital | Salemylink`}
-        twDescription={`${products.length > 0 ? `${products.length} ` : ''}${category.name.toLowerCase()} chất lượng, tải nhanh qua Google Drive tại Salemylink.`}
+        ogTitle={seoOverride.ogTitle}
+        ogDescription={`${seoOverride.ogDescription}${countSuffix}`}
+        twTitle={seoOverride.twTitle}
+        twDescription={seoOverride.twDescription}
         structuredData={combinedStructuredData}
         modifiedTime={new Date(latestUpdate).toISOString()}
       />

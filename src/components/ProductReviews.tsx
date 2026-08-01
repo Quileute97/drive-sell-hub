@@ -58,7 +58,7 @@ export const ProductReviews = ({ productId }: ProductReviewsProps) => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setReviews(data || []);
+      setReviews((data || []) as any);
     } catch (error) {
       console.error('Error fetching reviews:', error);
     } finally {
@@ -100,7 +100,7 @@ export const ProductReviews = ({ productId }: ProductReviewsProps) => {
         .maybeSingle();
 
       if (existingReview) {
-        setUserReview(existingReview);
+        setUserReview(existingReview as any);
         setRating(existingReview.rating);
         setComment(existingReview.comment || "");
       }

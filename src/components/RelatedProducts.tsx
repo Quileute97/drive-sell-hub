@@ -67,7 +67,7 @@ export const RelatedProducts = ({ categoryId, currentProductId, categorySlug }: 
         .limit(4);
 
       if (error) throw error;
-      setProducts(data || []);
+      setProducts((data || []) as any);
     } catch (error) {
       console.error('Error fetching related products:', error);
     } finally {

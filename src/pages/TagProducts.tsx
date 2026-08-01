@@ -69,11 +69,11 @@ export default function TagProducts() {
       const { data, error } = await query;
       if (error) throw error;
 
-      setProducts(data || []);
+      setProducts((data || []) as any);
 
       // Extract related tags from fetched products
       const tagSet = new Set<string>();
-      (data || []).forEach((p: Product) => {
+      ((data || []) as Product[]).forEach((p: Product) => {
         (p.tags || []).forEach((t: string) => {
           if (t.toLowerCase() !== decodedTag.toLowerCase()) tagSet.add(t);
         });

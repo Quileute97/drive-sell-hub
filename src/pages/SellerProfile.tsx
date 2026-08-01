@@ -63,11 +63,11 @@ export default function SellerProfile() {
       const { data: sellerData, error: sellerError } = await supabase
         .from('profiles')
         .select('user_id, full_name, avatar_url, created_at, is_verified')
-        .eq('user_id', sellerId)
+        .eq('user_id', sellerId!)
         .single();
 
       if (sellerError) throw sellerError;
-      setSeller(sellerData);
+      setSeller(sellerData as any);
 
       // Fetch seller's products
       const { data: productsData, error: productsError } = await supabase
@@ -78,18 +78,18 @@ export default function SellerProfile() {
           download_count, view_count,
           categories(name, slug)
         `)
-        .eq('seller_id', sellerId)
+        .eq('seller_id', sellerId!)
         .eq('status', 'active')
         .order('created_at', { ascending: false });
 
       if (productsError) throw productsError;
-      setProducts(productsData || []);
+      setProducts((productsData || []) as any);
 
       // Calculate stats
       if (productsData && productsData.length > 0) {
         const totalDownloads = productsData.reduce((sum, p) => sum + (p.download_count || 0), 0);
         const totalViews = productsData.reduce((sum, p) => sum + (p.view_count || 0), 0);
-        const ratings = productsData.filter(p => p.rating_count > 0);
+        const ratings = productsData.filter(p => (p.rating_count ?? 0) > 0);
         const avgRating = ratings.length > 0 
           ? ratings.reduce((sum, p) => sum + (p.rating_average || 0), 0) / ratings.length 
           : 0;

@@ -145,7 +145,7 @@ export default function SearchProducts() {
       const { data, error } = await query;
 
       if (error) throw error;
-      setProducts(data || []);
+      setProducts((data || []) as any);
     } catch (error) {
       console.error('Error fetching products:', error);
       toast({

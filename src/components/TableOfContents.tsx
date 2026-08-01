@@ -43,7 +43,7 @@ export function extractHeadings(html: string): TocItem[] {
       id = `${id}-${i}`;
     }
     usedIds.add(id);
-    items.push({ id, text, level: parseInt(el.tagName[1]) });
+    items.push({ id, text, level: parseInt(el.tagName[1] ?? '0') });
   });
 
   return items;

@@ -81,7 +81,7 @@ export const Categories = () => {
         color: colorMap[index % colorMap.length]
       })) || [];
 
-      setCategories(categoriesWithCount);
+      setCategories(categoriesWithCount as any);
     } catch (error) {
       console.error('Error fetching categories:', error);
       toast({

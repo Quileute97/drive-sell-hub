@@ -182,6 +182,9 @@ const Index = () => {
         
         {/* Below-the-fold: lazy loaded for better FID/TBT */}
         <Suspense fallback={<LazyFallback />}>
+          <TrustSignals />
+        </Suspense>
+        <Suspense fallback={<LazyFallback />}>
           <Features />
         </Suspense>
         <Suspense fallback={<LazyFallback />}>

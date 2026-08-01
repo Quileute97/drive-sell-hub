@@ -1,4 +1,7 @@
 import { Helmet } from 'react-helmet-async';
+import { useLocation } from 'react-router-dom';
+
+export const SITE_URL = 'https://salemylink.com';
 
 interface SEOProps {
   title?: string;
@@ -12,6 +15,11 @@ interface SEOProps {
   publishedTime?: string;
   modifiedTime?: string;
   author?: string;
+  // Social overrides
+  ogTitle?: string;
+  ogDescription?: string;
+  twTitle?: string;
+  twDescription?: string;
   // Product-specific props
   productPrice?: number;
   productCurrency?: string;
@@ -21,6 +29,7 @@ interface SEOProps {
   productRating?: number;
   productReviewCount?: number;
 }
+
 
 export const SEO = ({
   title = "Salemylink - Marketplace sản phẩm Digital Việt Nam",

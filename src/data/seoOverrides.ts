@@ -5,7 +5,24 @@ export interface SeoOverride {
   title: string;
   description: string;
   keywords?: string[];
+  ogTitle?: string;
+  ogDescription?: string;
+  twTitle?: string;
+  twDescription?: string;
 }
+
+// Derive specific social copy from the override's own title/description so
+// tag/category pages never fall back to generic sitewide text.
+const withSocial = (o: SeoOverride, label: string): Required<Pick<SeoOverride,'ogTitle'|'ogDescription'|'twTitle'|'twDescription'>> & SeoOverride => {
+  const shortTitle = o.title.replace(/\s*\|\s*Salemylink\s*$/i, '');
+  return {
+    ...o,
+    ogTitle: o.ogTitle || `${shortTitle} - Salemylink`,
+    ogDescription: o.ogDescription || `Khám phá ${shortTitle.toLowerCase()}. ${o.description}`.slice(0, 300),
+    twTitle: o.twTitle || `${label} | Salemylink`,
+    twDescription: o.twDescription || o.description,
+  };
+};
 
 const normalize = (s: string) => s.trim().toLowerCase();
 
@@ -195,20 +212,20 @@ const TAG_OVERRIDES: Record<string, SeoOverride> = {
 
 export function getCategorySeo(slug: string, name: string): SeoOverride {
   const key = normalize(slug);
-  if (CATEGORY_OVERRIDES[key]) return CATEGORY_OVERRIDES[key];
-  return {
+  if (CATEGORY_OVERRIDES[key]) return withSocial(CATEGORY_OVERRIDES[key], name);
+  return withSocial({
     title: `${name} | Salemylink`,
     description: `Kho ${name} chất lượng cao, tải xuống nhanh qua Google Drive. Mua bán an toàn tại Salemylink.`,
     keywords: [name, `mua ${name}`, `tải ${name}`, "salemylink"],
-  };
+  }, name);
 }
 
 export function getTagSeo(tag: string): SeoOverride {
   const key = normalize(tag);
-  if (TAG_OVERRIDES[key]) return TAG_OVERRIDES[key];
-  return {
+  if (TAG_OVERRIDES[key]) return withSocial(TAG_OVERRIDES[key], tag);
+  return withSocial({
     title: `${tag} - Sản phẩm digital liên quan | Salemylink`,
     description: `Khám phá sản phẩm digital gắn tag "${tag}" tại Salemylink: ebook, tài liệu, khóa học, source code chất lượng.`,
     keywords: [tag, "sản phẩm digital", "salemylink"],
-  };
+  }, tag);
 }

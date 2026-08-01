@@ -277,16 +277,26 @@ export default function ProductDetail() {
   const siteUrl = "https://salemylink.com";
   const productUrl = `${siteUrl}/product/${product.slug}`;
   
-  // SEO title: "Tên sản phẩm | Salemylink"
-  const metaTitle = product.meta_title || `${product.title} | Salemylink`;
-  
+  // SEO title: "Tên sản phẩm | Salemylink" (ignore too-short/placeholder meta_title)
+  const cleanText = (s?: string | null) =>
+    (s || '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+  const customTitle = cleanText(product.meta_title);
+  const metaTitle = customTitle.length >= 10 ? customTitle : `${product.title} | Salemylink`;
+
   // SEO-optimized description with call-to-action
-  const metaDescription =
-    product.meta_description ||
-    product.short_description ||
-    (product.description 
-      ? product.description.substring(0, 140) + ` Tải ngay tại Salemylink.com`
-      : `${product.title} - ${product.categories?.name || 'Sản phẩm digital'}. Tải xuống ngay sau khi thanh toán. An toàn, nhanh chóng trên Salemylink.com`);
+  const categoryName = product.categories?.name || 'Sản phẩm digital';
+  const customDesc = cleanText(product.meta_description);
+  const shortDesc = cleanText(product.short_description);
+  const bodyDesc = cleanText(product.description);
+  const baseDesc =
+    (customDesc.length >= 50 && customDesc) ||
+    (shortDesc.length >= 50 && shortDesc) ||
+    (bodyDesc.length >= 50 && `${bodyDesc.substring(0, 120)}...`) ||
+    '';
+  const metaDescription = baseDesc
+    ? `${baseDesc} — ${categoryName}. Tải ngay tại Salemylink.`
+    : `${product.title} - ${categoryName}. Tải xuống ngay sau khi thanh toán. An toàn, nhanh chóng trên Salemylink.`;
+
 
   const productImages = [product.thumbnail_url, ...(product.images || [])].filter(Boolean);
   const mainImage = productImages[0] || `${siteUrl}/og-image.png`;

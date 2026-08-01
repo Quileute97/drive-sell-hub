@@ -7,7 +7,7 @@ import {
 } from '@/components/ui/tooltip';
 
 interface VerifiedBadgeProps {
-  verified?: boolean | null;
+  verified?: boolean | null | undefined;
   /** icon = chỉ icon nhỏ cạnh tên, full = badge có chữ */
   variant?: 'icon' | 'full';
   className?: string;

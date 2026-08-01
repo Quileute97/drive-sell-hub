@@ -23,6 +23,7 @@ import { Route as SellerGuideRouteImport } from './routes/seller-guide'
 import { Route as SellerSignupRouteImport } from './routes/seller-signup'
 import { Route as SellersRouteImport } from './routes/sellers'
 import { Route as TermsOfServiceRouteImport } from './routes/terms-of-service'
+import { Route as WishlistRouteImport } from './routes/wishlist'
 import { Route as WithdrawalRouteImport } from './routes/withdrawal'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as AdminLoginRouteImport } from './routes/admin/login'
@@ -106,6 +107,11 @@ const TermsOfServiceRoute = TermsOfServiceRouteImport.update({
   path: '/terms-of-service',
   getParentRoute: () => rootRouteImport,
 } as any)
+const WishlistRoute = WishlistRouteImport.update({
+  id: '/wishlist',
+  path: '/wishlist',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const WithdrawalRoute = WithdrawalRouteImport.update({
   id: '/withdrawal',
   path: '/withdrawal',
@@ -182,6 +188,7 @@ export interface FileRoutesByFullPath {
   '/seller-signup': typeof SellerSignupRoute
   '/sellers': typeof SellersRoute
   '/terms-of-service': typeof TermsOfServiceRoute
+  '/wishlist': typeof WishlistRoute
   '/withdrawal': typeof WithdrawalRoute
   '/admin/login': typeof AdminLoginRoute
   '/category/$slug': typeof CategorySlugRoute
@@ -210,6 +217,7 @@ export interface FileRoutesByTo {
   '/seller-signup': typeof SellerSignupRoute
   '/sellers': typeof SellersRoute
   '/terms-of-service': typeof TermsOfServiceRoute
+  '/wishlist': typeof WishlistRoute
   '/withdrawal': typeof WithdrawalRoute
   '/admin/login': typeof AdminLoginRoute
   '/category/$slug': typeof CategorySlugRoute
@@ -239,6 +247,7 @@ export interface FileRoutesById {
   '/seller-signup': typeof SellerSignupRoute
   '/sellers': typeof SellersRoute
   '/terms-of-service': typeof TermsOfServiceRoute
+  '/wishlist': typeof WishlistRoute
   '/withdrawal': typeof WithdrawalRoute
   '/admin/login': typeof AdminLoginRoute
   '/category/$slug': typeof CategorySlugRoute
@@ -269,6 +278,7 @@ export interface FileRouteTypes {
     | '/seller-signup'
     | '/sellers'
     | '/terms-of-service'
+    | '/wishlist'
     | '/withdrawal'
     | '/admin/login'
     | '/category/$slug'
@@ -297,6 +307,7 @@ export interface FileRouteTypes {
     | '/seller-signup'
     | '/sellers'
     | '/terms-of-service'
+    | '/wishlist'
     | '/withdrawal'
     | '/admin/login'
     | '/category/$slug'
@@ -325,6 +336,7 @@ export interface FileRouteTypes {
     | '/seller-signup'
     | '/sellers'
     | '/terms-of-service'
+    | '/wishlist'
     | '/withdrawal'
     | '/admin/login'
     | '/category/$slug'
@@ -354,6 +366,7 @@ export interface RootRouteChildren {
   SellerSignupRoute: typeof SellerSignupRoute
   SellersRoute: typeof SellersRoute
   TermsOfServiceRoute: typeof TermsOfServiceRoute
+  WishlistRoute: typeof WishlistRoute
   WithdrawalRoute: typeof WithdrawalRoute
   AdminLoginRoute: typeof AdminLoginRoute
   CategorySlugRoute: typeof CategorySlugRoute
@@ -468,6 +481,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TermsOfServiceRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/wishlist': {
+      id: '/wishlist'
+      path: '/wishlist'
+      fullPath: '/wishlist'
+      preLoaderRoute: typeof WishlistRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/withdrawal': {
       id: '/withdrawal'
       path: '/withdrawal'
@@ -570,6 +590,7 @@ const rootRouteChildren: RootRouteChildren = {
   SellerSignupRoute: SellerSignupRoute,
   SellersRoute: SellersRoute,
   TermsOfServiceRoute: TermsOfServiceRoute,
+  WishlistRoute: WishlistRoute,
   WithdrawalRoute: WithdrawalRoute,
   AdminLoginRoute: AdminLoginRoute,
   CategorySlugRoute: CategorySlugRoute,

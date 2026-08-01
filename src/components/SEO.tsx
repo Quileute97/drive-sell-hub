@@ -1,4 +1,4 @@
-import { Helmet } from 'react-helmet-async';
+import { useEffect } from 'react';
 import { useLocation } from '@/lib/router-compat';
 
 export const SITE_URL = 'https://salemylink.com';
@@ -30,6 +30,23 @@ interface SEOProps {
   productReviewCount?: number | undefined;
 }
 
+type MetaSpec =
+  | { kind: 'meta-name'; key: string; content: string }
+  | { kind: 'meta-property'; key: string; content: string };
+
+const SEO_ATTR = 'data-seo-managed';
+
+function upsertMeta(spec: MetaSpec) {
+  const attr = spec.kind === 'meta-name' ? 'name' : 'property';
+  let el = document.head.querySelector<HTMLMetaElement>(`meta[${attr}="${spec.key}"]`);
+  if (!el) {
+    el = document.createElement('meta');
+    el.setAttribute(attr, spec.key);
+    el.setAttribute(SEO_ATTR, 'true');
+    document.head.appendChild(el);
+  }
+  el.setAttribute('content', spec.content);
+}
 
 export const SEO = ({
   title = "Salemylink - Marketplace sản phẩm Digital Việt Nam",
@@ -52,15 +69,13 @@ export const SEO = ({
   productAvailability = "InStock",
   productBrand,
   productCategory,
-  productRating,
-  productReviewCount
 }: SEOProps) => {
   const location = useLocation();
   // Canonical: explicit url, else current path on the production domain (query params stripped)
   const canonicalUrl = url || `${SITE_URL}${location.pathname === '/' ? '/' : location.pathname.replace(/\/+$/, '')}`;
 
   const fullTitle = title.includes('Salemylink') ? title : `${title} | Salemylink`;
-  
+
   // Ensure description is within optimal length (150-160 chars)
   const clamp = (s: string) => (s.length > 160 ? s.substring(0, 157) + '...' : s);
   const optimizedDescription = clamp(description);
@@ -69,95 +84,117 @@ export const SEO = ({
   const twitterTitle = twTitle || socialTitle;
   const twitterDescription = clamp(twDescription || ogDescription || description);
 
-  // Format price for Open Graph
-  const formattedPrice = productPrice ? productPrice.toString() : undefined;
+  const structuredDataJson = structuredData ? JSON.stringify(structuredData) : undefined;
 
+  useEffect(() => {
+    document.title = fullTitle;
 
-  return (
-    <Helmet>
-      {/* Basic Meta Tags */}
-      <title>{fullTitle}</title>
-      <meta name="description" content={optimizedDescription} />
-      <meta name="keywords" content={keywords} />
-      <link rel="canonical" href={canonicalUrl} />
-      
-      {/* Robots */}
-      <meta name="robots" content={noindex ? "noindex, nofollow" : "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"} />
-      <meta name="googlebot" content={noindex ? "noindex, nofollow" : "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"} />
+    const robots = noindex
+      ? 'noindex, nofollow'
+      : 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1';
 
-      {/* Open Graph / Facebook */}
-      <meta property="og:type" content={type === 'product' ? 'product' : type} />
-      <meta property="og:url" content={canonicalUrl} />
-      <meta property="og:title" content={socialTitle} />
-      <meta property="og:description" content={socialDescription} />
-      <meta property="og:image" content={image} />
-      <meta property="og:image:width" content="1200" />
-      <meta property="og:image:height" content="630" />
-      <meta property="og:image:alt" content={title} />
-      <meta property="og:locale" content="vi_VN" />
-      <meta property="og:site_name" content="Salemylink.com" />
-      
-      {/* Product-specific Open Graph tags */}
-      {type === 'product' && formattedPrice && (
-        <>
-          <meta property="product:price:amount" content={formattedPrice} />
-          <meta property="product:price:currency" content={productCurrency} />
-          <meta property="product:availability" content={productAvailability.toLowerCase()} />
-          {productBrand && <meta property="product:brand" content={productBrand} />}
-          {productCategory && <meta property="product:category" content={productCategory} />}
-        </>
-      )}
-      
-      {/* Article specific tags */}
-      {publishedTime && <meta property="article:published_time" content={publishedTime} />}
-      {modifiedTime && <meta property="article:modified_time" content={modifiedTime} />}
-      {author && <meta property="article:author" content={author} />}
+    const metas: MetaSpec[] = [
+      { kind: 'meta-name', key: 'description', content: optimizedDescription },
+      { kind: 'meta-name', key: 'keywords', content: keywords },
+      { kind: 'meta-name', key: 'robots', content: robots },
+      { kind: 'meta-name', key: 'googlebot', content: robots },
+      { kind: 'meta-property', key: 'og:type', content: type === 'product' ? 'product' : type },
+      { kind: 'meta-property', key: 'og:url', content: canonicalUrl },
+      { kind: 'meta-property', key: 'og:title', content: socialTitle },
+      { kind: 'meta-property', key: 'og:description', content: socialDescription },
+      { kind: 'meta-property', key: 'og:image', content: image },
+      { kind: 'meta-property', key: 'og:image:width', content: '1200' },
+      { kind: 'meta-property', key: 'og:image:height', content: '630' },
+      { kind: 'meta-property', key: 'og:image:alt', content: title },
+      { kind: 'meta-property', key: 'og:locale', content: 'vi_VN' },
+      { kind: 'meta-property', key: 'og:site_name', content: 'Salemylink.com' },
+      { kind: 'meta-name', key: 'twitter:card', content: 'summary_large_image' },
+      { kind: 'meta-name', key: 'twitter:url', content: canonicalUrl },
+      { kind: 'meta-name', key: 'twitter:title', content: twitterTitle },
+      { kind: 'meta-name', key: 'twitter:description', content: twitterDescription },
+      { kind: 'meta-name', key: 'twitter:image', content: image },
+      { kind: 'meta-name', key: 'twitter:image:alt', content: title },
+      { kind: 'meta-name', key: 'twitter:site', content: '@salemylink' },
+      { kind: 'meta-name', key: 'twitter:creator', content: '@salemylink' },
+      { kind: 'meta-name', key: 'author', content: author || 'Salemylink.com' },
+      { kind: 'meta-name', key: 'publisher', content: 'Salemylink.com' },
+    ];
 
-      {/* Twitter */}
-      <meta name="twitter:card" content="summary_large_image" />
-      <meta name="twitter:url" content={canonicalUrl} />
-      <meta name="twitter:title" content={twitterTitle} />
-      <meta name="twitter:description" content={twitterDescription} />
-      <meta name="twitter:image" content={image} />
-      <meta name="twitter:image:alt" content={title} />
-      <meta name="twitter:site" content="@salemylink" />
-      <meta name="twitter:creator" content="@salemylink" />
-      
-      {/* Twitter Product Card */}
-      {type === 'product' && formattedPrice && (
-        <>
-          <meta name="twitter:label1" content="Giá" />
-          <meta name="twitter:data1" content={`${new Intl.NumberFormat('vi-VN').format(productPrice!)} ${productCurrency}`} />
-          {productCategory && (
-            <>
-              <meta name="twitter:label2" content="Danh mục" />
-              <meta name="twitter:data2" content={productCategory} />
-            </>
-          )}
-        </>
-      )}
+    if (type === 'product' && productPrice) {
+      metas.push(
+        { kind: 'meta-property', key: 'product:price:amount', content: productPrice.toString() },
+        { kind: 'meta-property', key: 'product:price:currency', content: productCurrency },
+        { kind: 'meta-property', key: 'product:availability', content: productAvailability.toLowerCase() },
+        { kind: 'meta-name', key: 'twitter:label1', content: 'Giá' },
+        {
+          kind: 'meta-name',
+          key: 'twitter:data1',
+          content: `${new Intl.NumberFormat('vi-VN').format(productPrice)} ${productCurrency}`,
+        },
+      );
+      if (productBrand) metas.push({ kind: 'meta-property', key: 'product:brand', content: productBrand });
+      if (productCategory) {
+        metas.push(
+          { kind: 'meta-property', key: 'product:category', content: productCategory },
+          { kind: 'meta-name', key: 'twitter:label2', content: 'Danh mục' },
+          { kind: 'meta-name', key: 'twitter:data2', content: productCategory },
+        );
+      }
+    }
 
-      {/* Additional SEO */}
-      <meta name="author" content={author || "Salemylink.com"} />
-      <meta name="publisher" content="Salemylink.com" />
-      <meta name="language" content="vi" />
-      <meta name="geo.region" content="VN" />
-      <meta name="geo.placename" content="Vietnam" />
-      <meta name="content-language" content="vi" />
-      
-      {/* Mobile optimization */}
-      <meta name="format-detection" content="telephone=no" />
-      <meta name="mobile-web-app-capable" content="yes" />
-      <meta name="apple-mobile-web-app-capable" content="yes" />
-      <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-      <meta name="theme-color" content="#6366f1" />
+    if (publishedTime) metas.push({ kind: 'meta-property', key: 'article:published_time', content: publishedTime });
+    if (modifiedTime) metas.push({ kind: 'meta-property', key: 'article:modified_time', content: modifiedTime });
+    if (author) metas.push({ kind: 'meta-property', key: 'article:author', content: author });
 
-      {/* Structured Data */}
-      {structuredData && (
-        <script type="application/ld+json">
-          {JSON.stringify(structuredData)}
-        </script>
-      )}
-    </Helmet>
-  );
+    metas.forEach(upsertMeta);
+
+    // Canonical link
+    let canonical = document.head.querySelector<HTMLLinkElement>('link[rel="canonical"]');
+    if (!canonical) {
+      canonical = document.createElement('link');
+      canonical.rel = 'canonical';
+      canonical.setAttribute(SEO_ATTR, 'true');
+      document.head.appendChild(canonical);
+    }
+    canonical.href = canonicalUrl;
+
+    // Structured data (JSON-LD)
+    const existingLd = document.head.querySelector<HTMLScriptElement>(`script[type="application/ld+json"][${SEO_ATTR}]`);
+    if (structuredDataJson) {
+      const script = existingLd ?? (() => {
+        const s = document.createElement('script');
+        s.type = 'application/ld+json';
+        s.setAttribute(SEO_ATTR, 'true');
+        document.head.appendChild(s);
+        return s;
+      })();
+      script.textContent = structuredDataJson;
+    } else if (existingLd) {
+      existingLd.remove();
+    }
+  }, [
+    fullTitle,
+    optimizedDescription,
+    keywords,
+    canonicalUrl,
+    noindex,
+    type,
+    image,
+    title,
+    socialTitle,
+    socialDescription,
+    twitterTitle,
+    twitterDescription,
+    author,
+    publishedTime,
+    modifiedTime,
+    productPrice,
+    productCurrency,
+    productAvailability,
+    productBrand,
+    productCategory,
+    structuredDataJson,
+  ]);
+
+  return null;
 };

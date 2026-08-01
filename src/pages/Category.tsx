@@ -312,9 +312,14 @@ export default function Category() {
         keywords={metaKeywords}
         url={categoryUrl}
         image={categoryImage}
+        ogTitle={`${category.name} | Salemylink`}
+        ogDescription={`${category.description || seoOverride.description}${products.length > 0 ? ` Hiện có ${products.length} sản phẩm digital.` : ''}`}
+        twTitle={`${category.name} - Sản phẩm Digital | Salemylink`}
+        twDescription={`${products.length > 0 ? `${products.length} ` : ''}${category.name.toLowerCase()} chất lượng, tải nhanh qua Google Drive tại Salemylink.`}
         structuredData={combinedStructuredData}
         modifiedTime={new Date(latestUpdate).toISOString()}
       />
+
       <Header />
       
       <main className="container mx-auto px-4 py-12">

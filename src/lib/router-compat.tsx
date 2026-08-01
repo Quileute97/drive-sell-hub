@@ -130,14 +130,16 @@ export const Link = forwardRef<HTMLAnchorElement, LinkProps>(function Link(
   ref,
 ) {
   const { pathname, search, hash } = parseTo(to);
+  const extra: Record<string, unknown> = {};
+  if (hash !== undefined) extra["hash"] = hash;
+  if (replace !== undefined) extra["replace"] = replace;
+  if (state !== undefined) extra["state"] = state;
   return (
     <TSLink
       ref={ref as never}
       to={pathname as never}
       search={search as never}
-      hash={hash}
-      replace={replace}
-      state={state as never}
+      {...(extra as never)}
       {...((rest ?? {}) as Record<string, unknown>)}
     >
       {children}
@@ -150,7 +152,11 @@ export const Link = forwardRef<HTMLAnchorElement, LinkProps>(function Link(
 
 export function Navigate({ to, replace, state }: { to: string; replace?: boolean; state?: unknown }) {
   const { pathname, search, hash } = parseTo(to);
-  return <TSNavigate to={pathname as never} search={search as never} hash={hash} state={state as never} replace={replace} />;
+  const extra: Record<string, unknown> = {};
+  if (hash !== undefined) extra["hash"] = hash;
+  if (replace !== undefined) extra["replace"] = replace;
+  if (state !== undefined) extra["state"] = state;
+  return <TSNavigate to={pathname as never} search={search as never} {...(extra as never)} />;
 }
 
 // ---------- Outlet ----------

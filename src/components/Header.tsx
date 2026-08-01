@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { ShoppingCart, User, Search, LogOut } from "lucide-react";
+import { ShoppingCart, User, Search, LogOut, Heart } from "lucide-react";
 import { useAuth } from '@/contexts/AuthContext';
 import { Link, useNavigate } from '@/lib/router-compat';
 import { useCart } from '@/hooks/useCart';
+import { useWishlist } from '@/hooks/useWishlist';
 import { useUserRole } from '@/hooks/useUserRole';
 import { NotificationBell } from '@/components/NotificationBell';
 import {

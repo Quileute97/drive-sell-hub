@@ -587,6 +587,11 @@ export default function ProductDetail() {
         image={mainImage}
         url={productUrl}
         type="product"
+        ogTitle={`${product.title} - ${categoryName} | Salemylink`}
+        ogDescription={metaDescription}
+        twTitle={`${product.title} | Salemylink`}
+        twDescription={metaDescription}
+
         structuredData={combinedStructuredData}
         publishedTime={datePublished}
         modifiedTime={dateModified}

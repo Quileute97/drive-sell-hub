@@ -87,7 +87,98 @@ const TAG_OVERRIDES: Record<string, SeoOverride> = {
       "Template Excel quản lý, báo cáo tài chính, dashboard, hàm nâng cao. Tải file Excel chuyên nghiệp tại Salemylink.",
     keywords: ["file excel", "template excel", "excel mẫu", "excel quản lý"],
   },
+  "english": {
+    title: "Tài liệu tiếng Anh, đề thi, bài mẫu | Salemylink",
+    description:
+      "Tài liệu tiếng Anh: ngữ pháp, từ vựng, đề thi, bài mẫu Writing & Speaking cho mọi trình độ. Tải nhanh tại Salemylink.",
+    keywords: ["tài liệu tiếng anh", "đề thi tiếng anh", "bài mẫu tiếng anh", "học tiếng anh"],
+  },
+  "yds": {
+    title: "Tài liệu YDS, từ vựng, đề thi | Salemylink",
+    description:
+      "Tài liệu YDS: từ vựng chuyên ngành, đề thi thử, hướng dẫn ôn luyện đầy đủ. Tải xuống ngay tại Salemylink.",
+    keywords: ["yds", "tài liệu yds", "từ vựng yds", "đề thi yds"],
+  },
+  "tool": {
+    title: "Toolkit, template & công cụ học tập | Salemylink",
+    description:
+      "Bộ công cụ, toolkit và template hỗ trợ học tập, làm việc: quản lý thời gian, ghi chú, báo cáo. Tải tại Salemylink.",
+    keywords: ["toolkit", "công cụ học tập", "template", "tool"],
+  },
+  "nội khoa": {
+    title: "Tài liệu nội khoa, bệnh án mẫu | Salemylink",
+    description:
+      "Tài liệu nội khoa: bệnh án mẫu, phác đồ điều trị, slide bài giảng cho sinh viên và bác sĩ. Tải tại Salemylink.",
+    keywords: ["nội khoa", "bệnh án nội khoa", "phác đồ điều trị", "tài liệu y khoa"],
+  },
+  "hóa sinh": {
+    title: "Tài liệu hóa sinh, sinh học phân tử | Salemylink",
+    description:
+      "Tài liệu hóa sinh, sinh học phân tử: giáo trình, slide, đề thi và bài tập có lời giải. Tải tại Salemylink.",
+    keywords: ["hóa sinh", "sinh học phân tử", "giáo trình hóa sinh", "đề thi hóa sinh"],
+  },
+  "nhi khoa": {
+    title: "Tài liệu nhi khoa, bệnh án nhi mẫu | Salemylink",
+    description:
+      "Tài liệu nhi khoa: bệnh án nhi mẫu, phác đồ, slide bài giảng dành cho sinh viên y. Tải tại Salemylink.",
+    keywords: ["nhi khoa", "bệnh án nhi", "tài liệu nhi khoa"],
+  },
+  "ngoại khoa": {
+    title: "Tài liệu ngoại khoa, phẫu thuật, bệnh án | Salemylink",
+    description:
+      "Tài liệu ngoại khoa: kỹ thuật phẫu thuật, bệnh án mẫu, slide bài giảng chuyên sâu. Tải tại Salemylink.",
+    keywords: ["ngoại khoa", "phẫu thuật", "bệnh án ngoại khoa"],
+  },
+  "dược": {
+    title: "Tài liệu dược, dược lý & dược lâm sàng | Salemylink",
+    description:
+      "Tài liệu ngành dược: dược lý, dược lâm sàng, bào chế, đề thi và giáo trình. Tải tại Salemylink.",
+    keywords: ["dược", "dược lý", "dược lâm sàng", "tài liệu ngành dược"],
+  },
+  "giải phẫu": {
+    title: "Tài liệu giải phẫu, atlas & bài giảng | Salemylink",
+    description:
+      "Tài liệu giải phẫu người: atlas hình ảnh, bài giảng, đề thi và sơ đồ hệ cơ quan. Tải tại Salemylink.",
+    keywords: ["giải phẫu", "atlas giải phẫu", "bài giảng giải phẫu"],
+  },
+  "tiểu luận": {
+    title: "Tiểu luận mẫu đa ngành, có tài liệu tham khảo | Salemylink",
+    description:
+      "Kho tiểu luận mẫu đa ngành kèm tài liệu tham khảo, trình bày đúng chuẩn. Tham khảo và tải tại Salemylink.",
+    keywords: ["tiểu luận", "tiểu luận mẫu", "bài tiểu luận"],
+  },
+  "đồ án": {
+    title: "Đồ án tốt nghiệp mẫu, báo cáo & source code | Salemylink",
+    description:
+      "Đồ án tốt nghiệp mẫu kèm báo cáo, slide bảo vệ và source code đa ngành. Tải tại Salemylink.",
+    keywords: ["đồ án", "đồ án tốt nghiệp", "báo cáo đồ án"],
+  },
+  "python": {
+    title: "Source code Python, tài liệu & khóa học | Salemylink",
+    description:
+      "Source code Python, tài liệu lập trình, khóa học từ cơ bản đến data science. Tải tại Salemylink.",
+    keywords: ["python", "source code python", "khóa học python"],
+  },
+  "photoshop": {
+    title: "File PSD, action & template Photoshop | Salemylink",
+    description:
+      "File PSD, action, brush, mockup và template Photoshop chuyên nghiệp. Tải tại Salemylink.",
+    keywords: ["photoshop", "file psd", "template photoshop"],
+  },
+  "powerpoint": {
+    title: "Template PowerPoint thuyết trình đẹp | Salemylink",
+    description:
+      "Template PowerPoint thuyết trình, báo cáo, đồ án với thiết kế hiện đại. Tải file PPTX tại Salemylink.",
+    keywords: ["powerpoint", "template powerpoint", "slide thuyết trình"],
+  },
+  "marketing": {
+    title: "Tài liệu marketing, khóa học & template | Salemylink",
+    description:
+      "Tài liệu marketing: digital marketing, content, ads, template kế hoạch marketing. Tải tại Salemylink.",
+    keywords: ["marketing", "digital marketing", "tài liệu marketing"],
+  },
 };
+
 
 export function getCategorySeo(slug: string, name: string): SeoOverride {
   const key = normalize(slug);

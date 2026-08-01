@@ -139,7 +139,7 @@ export const Link = forwardRef<HTMLAnchorElement, LinkProps>(function Link(
       ref={ref as never}
       to={pathname as never}
       search={search as never}
-      {...(extra as never)}
+      {...(extra as object)}
       {...((rest ?? {}) as Record<string, unknown>)}
     >
       {children}
@@ -156,7 +156,7 @@ export function Navigate({ to, replace, state }: { to: string; replace?: boolean
   if (hash !== undefined) extra["hash"] = hash;
   if (replace !== undefined) extra["replace"] = replace;
   if (state !== undefined) extra["state"] = state;
-  return <TSNavigate to={pathname as never} search={search as never} {...(extra as never)} />;
+  return <TSNavigate to={pathname as never} search={search as never} {...(extra as object)} />;
 }
 
 // ---------- Outlet ----------

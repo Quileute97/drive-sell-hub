@@ -61,7 +61,23 @@ export const Header = () => {
           {/* Right Navigation */}
           <div className="flex items-center space-x-2 sm:space-x-4">
             {user && <NotificationBell />}
-            
+
+            <Link to="/wishlist">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="relative hidden sm:flex"
+                aria-label="Sản phẩm yêu thích"
+              >
+                <Heart className="h-4 w-4" />
+                {wishlistCount > 0 && (
+                  <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-destructive text-xs text-destructive-foreground">
+                    {wishlistCount}
+                  </span>
+                )}
+              </Button>
+            </Link>
+
             <Link to="/cart">
               <Button variant="ghost" size="sm" className="hidden sm:flex relative">
                 <ShoppingCart className="h-4 w-4" />

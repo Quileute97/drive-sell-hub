@@ -130,8 +130,8 @@ const SellerDashboard = () => {
     });
 
     const revenueByMonth = orders
-      .filter(order => order.status === 'delivered')
-      .reduce((acc, order) => {
+      .filter((order: any) => order.status === 'delivered')
+      .reduce((acc: Record<string, number>, order: any) => {
         const date = new Date(order.created_at);
         const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
         acc[monthKey] = (acc[monthKey] || 0) + Number(order.seller_amount);
@@ -156,13 +156,13 @@ const SellerDashboard = () => {
   };
 
   // Calculate revenue stats
-  const completedOrders = orders.filter(order => order.status === 'delivered');
-  const paidOrDeliveredOrders = orders.filter(order => order.status === 'paid' || order.status === 'delivered');
-  const totalRevenue = completedOrders.reduce((sum, order) => sum + Number(order.seller_amount), 0);
+  const completedOrders = orders.filter((order: any) => order.status === 'delivered');
+  const paidOrDeliveredOrders = orders.filter((order: any) => order.status === 'paid' || order.status === 'delivered');
+  const totalRevenue = completedOrders.reduce((sum: number, order: any) => sum + Number(order.seller_amount), 0);
   const totalOrders = orders.length;
   const totalProducts = products.length;
   // Total downloads = sum of quantities from paid/delivered orders
-  const totalDownloads = paidOrDeliveredOrders.reduce((sum, order) => sum + (order.quantity || 1), 0);
+  const totalDownloads = paidOrDeliveredOrders.reduce((sum: number, order: any) => sum + (order.quantity || 1), 0);
 
   const handleAddProductSuccess = () => {
     queryClient.invalidateQueries({ queryKey: ['seller-products', user?.id] });
@@ -441,7 +441,7 @@ const SellerDashboard = () => {
             <h2 className="text-2xl font-semibold">Đơn hàng</h2>
             
             <div className="grid gap-4">
-              {orders.map((order) => (
+              {orders.map((order: any) => (
                 <Card key={order.id}>
                   <CardContent className="p-6">
                     <div className="flex items-center justify-between">

@@ -29,7 +29,7 @@ export const PaymentSuccess = () => {
       }
 
       try {
-        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://dfalphamyvdfewixrnju.supabase.co';
+        const supabaseUrl = import.meta.env['VITE_SUPABASE_URL'] || 'https://dfalphamyvdfewixrnju.supabase.co';
         const response = await fetch(`${supabaseUrl}/functions/v1/payos-verify-payment?orderCode=${orderCode}`, {
           method: 'GET',
           headers: {

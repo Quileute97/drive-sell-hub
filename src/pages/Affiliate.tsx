@@ -31,7 +31,7 @@ interface Commission {
 }
 
 const generateCode = (email: string) =>
-  (email.split("@")[0].replace(/[^a-z0-9]/gi, "").slice(0, 8).toLowerCase() || "ref") +
+  ((email.split("@")[0] ?? "").replace(/[^a-z0-9]/gi, "").slice(0, 8).toLowerCase() || "ref") +
   Math.random().toString(36).slice(2, 6);
 
 export default function Affiliate() {

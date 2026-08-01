@@ -100,7 +100,7 @@ export const Cart = () => {
       console.error('Payment error:', error);
       toast({
         title: "Lỗi thanh toán",
-        description: `Không thể tạo thanh toán: ${error.message || 'Vui lòng thử lại sau.'}`,
+        description: `Không thể tạo thanh toán: ${error instanceof Error ? error.message : 'Vui lòng thử lại sau.'}`,
         variant: "destructive",
       });
     } finally {

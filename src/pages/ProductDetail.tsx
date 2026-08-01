@@ -113,12 +113,12 @@ export default function ProductDetail() {
           profiles!products_seller_id_fkey(full_name, avatar_url),
           categories(name, slug)
         `)
-        .eq('slug', slug)
+        .eq('slug', slug!)
         .eq('status', 'active')
         .single();
 
       if (error) throw error;
-      setProduct(data);
+      setProduct(data as any);
       
       // Fetch reviews for structured data
       if (data?.id) {
@@ -207,8 +207,8 @@ export default function ProductDetail() {
     if (navigator.share) {
       try {
         await navigator.share({
-          title: product?.title,
-          text: product?.short_description || product?.description,
+          title: product?.title ?? '',
+          text: product?.short_description || product?.description || '',
           url: url,
         });
         toast({
@@ -444,7 +444,7 @@ export default function ProductDetail() {
 
   // Only include aggregateRating with real data
   if (product.rating_count > 0) {
-    productNode.aggregateRating = {
+    productNode['aggregateRating'] = {
       "@type": "AggregateRating",
       "@id": `${productUrl}#rating`,
       ratingValue: product.rating_average.toFixed(1),
@@ -456,7 +456,7 @@ export default function ProductDetail() {
 
   // Only include real reviews with enhanced schema
   if (reviews.length > 0) {
-    productNode.review = reviews.map((review, index) => ({
+    productNode['review'] = reviews.map((review, index) => ({
       "@type": "Review",
       "@id": `${productUrl}#review-${index}`,
       reviewRating: {
@@ -492,7 +492,7 @@ export default function ProductDetail() {
     });
   }
   if (additionalProperties.length > 0) {
-    productNode.additionalProperty = additionalProperties;
+    productNode['additionalProperty'] = additionalProperties;
   }
 
   graphNodes.push(productNode);

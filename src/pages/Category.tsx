@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useParams, useNavigate, Link } from "react-router-dom";
+import { useParams, useNavigate, Link } from "@/lib/router-compat";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { Card, CardContent } from "@/components/ui/card";
@@ -60,12 +60,12 @@ export default function Category() {
       const { data: categoryData, error: categoryError } = await supabase
         .from('categories')
         .select('*')
-        .eq('slug', slug)
+        .eq('slug', slug!)
         .eq('is_active', true)
         .single();
 
       if (categoryError) throw categoryError;
-      setCategory(categoryData);
+      setCategory(categoryData as any);
 
       const { data: productsData, error: productsError } = await supabase
         .from('products')
@@ -75,7 +75,7 @@ export default function Category() {
         .order('created_at', { ascending: false });
 
       if (productsError) throw productsError;
-      setProducts(productsData || []);
+      setProducts((productsData || []) as any);
     } catch (error) {
       console.error('Error:', error);
       toast({
@@ -155,7 +155,7 @@ export default function Category() {
   const latestUpdate = products.length > 0 
     ? products.reduce((latest, p) => 
         new Date(p.updated_at) > new Date(latest) ? p.updated_at : latest, 
-        products[0].updated_at
+        products[0]!.updated_at
       )
     : category.updated_at;
 

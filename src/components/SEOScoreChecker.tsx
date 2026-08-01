@@ -42,7 +42,7 @@ function getHeadings(html: string): { level: number; text: string }[] {
   const headings: { level: number; text: string }[] = [];
   doc.querySelectorAll('h1, h2, h3, h4, h5, h6').forEach((el) => {
     headings.push({
-      level: parseInt(el.tagName[1]),
+      level: parseInt(el.tagName[1] ?? '0'),
       text: el.textContent || '',
     });
   });

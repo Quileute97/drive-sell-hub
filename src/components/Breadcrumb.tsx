@@ -1,9 +1,9 @@
-import { Link } from "react-router-dom";
+import { Link } from "@/lib/router-compat";
 import { ChevronRight, Home } from "lucide-react";
 
 interface BreadcrumbItem {
   label: string;
-  href?: string;
+  href?: string | undefined;
 }
 
 interface BreadcrumbProps {

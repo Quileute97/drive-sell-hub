@@ -1,33 +1,33 @@
 import { Helmet } from 'react-helmet-async';
-import { useLocation } from 'react-router-dom';
+import { useLocation } from '@/lib/router-compat';
 
 export const SITE_URL = 'https://salemylink.com';
 
 interface SEOProps {
-  title?: string;
-  description?: string;
-  keywords?: string;
-  image?: string;
-  url?: string;
-  type?: 'website' | 'product' | 'article';
-  structuredData?: object | object[];
-  noindex?: boolean;
-  publishedTime?: string;
-  modifiedTime?: string;
-  author?: string;
+  title?: string | undefined;
+  description?: string | undefined;
+  keywords?: string | undefined;
+  image?: string | undefined;
+  url?: string | undefined;
+  type?: 'website' | 'product' | 'article' | undefined;
+  structuredData?: object | object[] | undefined;
+  noindex?: boolean | undefined;
+  publishedTime?: string | undefined;
+  modifiedTime?: string | undefined;
+  author?: string | undefined;
   // Social overrides
-  ogTitle?: string;
-  ogDescription?: string;
-  twTitle?: string;
-  twDescription?: string;
+  ogTitle?: string | undefined;
+  ogDescription?: string | undefined;
+  twTitle?: string | undefined;
+  twDescription?: string | undefined;
   // Product-specific props
-  productPrice?: number;
-  productCurrency?: string;
-  productAvailability?: 'InStock' | 'OutOfStock' | 'PreOrder';
-  productBrand?: string;
-  productCategory?: string;
-  productRating?: number;
-  productReviewCount?: number;
+  productPrice?: number | undefined;
+  productCurrency?: string | undefined;
+  productAvailability?: 'InStock' | 'OutOfStock' | 'PreOrder' | undefined;
+  productBrand?: string | undefined;
+  productCategory?: string | undefined;
+  productRating?: number | undefined;
+  productReviewCount?: number | undefined;
 }
 
 

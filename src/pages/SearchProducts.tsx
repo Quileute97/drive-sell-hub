@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useSearchParams, useNavigate, Link } from "react-router-dom";
+import { useSearchParams, useNavigate, Link } from "@/lib/router-compat";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -145,7 +145,7 @@ export default function SearchProducts() {
       const { data, error } = await query;
 
       if (error) throw error;
-      setProducts(data || []);
+      setProducts((data || []) as any);
     } catch (error) {
       console.error('Error fetching products:', error);
       toast({
@@ -453,7 +453,7 @@ export default function SearchProducts() {
 
                 return <article 
                   key={product.id} 
-                  className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-1 cursor-pointer flex flex-col h-full rounded-lg border bg-card text-card-foreground shadow-sm"
+                  className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-1 cursor-pointer flex flex-col h-full rounded-lg border bg-card text-card-foreground shadow-xs"
                   onClick={() => navigate(`/product/${product.slug}`)}
                 >
                   <div className="relative overflow-hidden rounded-t-lg aspect-[4/3] bg-muted">

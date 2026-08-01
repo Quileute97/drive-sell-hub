@@ -58,7 +58,7 @@ export const ProductReviews = ({ productId }: ProductReviewsProps) => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setReviews(data || []);
+      setReviews((data || []) as any);
     } catch (error) {
       console.error('Error fetching reviews:', error);
     } finally {
@@ -100,7 +100,7 @@ export const ProductReviews = ({ productId }: ProductReviewsProps) => {
         .maybeSingle();
 
       if (existingReview) {
-        setUserReview(existingReview);
+        setUserReview(existingReview as any);
         setRating(existingReview.rating);
         setComment(existingReview.comment || "");
       }
@@ -208,7 +208,7 @@ export const ProductReviews = ({ productId }: ProductReviewsProps) => {
                 setRating(star);
               }
             }}
-            className={`p-0 border-0 bg-transparent ${interactive ? 'cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1 rounded' : 'cursor-default'}`}
+            className={`p-0 border-0 bg-transparent ${interactive ? 'cursor-pointer focus:outline-hidden focus:ring-2 focus:ring-primary focus:ring-offset-1 rounded' : 'cursor-default'}`}
             aria-label={interactive ? `Đánh giá ${star} sao` : undefined}
           >
             <Star

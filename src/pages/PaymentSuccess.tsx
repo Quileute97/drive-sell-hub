@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useSearchParams, Link } from 'react-router-dom';
+import { useSearchParams, Link } from '@/lib/router-compat';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -29,7 +29,7 @@ export const PaymentSuccess = () => {
       }
 
       try {
-        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://dfalphamyvdfewixrnju.supabase.co';
+        const supabaseUrl = import.meta.env['VITE_SUPABASE_URL'] || 'https://dfalphamyvdfewixrnju.supabase.co';
         const response = await fetch(`${supabaseUrl}/functions/v1/payos-verify-payment?orderCode=${orderCode}`, {
           method: 'GET',
           headers: {

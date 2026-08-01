@@ -99,7 +99,7 @@ export default function Withdrawal() {
           queryClient.invalidateQueries({ queryKey: ['seller-balance', user.id] });
           
           // Show toast notification based on new status
-          const newStatus = payload.new.status;
+          const newStatus = payload.new['status'];
           if (newStatus === 'completed') {
             toast({
               title: "Rút tiền thành công!",
@@ -108,7 +108,7 @@ export default function Withdrawal() {
           } else if (newStatus === 'rejected') {
             toast({
               title: "Yêu cầu bị từ chối",
-              description: payload.new.rejected_reason || "Yêu cầu rút tiền của bạn đã bị từ chối.",
+              description: payload.new['rejected_reason'] || "Yêu cầu rút tiền của bạn đã bị từ chối.",
               variant: "destructive",
             });
           }
@@ -131,11 +131,11 @@ export default function Withdrawal() {
 
       if (error) throw error;
 
-      const completed = orders?.filter(o => o.status === 'delivered') || [];
-      const pending = orders?.filter(o => o.status === 'paid') || [];
+      const completed = orders?.filter((o: any) => o.status === 'delivered') || [];
+      const pending = orders?.filter((o: any) => o.status === 'paid') || [];
       
-      const available = completed.reduce((sum, o) => sum + Number(o.seller_amount), 0);
-      const pendingAmount = pending.reduce((sum, o) => sum + Number(o.seller_amount), 0);
+      const available = completed.reduce((sum: number, o: any) => sum + Number(o.seller_amount), 0);
+      const pendingAmount = pending.reduce((sum: number, o: any) => sum + Number(o.seller_amount), 0);
 
       // Subtract withdrawn amounts
       const { data: withdrawals } = await supabase
@@ -320,7 +320,7 @@ export default function Withdrawal() {
       rejected: { variant: 'destructive', icon: XCircle, label: 'Từ chối' }
     };
 
-    const config = variants[status] || variants.pending;
+    const config = (variants[status] ?? variants['pending'])!;
     const Icon = config.icon;
 
     return (

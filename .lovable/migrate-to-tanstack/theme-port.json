@@ -1,0 +1,27 @@
+{
+  "customizations": [
+    { "token": "--primary / --primary-foreground / --primary-light (blue brand)", "source": "src/index.css", "reappliedIn": "src/styles.css" },
+    { "token": "--accent / --accent-foreground / --accent-light (orange CTA)", "source": "src/index.css", "reappliedIn": "src/styles.css" },
+    { "token": "--gradient-hero", "source": "src/index.css", "reappliedIn": "src/styles.css" },
+    { "token": "--gradient-accent", "source": "src/index.css", "reappliedIn": "src/styles.css" },
+    { "token": "--gradient-subtle", "source": "src/index.css", "reappliedIn": "src/styles.css" },
+    { "token": "--shadow-primary", "source": "src/index.css", "reappliedIn": "src/styles.css" },
+    { "token": "--shadow-accent", "source": "src/index.css", "reappliedIn": "src/styles.css" },
+    { "token": "--shadow-elegant", "source": "src/index.css", "reappliedIn": "src/styles.css" },
+    { "token": "--transition-smooth / --transition-bounce", "source": "src/index.css", "reappliedIn": "src/styles.css" },
+    { "token": "--radius: 0.75rem", "source": "src/index.css", "reappliedIn": "src/styles.css" },
+    { "token": "sidebar-* variables (light + dark)", "source": "src/index.css", "reappliedIn": "src/styles.css" },
+    { "token": ".gradient-hero / .gradient-accent / .gradient-subtle utilities", "source": "src/index.css", "reappliedIn": "src/styles.css" },
+    { "token": ".shadow-primary / .shadow-accent / .shadow-elegant utilities", "source": "src/index.css", "reappliedIn": "src/styles.css" },
+    { "token": ".transition-smooth / .transition-bounce utilities", "source": "src/index.css", "reappliedIn": "src/styles.css" },
+    { "token": ".animate-fade-in-up / .animate-float + keyframes", "source": "src/index.css", "reappliedIn": "src/styles.css" },
+    { "token": "accordion-down / accordion-up keyframes + animations", "source": "tailwind.config.ts", "reappliedIn": "src/styles.css" },
+    { "token": "fade-in-up / float keyframes (config variants)", "source": "tailwind.config.ts", "reappliedIn": "src/styles.css" },
+    { "token": "container (center, 2rem padding, 1400px cap)", "source": "tailwind.config.ts", "reappliedIn": "src/styles.css" },
+    { "token": "font-sans: Inter, system-ui, sans-serif", "source": "tailwind.config.ts", "reappliedIn": "src/styles.css" },
+    { "token": "body overflow-y scroll + img content-visibility + Inter font-face", "source": "src/index.css", "reappliedIn": "src/styles.css" },
+    { "token": "TipTap editor styles (.tiptap, iframe-wrapper)", "source": "src/index.css", "reappliedIn": "src/styles.css" },
+    { "token": ".prose .iframe-wrapper styles", "source": "src/index.css", "reappliedIn": "src/styles.css" },
+    { "token": "dark-mode full palette overrides", "source": "src/index.css", "reappliedIn": "src/styles.css" }
+  ]
+}

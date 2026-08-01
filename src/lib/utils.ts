@@ -13,19 +13,19 @@ export function extractGoogleDriveFileId(driveUrl: string | null): string | null
   
   // Format: https://drive.google.com/file/d/{FILE_ID}/view
   const fileMatch = driveUrl.match(/\/file\/d\/([^\/?#]+)/);
-  if (fileMatch) return fileMatch[1];
+  if (fileMatch) return fileMatch[1] ?? null;
   
   // Google Workspace URLs: /document/d/{ID}, /presentation/d/{ID}, /spreadsheets/d/{ID}, /forms/d/{ID}
   const workspaceMatch = driveUrl.match(/\/(?:document|presentation|spreadsheets|forms)\/d\/([^\/?#]+)/);
-  if (workspaceMatch) return workspaceMatch[1];
+  if (workspaceMatch) return workspaceMatch[1] ?? null;
   
   // Format: https://drive.google.com/open?id={FILE_ID} or ?id={FILE_ID}
   const openMatch = driveUrl.match(/[?&]id=([^&#]+)/);
-  if (openMatch) return openMatch[1];
+  if (openMatch) return openMatch[1] ?? null;
   
   // Folder URL (last resort): /folders/{ID}
   const folderMatch = driveUrl.match(/\/folders\/([^\/?#]+)/);
-  if (folderMatch) return folderMatch[1];
+  if (folderMatch) return folderMatch[1] ?? null;
   
   return null;
 }

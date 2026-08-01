@@ -1,0 +1,8 @@
+{
+  "functions": [
+    { "name": "create-order", "classification": "unknown", "signal": "no internal call sites in src/; URL treated as load-bearing", "outcome": "left" },
+    { "name": "generate-sitemap", "classification": "custom response / fixed URL", "signal": "public/_redirects proxies /sitemap.xml to this function URL; sitemap likely submitted to Google Search Console", "outcome": "left" },
+    { "name": "payos-create-payment", "classification": "internal-only but secret-bound", "signal": "called from src/pages/Cart.tsx; requires PAYOS_* and SUPABASE_SERVICE_ROLE_KEY secrets bound to the Supabase runtime — moving would break payments", "outcome": "left" },
+    { "name": "payos-verify-payment", "classification": "webhook receiver", "signal": "verifies PayOS HMAC signature; PayOS webhook URL is configured externally", "outcome": "left" }
+  ]
+}

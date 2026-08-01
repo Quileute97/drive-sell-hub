@@ -167,7 +167,7 @@ export const ProductThumbnail = ({
           />
           {/* Overlay to prevent interaction and keep click going to parent link */}
           <div className="absolute inset-0 bg-transparent" />
-          <span className={`absolute bottom-2 right-2 text-xs font-semibold ${config.color} px-2 py-0.5 rounded-full bg-white/90 dark:bg-black/60 shadow-sm`}>
+          <span className={`absolute bottom-2 right-2 text-xs font-semibold ${config.color} px-2 py-0.5 rounded-full bg-white/90 dark:bg-black/60 shadow-xs`}>
             {config.label}
           </span>
         </div>

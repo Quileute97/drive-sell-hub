@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "@/lib/router-compat";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -31,7 +31,7 @@ interface Commission {
 }
 
 const generateCode = (email: string) =>
-  (email.split("@")[0].replace(/[^a-z0-9]/gi, "").slice(0, 8).toLowerCase() || "ref") +
+  ((email.split("@")[0] ?? "").replace(/[^a-z0-9]/gi, "").slice(0, 8).toLowerCase() || "ref") +
   Math.random().toString(36).slice(2, 6);
 
 export default function Affiliate() {

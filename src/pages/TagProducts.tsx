@@ -194,8 +194,13 @@ export default function TagProducts() {
         keywords={metaKeywords}
         url={canonicalUrl}
         type="website"
+        ogTitle={`${decodedTag} - Sản phẩm Digital | Salemylink`}
+        ogDescription={`Khám phá ${products.length > 0 ? `${products.length} ` : ''}sản phẩm về ${decodedTag}. Tài liệu, ebook, khóa học chất lượng cao tại Salemylink.`}
+        twTitle={`${decodedTag} | Salemylink`}
+        twDescription={`Tài liệu, ebook và khóa học về ${decodedTag} — tải nhanh qua Google Drive tại Salemylink.`}
         structuredData={structuredData}
       />
+
       <Header />
       <main className="container mx-auto px-4 py-8 min-h-screen">
         <Breadcrumb items={breadcrumbItems} />

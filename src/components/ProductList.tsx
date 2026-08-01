@@ -184,6 +184,7 @@ export const ProductList = () => {
                       -{Math.round(((product.original_price - product.price) / product.original_price) * 100)}%
                     </Badge>
                   )}
+                  <WishlistButton productId={product.id} />
                 </div>
 
                 <CardContent className="p-4 flex-grow flex flex-col">

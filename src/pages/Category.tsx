@@ -313,7 +313,7 @@ export default function Category() {
         url={categoryUrl}
         image={categoryImage}
         ogTitle={`${category.name} | Salemylink`}
-        ogDescription={`${category.description || seoOverride.description}${products.length > 0 ? ` Hiện có ${products.length} sản phẩm digital.` : ''}`}
+        ogDescription={`${(category.description || seoOverride.description).replace(/[.\s]*$/, '')}.${products.length > 0 ? ` Hiện có ${products.length} sản phẩm digital.` : ''}`}
         twTitle={`${category.name} - Sản phẩm Digital | Salemylink`}
         twDescription={`${products.length > 0 ? `${products.length} ` : ''}${category.name.toLowerCase()} chất lượng, tải nhanh qua Google Drive tại Salemylink.`}
         structuredData={combinedStructuredData}

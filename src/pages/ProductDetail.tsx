@@ -888,6 +888,11 @@ export default function ProductDetail() {
           categorySlug={product.categories?.slug}
         />
 
+        {/* Personalized recommendations */}
+        <RecommendedProducts excludeIds={[product.id]} />
+
+
+
         {/* Related Categories — internal linking for SEO */}
         <RelatedCategories 
           currentCategoryId={product.category_id}

@@ -53,7 +53,7 @@ export const Header = () => {
                 placeholder="Tìm kiếm sản phẩm digital..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-input rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-primary/20 transition-smooth"
+                className="w-full pl-10 pr-4 py-2 border border-input rounded-lg bg-background focus:outline-hidden focus:ring-2 focus:ring-primary/20 transition-smooth"
               />
             </div>
           </form>

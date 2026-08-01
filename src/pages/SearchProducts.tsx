@@ -453,7 +453,7 @@ export default function SearchProducts() {
 
                 return <article 
                   key={product.id} 
-                  className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-1 cursor-pointer flex flex-col h-full rounded-lg border bg-card text-card-foreground shadow-sm"
+                  className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-1 cursor-pointer flex flex-col h-full rounded-lg border bg-card text-card-foreground shadow-xs"
                   onClick={() => navigate(`/product/${product.slug}`)}
                 >
                   <div className="relative overflow-hidden rounded-t-lg aspect-[4/3] bg-muted">

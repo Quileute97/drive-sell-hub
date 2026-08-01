@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation } from "@/lib/router-compat";
 import { captureAffiliateRef } from "@/lib/affiliate";
 
 /** Captures ?ref=CODE on every navigation, stores cookie 30d, logs click. */

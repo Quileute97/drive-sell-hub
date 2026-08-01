@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Trash2, Plus, Minus, ShoppingBag, Loader2 } from 'lucide-react';
 import { useCart } from '@/hooks/useCart';
-import { Link } from 'react-router-dom';
+import { Link } from '@/lib/router-compat';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useState } from 'react';

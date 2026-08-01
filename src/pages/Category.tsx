@@ -136,10 +136,9 @@ export default function Category() {
   // SEO meta — per-slug overrides with generic fallback
   const seoOverride = getCategorySeo(category.slug, category.name);
   const metaTitle = seoOverride.title;
-  const countPrefix = products.length > 0 ? `Khám phá ${products.length} ` : "";
-  const metaDescription = products.length > 0
-    ? `${countPrefix}${category.name.toLowerCase()}, tải nhanh qua Google Drive tại Salemylink. ${seoOverride.description}`.substring(0, 160)
-    : (category.description || seoOverride.description);
+  const baseDescription = seoOverride.description;
+  const countSuffix = products.length > 0 ? ` Hiện có ${products.length} sản phẩm.` : "";
+  const metaDescription = `${baseDescription}${countSuffix}`.substring(0, 160);
 
   // Long-tail keywords for category ranking
   const metaKeywords = [
@@ -312,10 +311,10 @@ export default function Category() {
         keywords={metaKeywords}
         url={categoryUrl}
         image={categoryImage}
-        ogTitle={`${category.name} | Salemylink`}
-        ogDescription={`${(category.description || seoOverride.description).replace(/[.\s]*$/, '')}.${products.length > 0 ? ` Hiện có ${products.length} sản phẩm digital.` : ''}`}
-        twTitle={`${category.name} - Sản phẩm Digital | Salemylink`}
-        twDescription={`${products.length > 0 ? `${products.length} ` : ''}${category.name.toLowerCase()} chất lượng, tải nhanh qua Google Drive tại Salemylink.`}
+        ogTitle={seoOverride.ogTitle}
+        ogDescription={`${seoOverride.ogDescription}${countSuffix}`}
+        twTitle={seoOverride.twTitle}
+        twDescription={seoOverride.twDescription}
         structuredData={combinedStructuredData}
         modifiedTime={new Date(latestUpdate).toISOString()}
       />

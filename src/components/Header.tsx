@@ -19,6 +19,7 @@ import {
 export const Header = () => {
   const { user, profile, signOut } = useAuth();
   const { totalItems } = useCart();
+  const { count: wishlistCount } = useWishlist();
   const { isSeller, isAdmin } = useUserRole();
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');

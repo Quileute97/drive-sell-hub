@@ -65,6 +65,34 @@ const ReadOnline = () => {
     };
   }, [toast]);
 
+  // Track native fullscreen state
+  useEffect(() => {
+    const onChange = () => setIsFullscreen(Boolean(document.fullscreenElement));
+    document.addEventListener("fullscreenchange", onChange);
+    return () => document.removeEventListener("fullscreenchange", onChange);
+  }, []);
+
+  const toggleFullscreen = async () => {
+    try {
+      if (document.fullscreenElement) {
+        await document.exitFullscreen();
+      } else {
+        await document.documentElement.requestFullscreen();
+      }
+    } catch {
+      toast({ title: "Trình duyệt không hỗ trợ toàn màn hình", variant: "destructive" });
+    }
+  };
+
+  // Auto-enter fullscreen is blocked without a gesture, so hide chrome instead
+  useEffect(() => {
+    if (loading) return;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [loading]);
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center text-muted-foreground">

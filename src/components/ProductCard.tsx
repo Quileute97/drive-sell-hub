@@ -8,6 +8,7 @@ import { FreeDownloadButton } from '@/components/FreeDownloadButton';
 import { WishlistButton } from '@/components/WishlistButton';
 import { useCart } from '@/hooks/useCart';
 import { getProductDownloadUrl, isFreeProduct } from '@/lib/productAccess';
+import { fixVietnameseEncoding } from '@/lib/vietnameseText';
 
 export interface ProductCardData {
   id: string;
@@ -43,6 +44,8 @@ export const ProductCard = ({
   const { addToCart } = useCart();
   const navigate = useNavigate();
   const isFree = isFreeProduct(product.price);
+  const title = fixVietnameseEncoding(product.title);
+  const summary = fixVietnameseEncoding(product.short_description || product.description || '');
   const downloadUrl = getProductDownloadUrl(
     product.google_drive_link,
     product.download_only_link
@@ -62,7 +65,7 @@ export const ProductCard = ({
                 googleDriveLink={product.google_drive_link}
                 thumbnailUrl={product.thumbnail_url ?? null}
                 fileFormat={product.file_format ?? ''}
-                title={product.title}
+                title={`${title}${product.categories ? ` - ${product.categories.name}` : ''}`}
                 size={600}
                 loading={loading}
               />
@@ -100,12 +103,12 @@ export const ProductCard = ({
 
           <Link to={`/product/${product.slug}`}>
             <h3 className="mb-2 line-clamp-2 min-h-[3rem] text-base font-semibold transition-colors group-hover:text-primary">
-              {product.title}
+              {title}
             </h3>
           </Link>
 
           <p className="mb-3 line-clamp-2 min-h-[2.5rem] text-sm text-muted-foreground">
-            {product.short_description || product.description}
+            {summary}
           </p>
 
           {(product.rating_count ?? 0) > 0 && (

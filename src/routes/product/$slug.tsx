@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import ProductDetail from "@/pages/ProductDetail";
 import { supabase } from "@/integrations/supabase/client";
 import { buildHead, SITE_URL } from "@/lib/seoHead";
+import { fixVietnameseEncoding } from "@/lib/vietnameseText";
 
 export const Route = createFileRoute("/product/$slug")({
   loader: async ({ params }) => {
@@ -9,22 +10,29 @@ export const Route = createFileRoute("/product/$slug")({
       const { data } = await supabase
         .from("products")
         .select(
-          "title, short_description, description, price, thumbnail_url, meta_title, meta_description, rating_average, rating_count, created_at, updated_at",
+          "title, short_description, description, price, thumbnail_url, meta_title, meta_description, rating_average, rating_count, created_at, updated_at, file_format, profiles!products_seller_id_fkey(full_name), categories(name, slug)",
         )
         .eq("slug", params.slug)
         .maybeSingle();
       if (!data) return null;
+      const seller = (data as { profiles?: { full_name?: string | null } | null }).profiles;
+      const category = (data as { categories?: { name?: string; slug?: string } | null }).categories;
       return {
-        title: data.meta_title || data.title,
-        description:
+        title: fixVietnameseEncoding(data.meta_title || data.title),
+        description: fixVietnameseEncoding(
           data.meta_description ||
-          data.short_description ||
-          (data.description || "").replace(/<[^>]*>/g, "").slice(0, 300),
+            data.short_description ||
+            (data.description || "").replace(/<[^>]*>/g, "").slice(0, 300),
+        ),
         price: data.price,
         image: data.thumbnail_url || null,
         rating: data.rating_average,
         ratingCount: data.rating_count,
-        name: data.title,
+        name: fixVietnameseEncoding(data.title),
+        sellerName: seller?.full_name || null,
+        categoryName: category?.name || null,
+        categorySlug: category?.slug || null,
+        fileFormat: data.file_format || null,
       };
     } catch {
       return null;
@@ -44,19 +52,34 @@ export const Route = createFileRoute("/product/$slug")({
     const desc =
       loaderData.description ||
       `${loaderData.name} - sản phẩm digital chất lượng, tải xuống ngay sau khi thanh toán tại Salemylink.`;
-    const structuredData: Record<string, unknown> = {
+    const productSchema: Record<string, unknown> = {
       "@context": "https://schema.org",
       "@type": "Product",
       name: loaderData.name,
       description: desc.slice(0, 300),
       url: `${SITE_URL}${path}`,
+      sku: params.slug,
       ...(loaderData.image ? { image: loaderData.image } : {}),
+      ...(loaderData.categoryName ? { category: loaderData.categoryName } : {}),
+      ...(loaderData.fileFormat ? { encodingFormat: loaderData.fileFormat } : {}),
+      brand: {
+        "@type": "Brand",
+        name: loaderData.sellerName || "Salemylink",
+      },
+      ...(loaderData.sellerName
+        ? { manufacturer: { "@type": "Organization", name: loaderData.sellerName } }
+        : {}),
       offers: {
         "@type": "Offer",
         price: loaderData.price,
         priceCurrency: "VND",
         availability: "https://schema.org/InStock",
+        itemCondition: "https://schema.org/NewCondition",
         url: `${SITE_URL}${path}`,
+        seller: {
+          "@type": "Organization",
+          name: loaderData.sellerName || "Salemylink.com",
+        },
       },
       ...(loaderData.ratingCount && loaderData.ratingCount > 0
         ? {
@@ -64,9 +87,34 @@ export const Route = createFileRoute("/product/$slug")({
               "@type": "AggregateRating",
               ratingValue: loaderData.rating,
               reviewCount: loaderData.ratingCount,
+              bestRating: 5,
+              worstRating: 1,
             },
           }
         : {}),
+    };
+    const breadcrumb = {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      itemListElement: [
+        { "@type": "ListItem", position: 1, name: "Trang chủ", item: SITE_URL },
+        ...(loaderData.categorySlug
+          ? [
+              {
+                "@type": "ListItem",
+                position: 2,
+                name: loaderData.categoryName,
+                item: `${SITE_URL}/category/${loaderData.categorySlug}`,
+              },
+            ]
+          : []),
+        {
+          "@type": "ListItem",
+          position: loaderData.categorySlug ? 3 : 2,
+          name: loaderData.name,
+          item: `${SITE_URL}${path}`,
+        },
+      ],
     };
     return buildHead({
       title: loaderData.title,
@@ -74,7 +122,7 @@ export const Route = createFileRoute("/product/$slug")({
       path,
       type: "product",
       image: loaderData.image || undefined,
-      structuredData,
+      structuredData: [productSchema, breadcrumb],
     });
   },
   component: ProductDetail,

@@ -3,7 +3,7 @@ import { useParams, useNavigate, Link } from "@/lib/router-compat";
 import { supabase } from "@/integrations/supabase/client";
 import { getGoogleDrivePreviewUrl } from "@/lib/productAccess";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, ShieldAlert } from "lucide-react";
+import { ArrowLeft, ShieldAlert, Maximize2, Minimize2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 const ReadOnline = () => {

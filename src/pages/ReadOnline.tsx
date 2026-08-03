@@ -102,7 +102,7 @@ const ReadOnline = () => {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-background">
+    <div className="fixed inset-0 z-50 flex flex-col bg-background">
       <header className="border-b bg-card px-4 py-3 flex items-center justify-between gap-3">
         <div className="flex items-center gap-2 min-w-0">
           <Button variant="ghost" size="sm" asChild>
@@ -113,11 +113,29 @@ const ReadOnline = () => {
           </Button>
           <h1 className="font-semibold truncate">{title}</h1>
         </div>
-        <div className="hidden md:flex items-center text-xs text-muted-foreground gap-1">
-          <ShieldAlert className="h-4 w-4" />
-          Chế độ chỉ đọc – không hỗ trợ tải xuống
+        <div className="flex items-center gap-3">
+          <div className="hidden md:flex items-center text-xs text-muted-foreground gap-1">
+            <ShieldAlert className="h-4 w-4" />
+            Chế độ chỉ đọc – không hỗ trợ tải xuống
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={toggleFullscreen}
+            aria-label={isFullscreen ? "Thoát toàn màn hình" : "Đọc toàn màn hình"}
+          >
+            {isFullscreen ? (
+              <Minimize2 className="h-4 w-4 md:mr-1" />
+            ) : (
+              <Maximize2 className="h-4 w-4 md:mr-1" />
+            )}
+            <span className="hidden md:inline">
+              {isFullscreen ? "Thoát toàn màn hình" : "Toàn màn hình"}
+            </span>
+          </Button>
         </div>
       </header>
+
 
       <div className="relative flex-1 select-none" style={{ userSelect: "none" }}>
         {previewUrl && (

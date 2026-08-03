@@ -23,7 +23,7 @@ const PAIRS: Record<string, string> = {
 
 const SINGLES: Record<string, string> = { "ñ": "đ", "ö": "ư", "ô": "ơ" };
 
-const BROKEN = /[ñöøûõïäåäâêôæ]|a[áàåãäéèëêúü]|e[áàåã]|o[áàåã]/i;
+const BROKEN = /[ñöøäå]|a[áàåãäéèëêúüùïû]|e[áàåãùïû]|o[áàåãùïû]|[iuy][ùøûõï]/i;
 
 const matchCase = (out: string, sample: string) =>
   sample === sample.toUpperCase() && sample !== sample.toLowerCase()

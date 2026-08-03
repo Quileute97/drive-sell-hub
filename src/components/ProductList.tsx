@@ -263,7 +263,7 @@ export const ProductList = () => {
                         }}
                       >
                         <BookOpen className="h-4 w-4 mr-2" />
-                        Đọc trực tuyến
+                        Đọc trực tuyến (Full màn hình)
                       </Button>
                     )
                   ) : isFree ? (

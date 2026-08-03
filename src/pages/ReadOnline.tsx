@@ -3,7 +3,7 @@ import { useParams, useNavigate, Link } from "@/lib/router-compat";
 import { supabase } from "@/integrations/supabase/client";
 import { getGoogleDrivePreviewUrl } from "@/lib/productAccess";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, ShieldAlert } from "lucide-react";
+import { ArrowLeft, ShieldAlert, Maximize2, Minimize2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 const ReadOnline = () => {
@@ -13,6 +13,7 @@ const ReadOnline = () => {
   const [loading, setLoading] = useState(true);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [title, setTitle] = useState("");
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
   useEffect(() => {
     const load = async () => {
@@ -64,6 +65,34 @@ const ReadOnline = () => {
     };
   }, [toast]);
 
+  // Track native fullscreen state
+  useEffect(() => {
+    const onChange = () => setIsFullscreen(Boolean(document.fullscreenElement));
+    document.addEventListener("fullscreenchange", onChange);
+    return () => document.removeEventListener("fullscreenchange", onChange);
+  }, []);
+
+  const toggleFullscreen = async () => {
+    try {
+      if (document.fullscreenElement) {
+        await document.exitFullscreen();
+      } else {
+        await document.documentElement.requestFullscreen();
+      }
+    } catch {
+      toast({ title: "Trình duyệt không hỗ trợ toàn màn hình", variant: "destructive" });
+    }
+  };
+
+  // Auto-enter fullscreen is blocked without a gesture, so hide chrome instead
+  useEffect(() => {
+    if (loading) return;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [loading]);
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center text-muted-foreground">
@@ -73,7 +102,7 @@ const ReadOnline = () => {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-background">
+    <div className="fixed inset-0 z-50 flex flex-col bg-background">
       <header className="border-b bg-card px-4 py-3 flex items-center justify-between gap-3">
         <div className="flex items-center gap-2 min-w-0">
           <Button variant="ghost" size="sm" asChild>
@@ -84,11 +113,29 @@ const ReadOnline = () => {
           </Button>
           <h1 className="font-semibold truncate">{title}</h1>
         </div>
-        <div className="hidden md:flex items-center text-xs text-muted-foreground gap-1">
-          <ShieldAlert className="h-4 w-4" />
-          Chế độ chỉ đọc – không hỗ trợ tải xuống
+        <div className="flex items-center gap-3">
+          <div className="hidden md:flex items-center text-xs text-muted-foreground gap-1">
+            <ShieldAlert className="h-4 w-4" />
+            Chế độ chỉ đọc – không hỗ trợ tải xuống
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={toggleFullscreen}
+            aria-label={isFullscreen ? "Thoát toàn màn hình" : "Đọc toàn màn hình"}
+          >
+            {isFullscreen ? (
+              <Minimize2 className="h-4 w-4 md:mr-1" />
+            ) : (
+              <Maximize2 className="h-4 w-4 md:mr-1" />
+            )}
+            <span className="hidden md:inline">
+              {isFullscreen ? "Thoát toàn màn hình" : "Toàn màn hình"}
+            </span>
+          </Button>
         </div>
       </header>
+
 
       <div className="relative flex-1 select-none" style={{ userSelect: "none" }}>
         {previewUrl && (

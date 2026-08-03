@@ -163,7 +163,7 @@ export const ProductCard = ({
               onClick={() => navigate(`/read/${product.slug}`)}
             >
               <BookOpen className="mr-2 h-4 w-4" />
-              Đọc trực tuyến
+              Đọc trực tuyến (Full màn hình)
             </Button>
           ) : isFree ? (
             <FreeDownloadButton size="sm" downloadUrl={downloadUrl} />

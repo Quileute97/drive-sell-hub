@@ -803,7 +803,7 @@ export default function ProductDetail() {
                     onClick={() => navigate(`/read/${product.slug}`)}
                   >
                     <BookOpen className="h-4 w-4 mr-2" />
-                    Đọc trực tuyến (Read Only)
+                    Đọc trực tuyến (Full màn hình)
                   </Button>
                 )
               ) : isFree ? (

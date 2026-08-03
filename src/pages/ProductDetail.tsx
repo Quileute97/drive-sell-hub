@@ -14,6 +14,7 @@ import { ProductReviews } from "@/components/ProductReviews";
 import { useCart } from "@/hooks/useCart";
 import { SEO } from "@/components/SEO";
 import { Breadcrumb } from "@/components/Breadcrumb";
+import { fixVietnameseEncoding } from "@/lib/vietnameseText";
 import { ProductFAQ } from "@/components/ProductFAQ";
 import { RelatedCategories } from "@/components/RelatedCategories";
 import { FreeDownloadButton } from "@/components/FreeDownloadButton";
@@ -119,7 +120,11 @@ export default function ProductDetail() {
         .single();
 
       if (error) throw error;
-      setProduct(data as any);
+      setProduct({
+        ...(data as any),
+        title: fixVietnameseEncoding((data as any)?.title),
+        short_description: fixVietnameseEncoding((data as any)?.short_description),
+      } as any);
       
       // Fetch reviews for structured data
       if (data?.id) {

@@ -55,11 +55,11 @@ export const Hero = () => {
           {/* Left Content */}
           <div className="text-center lg:text-left animate-fade-in-up">
             <h1 className="text-4xl lg:text-6xl font-bold mb-6 leading-tight">
-              Nền tảng bán 
+              Mua bán tài liệu số, ebook,
               <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-                {" "}sản phẩm Digital{" "}
+                {" "}khóa học online{" "}
               </span>
-              hàng đầu Việt Nam
+              qua Google Drive
             </h1>
             
             <p className="text-xl text-muted-foreground mb-8 leading-relaxed">

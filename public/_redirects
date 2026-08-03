@@ -1,67 +1,59 @@
-# 301 Redirects for old/deprecated URLs
-/seller-auth          /seller-signup        301
-/login                /auth                 301
-/signup               /auth                 301
-/register             /auth                 301
-/dang-nhap            /auth                 301
-/dang-ky              /auth                 301
-/gioi-thieu           /about                301
-/lien-he              /about                301
-/contact              /about                301
+# Cloudflare Pages redirects — one rule per line, no duplicates, no external proxies
 
-# Product slug redirects (old URLs with .pdf and special chars to normalized slugs)
-/product/tai-lieu-on-thi-tuyen-sinh-vao-lop-10-mon-tieng-anhpdf                              /product/tai-lieu-on-thi-tuyen-sinh-vao-lop-10-mon-tieng-anh                              301
-/product/de-thi-thu-vao-lop-10-thpt-chuyen-hung-vuong-2023-2024pdf                           /product/de-thi-thu-vao-lop-10-thpt-chuyen-hung-vuong-2023-2024                           301
-/product/de-thi-vao-lop-10-nam-dinh-mon-toan-2024-2025pdf                                    /product/de-thi-vao-lop-10-nam-dinh-mon-toan-2024-2025                                    301
-/product/de-thi-vao-lop-10-nam-dinh-mon-tieng-anh-2024-2025pdf                               /product/de-thi-vao-lop-10-nam-dinh-mon-tieng-anh-2024-2025                               301
-/product/de-thi-tuyen-sinh-vao-lop-10-tinh-quang-tri-mon-toan-2024-2025pdf                   /product/de-thi-tuyen-sinh-vao-lop-10-tinh-quang-tri-mon-toan-2024-2025                   301
-/product/de-thi-tuyen-sinh-vao-lop-10-tinh-quang-tri-mon-tieng-anh-2024-2025pdf              /product/de-thi-tuyen-sinh-vao-lop-10-tinh-quang-tri-mon-tieng-anh-2024-2025              301
-/product/de-thi-hoc-ky-2-tieng-anh-6-global-success-2024-2025--de-so-4                       /product/de-thi-hoc-ky-2-tieng-anh-6-global-success-2024-2025-de-so-4                     301
-/product/de-thi-hoc-ky-2-tieng-anh-6-global-success-2024-2025--de-so-3                       /product/de-thi-hoc-ky-2-tieng-anh-6-global-success-2024-2025-de-so-3                     301
-/product/de-thi-hoc-ky-2-tieng-anh-6-global-success-2024-2025--de-so-2                       /product/de-thi-hoc-ky-2-tieng-anh-6-global-success-2024-2025-de-so-2                     301
-/product/de-thi-hoc-ky-2-tieng-anh-6-global-success-2024-2025--de-so-1                       /product/de-thi-hoc-ky-2-tieng-anh-6-global-success-2024-2025-de-so-1                     301
+# Auth
+/seller-auth          /seller-signup   301
+/login                /auth            301
+/signup               /auth            301
+/register             /auth            301
+/dang-nhap            /auth            301
+/dang-ky              /auth            301
 
-# Vietnamese product URL redirects (san-pham paths)
-/san-pham/tai-lieu-on-thi-tuyen-sinh-vao-lop-10-mon-tieng-anhpdf                             /product/tai-lieu-on-thi-tuyen-sinh-vao-lop-10-mon-tieng-anh                              301
-/san-pham/de-thi-thu-vao-lop-10-thpt-chuyen-hung-vuong-2023-2024pdf                          /product/de-thi-thu-vao-lop-10-thpt-chuyen-hung-vuong-2023-2024                           301
-/san-pham/de-thi-vao-lop-10-nam-dinh-mon-toan-2024-2025pdf                                   /product/de-thi-vao-lop-10-nam-dinh-mon-toan-2024-2025                                    301
-/san-pham/de-thi-vao-lop-10-nam-dinh-mon-tieng-anh-2024-2025pdf                              /product/de-thi-vao-lop-10-nam-dinh-mon-tieng-anh-2024-2025                               301
-/san-pham/de-thi-tuyen-sinh-vao-lop-10-tinh-quang-tri-mon-toan-2024-2025pdf                  /product/de-thi-tuyen-sinh-vao-lop-10-tinh-quang-tri-mon-toan-2024-2025                   301
-/san-pham/de-thi-tuyen-sinh-vao-lop-10-tinh-quang-tri-mon-tieng-anh-2024-2025pdf             /product/de-thi-tuyen-sinh-vao-lop-10-tinh-quang-tri-mon-tieng-anh-2024-2025              301
-/san-pham/de-thi-hoc-ky-2-tieng-anh-6-global-success-2024-2025--de-so-4                      /product/de-thi-hoc-ky-2-tieng-anh-6-global-success-2024-2025-de-so-4                     301
-/san-pham/de-thi-hoc-ky-2-tieng-anh-6-global-success-2024-2025--de-so-3                      /product/de-thi-hoc-ky-2-tieng-anh-6-global-success-2024-2025-de-so-3                     301
-/san-pham/de-thi-hoc-ky-2-tieng-anh-6-global-success-2024-2025--de-so-2                      /product/de-thi-hoc-ky-2-tieng-anh-6-global-success-2024-2025-de-so-2                     301
-/san-pham/de-thi-hoc-ky-2-tieng-anh-6-global-success-2024-2025--de-so-1                      /product/de-thi-hoc-ky-2-tieng-anh-6-global-success-2024-2025-de-so-1                     301
-/huong-dan            /how-it-works         301
-/guide                /how-it-works         301
-/chinh-sach-bao-mat   /privacy-policy       301
-/privacy              /privacy-policy       301
-/dieu-khoan           /terms-of-service     301
-/terms                /terms-of-service     301
-/gio-hang             /cart                 301
-/thanh-toan           /cart                 301
-/checkout             /cart                 301
-/tim-kiem             /search               301
-/products             /search               301
-/danh-muc             /                     301
-/categories           /                     301
+# Static pages
+/gioi-thieu           /about              301
+/lien-he              /about              301
+/contact              /about              301
+/huong-dan            /how-it-works       301
+/guide                /how-it-works       301
+/chinh-sach-bao-mat   /privacy-policy     301
+/privacy              /privacy-policy     301
+/dieu-khoan           /terms-of-service   301
+/terms                /terms-of-service   301
+/seller               /seller-guide       301
+/become-seller        /seller-signup      301
+/tro-thanh-nguoi-ban  /seller-signup      301
 
-# Vietnamese URL redirects for products and categories
-/san-pham/:slug       /product/:slug        301
-/san-pham             /search               301
-/danh-muc/:slug       /category/:slug       301
-/nguoi-ban/:id        /seller/:id           301
-/nguoi-ban            /sellers              301
-/categories           /                     301
-/home                 /                     301
-/index                /                     301
-/index.html           /                     301
-/seller               /seller-guide         301
-/become-seller        /seller-signup        301
-/tro-thanh-nguoi-ban  /seller-signup        301
+# Cart & search
+/gio-hang             /cart      301
+/thanh-toan           /cart      301
+/checkout             /cart      301
+/tim-kiem             /search    301
+/products             /search    301
 
-# Dynamic sitemap proxy - serves sitemap from edge function at your domain
-/sitemap.xml  https://dfalphamyvdfewixrnju.supabase.co/functions/v1/generate-sitemap  200
+# Home aliases
+/danh-muc             /   301
+/categories           /   301
+/home                 /   301
+/index                /   301
+/index.html           /   301
 
-# Netlify SPA redirect - All other routes serve index.html
+# Legacy product slugs (.pdf suffix / double dash normalisation)
+/product/tai-lieu-on-thi-tuyen-sinh-vao-lop-10-mon-tieng-anhpdf                   /product/tai-lieu-on-thi-tuyen-sinh-vao-lop-10-mon-tieng-anh                   301
+/product/de-thi-thu-vao-lop-10-thpt-chuyen-hung-vuong-2023-2024pdf                /product/de-thi-thu-vao-lop-10-thpt-chuyen-hung-vuong-2023-2024                301
+/product/de-thi-vao-lop-10-nam-dinh-mon-toan-2024-2025pdf                         /product/de-thi-vao-lop-10-nam-dinh-mon-toan-2024-2025                         301
+/product/de-thi-vao-lop-10-nam-dinh-mon-tieng-anh-2024-2025pdf                    /product/de-thi-vao-lop-10-nam-dinh-mon-tieng-anh-2024-2025                    301
+/product/de-thi-tuyen-sinh-vao-lop-10-tinh-quang-tri-mon-toan-2024-2025pdf        /product/de-thi-tuyen-sinh-vao-lop-10-tinh-quang-tri-mon-toan-2024-2025        301
+/product/de-thi-tuyen-sinh-vao-lop-10-tinh-quang-tri-mon-tieng-anh-2024-2025pdf   /product/de-thi-tuyen-sinh-vao-lop-10-tinh-quang-tri-mon-tieng-anh-2024-2025   301
+/product/de-thi-hoc-ky-2-tieng-anh-6-global-success-2024-2025--de-so-1            /product/de-thi-hoc-ky-2-tieng-anh-6-global-success-2024-2025-de-so-1          301
+/product/de-thi-hoc-ky-2-tieng-anh-6-global-success-2024-2025--de-so-2            /product/de-thi-hoc-ky-2-tieng-anh-6-global-success-2024-2025-de-so-2          301
+/product/de-thi-hoc-ky-2-tieng-anh-6-global-success-2024-2025--de-so-3            /product/de-thi-hoc-ky-2-tieng-anh-6-global-success-2024-2025-de-so-3          301
+/product/de-thi-hoc-ky-2-tieng-anh-6-global-success-2024-2025--de-so-4            /product/de-thi-hoc-ky-2-tieng-anh-6-global-success-2024-2025-de-so-4          301
+
+# Vietnamese URL patterns
+/san-pham/:slug   /product/:slug     301
+/san-pham         /search            301
+/danh-muc/:slug   /category/:slug    301
+/nguoi-ban/:id    /seller/:id        301
+/nguoi-ban        /sellers           301
+
+# SPA fallback (must stay last)
 /*    /index.html   200

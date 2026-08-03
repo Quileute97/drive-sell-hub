@@ -13,6 +13,7 @@ const ReadOnline = () => {
   const [loading, setLoading] = useState(true);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [title, setTitle] = useState("");
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
   useEffect(() => {
     const load = async () => {

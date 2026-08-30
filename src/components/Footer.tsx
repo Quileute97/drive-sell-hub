@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Facebook, Twitter, Instagram, Youtube, Mail, Phone, MapPin } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { Logo } from "@/components/Logo";
+import { Link } from "@/lib/router-compat";
 
 export const Footer = () => {
   const [categories, setCategories] = useState<{id: string, name: string, slug: string}[]>([]);
@@ -32,7 +32,18 @@ export const Footer = () => {
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
           {/* Company Info */}
           <div className="space-y-4">
-            <Logo size="md" showTagline={true} />
+            <Link to="/" className="flex items-center space-x-2.5 hover:opacity-85 transition-opacity inline-flex">
+              <img
+                src="/logo.png"
+                alt="Salemylink Logo"
+                width={36}
+                height={36}
+                className="w-9 h-9 rounded-xl shadow-sm object-contain"
+              />
+              <span className="text-xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                Salemylink.com
+              </span>
+            </Link>
             <p className="text-muted-foreground">
               Nền tảng thương mại điện tử hàng đầu cho sản phẩm digital tại Việt Nam.
               Kết nối người mua và người bán một cách an toàn, nhanh chóng.

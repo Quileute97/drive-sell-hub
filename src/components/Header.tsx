@@ -2,12 +2,11 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ShoppingCart, User, Search, LogOut, Heart } from "lucide-react";
 import { useAuth } from '@/contexts/AuthContext';
-import { useNavigate } from '@/lib/router-compat';
+import { Link, useNavigate } from '@/lib/router-compat';
 import { useCart } from '@/hooks/useCart';
 import { useWishlist } from '@/hooks/useWishlist';
 import { useUserRole } from '@/hooks/useUserRole';
 import { NotificationBell } from '@/components/NotificationBell';
-import { Logo } from '@/components/Logo';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -37,7 +36,18 @@ export const Header = () => {
       <div className="container mx-auto px-4">
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
-          <Logo size="md" />
+          <Link to="/" className="flex items-center space-x-2.5 hover:opacity-85 transition-opacity">
+            <img
+              src="/logo.png"
+              alt="Salemylink Logo"
+              width={34}
+              height={34}
+              className="w-[34px] h-[34px] rounded-xl shadow-sm object-contain"
+            />
+            <span className="text-xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+              Salemylink.com
+            </span>
+          </Link>
 
           {/* Search Bar */}
           <form onSubmit={handleSearch} className="hidden md:flex flex-1 max-w-md mx-8">

@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <defs>
+    <linearGradient id="slBlue512" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38BDF8" />
+      <stop offset="60%" stop-color="#2563EB" />
+      <stop offset="100%" stop-color="#0F3A7E" />
+    </linearGradient>
+    <linearGradient id="slOrange512" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FDBA74" />
+      <stop offset="40%" stop-color="#FB923C" />
+      <stop offset="100%" stop-color="#EA580C" />
+    </linearGradient>
+    <linearGradient id="slBg512" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0B132B" />
+      <stop offset="100%" stop-color="#030712" />
+    </linearGradient>
+    <filter id="shadow512" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="12" stdDeviation="18" flood-color="#000000" flood-opacity="0.35" />
+    </filter>
+  </defs>
+
+  <rect width="512" height="512" rx="128" fill="url(#slBg512)" />
+  <rect x="4" y="4" width="504" height="504" rx="124" fill="none" stroke="rgba(255,255,255,0.12)" stroke-width="4" />
+
+  <g filter="url(#shadow512)">
+    <!-- Bottom Orange Link Loop -->
+    <path d="M 152 352 C 152 424 360 424 360 352 L 360 292 C 360 216 272 200 200 200" 
+          stroke="url(#slOrange512)" stroke-width="60" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+    
+    <!-- Top Blue Link Loop -->
+    <path d="M 360 160 C 360 88 152 88 152 160 L 152 220 C 152 296 240 312 312 312" 
+          stroke="url(#slBlue512)" stroke-width="60" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+
+    <!-- Center Pulse Glow -->
+    <circle cx="256" cy="256" r="28" fill="#FFFFFF" />
+  </g>
+</svg>

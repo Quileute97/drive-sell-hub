@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="100%" height="100%">
+  <defs>
+    <linearGradient id="favBlue" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38BDF8" />
+      <stop offset="60%" stop-color="#2563EB" />
+      <stop offset="100%" stop-color="#0F3A7E" />
+    </linearGradient>
+    <linearGradient id="favOrange" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FDBA74" />
+      <stop offset="40%" stop-color="#FB923C" />
+      <stop offset="100%" stop-color="#EA580C" />
+    </linearGradient>
+    <linearGradient id="favBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0B132B" />
+      <stop offset="100%" stop-color="#030712" />
+    </linearGradient>
+    <filter id="favShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="3" stdDeviation="4" flood-color="#000000" flood-opacity="0.4" />
+    </filter>
+  </defs>
+
+  <rect width="128" height="128" rx="32" fill="url(#favBg)" />
+  <rect x="2" y="2" width="124" height="124" rx="30" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="2" />
+
+  <g filter="url(#favShadow)">
+    <!-- Bottom Orange Link Loop -->
+    <path d="M 38 88 C 38 106 90 106 90 88 L 90 73 C 90 54 68 50 50 50" 
+          stroke="url(#favOrange)" stroke-width="15" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+    
+    <!-- Top Blue Link Loop -->
+    <path d="M 90 40 C 90 22 38 22 38 40 L 38 55 C 38 74 60 78 78 78" 
+          stroke="url(#favBlue)" stroke-width="15" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+
+    <!-- Center Pulse Glow -->
+    <circle cx="64" cy="64" r="7" fill="#FFFFFF" />
+  </g>
+</svg>

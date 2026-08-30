@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Facebook, Twitter, Instagram, Youtube, Mail, Phone, MapPin } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { Logo } from "@/components/Logo";
 
 export const Footer = () => {
   const [categories, setCategories] = useState<{id: string, name: string, slug: string}[]>([]);
@@ -31,14 +32,7 @@ export const Footer = () => {
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
           {/* Company Info */}
           <div className="space-y-4">
-            <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 rounded-lg gradient-hero flex items-center justify-center">
-                <span className="text-white font-bold text-sm">SL</span>
-              </div>
-              <span className="text-xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-                Salemylink.com
-              </span>
-            </div>
+            <Logo size="md" showTagline={true} />
             <p className="text-muted-foreground">
               Nền tảng thương mại điện tử hàng đầu cho sản phẩm digital tại Việt Nam.
               Kết nối người mua và người bán một cách an toàn, nhanh chóng.

@@ -59,7 +59,7 @@ export const ProductCard = ({
     <article className="group flex h-full flex-col">
       <Card className="flex h-full flex-col overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
         <div className="relative aspect-4/3 overflow-hidden bg-muted">
-          <Link to={`/product/${product.slug}`} className="block h-full w-full">
+          <Link to={`/san-pham/${product.slug}`} className="block h-full w-full">
             <div className="h-full w-full transition-transform duration-300 group-hover:scale-105">
               <ProductThumbnail
                 googleDriveLink={product.google_drive_link}
@@ -82,7 +82,7 @@ export const ProductCard = ({
         <CardContent className="flex grow flex-col p-4">
           <div className="mb-2 flex flex-wrap items-center gap-2">
             {product.categories && (
-              <Link to={`/category/${product.categories.slug}`}>
+              <Link to={`/danh-muc/${product.categories.slug}`}>
                 <Badge
                   variant="secondary"
                   className="cursor-pointer text-xs transition-colors hover:bg-primary hover:text-primary-foreground"
@@ -101,7 +101,7 @@ export const ProductCard = ({
             )}
           </div>
 
-          <Link to={`/product/${product.slug}`}>
+          <Link to={`/san-pham/${product.slug}`}>
             <h3 className="mb-2 line-clamp-2 min-h-[3rem] text-base font-semibold transition-colors group-hover:text-primary">
               {title}
             </h3>

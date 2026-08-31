@@ -28,12 +28,18 @@ import { Route as WithdrawalRouteImport } from './routes/withdrawal'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as AdminLoginRouteImport } from './routes/admin/login'
 import { Route as CategorySlugRouteImport } from './routes/category/$slug'
+import { Route as DanhMucSlugRouteImport } from './routes/danh-muc/$slug'
 import { Route as GuidesIndexRouteImport } from './routes/guides/index'
 import { Route as GuidesSlugRouteImport } from './routes/guides/$slug'
+import { Route as HuongDanIndexRouteImport } from './routes/huong-dan/index'
+import { Route as HuongDanSlugRouteImport } from './routes/huong-dan/$slug'
+import { Route as NguoiBanIndexRouteImport } from './routes/nguoi-ban/index'
+import { Route as NguoiBanSlugRouteImport } from './routes/nguoi-ban/$slug'
 import { Route as PaymentCancelRouteImport } from './routes/payment/cancel'
 import { Route as PaymentSuccessRouteImport } from './routes/payment/success'
 import { Route as ProductSlugRouteImport } from './routes/product/$slug'
 import { Route as ReadSlugRouteImport } from './routes/read/$slug'
+import { Route as SanPhamSlugRouteImport } from './routes/san-pham/$slug'
 import { Route as SellerSellerIdRouteImport } from './routes/seller/$sellerId'
 import { Route as TagTagRouteImport } from './routes/tag/$tag'
 
@@ -132,6 +138,11 @@ const CategorySlugRoute = CategorySlugRouteImport.update({
   path: '/category/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DanhMucSlugRoute = DanhMucSlugRouteImport.update({
+  id: '/danh-muc/$slug',
+  path: '/danh-muc/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const GuidesIndexRoute = GuidesIndexRouteImport.update({
   id: '/guides/',
   path: '/guides/',
@@ -140,6 +151,26 @@ const GuidesIndexRoute = GuidesIndexRouteImport.update({
 const GuidesSlugRoute = GuidesSlugRouteImport.update({
   id: '/guides/$slug',
   path: '/guides/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HuongDanIndexRoute = HuongDanIndexRouteImport.update({
+  id: '/huong-dan/',
+  path: '/huong-dan/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HuongDanSlugRoute = HuongDanSlugRouteImport.update({
+  id: '/huong-dan/$slug',
+  path: '/huong-dan/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const NguoiBanIndexRoute = NguoiBanIndexRouteImport.update({
+  id: '/nguoi-ban/',
+  path: '/nguoi-ban/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const NguoiBanSlugRoute = NguoiBanSlugRouteImport.update({
+  id: '/nguoi-ban/$slug',
+  path: '/nguoi-ban/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PaymentCancelRoute = PaymentCancelRouteImport.update({
@@ -160,6 +191,11 @@ const ProductSlugRoute = ProductSlugRouteImport.update({
 const ReadSlugRoute = ReadSlugRouteImport.update({
   id: '/read/$slug',
   path: '/read/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SanPhamSlugRoute = SanPhamSlugRouteImport.update({
+  id: '/san-pham/$slug',
+  path: '/san-pham/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SellerSellerIdRoute = SellerSellerIdRouteImport.update({
@@ -192,15 +228,21 @@ export interface FileRoutesByFullPath {
   '/withdrawal': typeof WithdrawalRoute
   '/admin/login': typeof AdminLoginRoute
   '/category/$slug': typeof CategorySlugRoute
+  '/danh-muc/$slug': typeof DanhMucSlugRoute
   '/guides/$slug': typeof GuidesSlugRoute
+  '/huong-dan/$slug': typeof HuongDanSlugRoute
+  '/nguoi-ban/$slug': typeof NguoiBanSlugRoute
   '/payment/cancel': typeof PaymentCancelRoute
   '/payment/success': typeof PaymentSuccessRoute
   '/product/$slug': typeof ProductSlugRoute
   '/read/$slug': typeof ReadSlugRoute
+  '/san-pham/$slug': typeof SanPhamSlugRoute
   '/seller/$sellerId': typeof SellerSellerIdRoute
   '/tag/$tag': typeof TagTagRoute
   '/admin/': typeof AdminIndexRoute
   '/guides/': typeof GuidesIndexRoute
+  '/huong-dan/': typeof HuongDanIndexRoute
+  '/nguoi-ban/': typeof NguoiBanIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -221,15 +263,21 @@ export interface FileRoutesByTo {
   '/withdrawal': typeof WithdrawalRoute
   '/admin/login': typeof AdminLoginRoute
   '/category/$slug': typeof CategorySlugRoute
+  '/danh-muc/$slug': typeof DanhMucSlugRoute
   '/guides/$slug': typeof GuidesSlugRoute
+  '/huong-dan/$slug': typeof HuongDanSlugRoute
+  '/nguoi-ban/$slug': typeof NguoiBanSlugRoute
   '/payment/cancel': typeof PaymentCancelRoute
   '/payment/success': typeof PaymentSuccessRoute
   '/product/$slug': typeof ProductSlugRoute
   '/read/$slug': typeof ReadSlugRoute
+  '/san-pham/$slug': typeof SanPhamSlugRoute
   '/seller/$sellerId': typeof SellerSellerIdRoute
   '/tag/$tag': typeof TagTagRoute
   '/admin': typeof AdminIndexRoute
   '/guides': typeof GuidesIndexRoute
+  '/huong-dan': typeof HuongDanIndexRoute
+  '/nguoi-ban': typeof NguoiBanIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -251,15 +299,21 @@ export interface FileRoutesById {
   '/withdrawal': typeof WithdrawalRoute
   '/admin/login': typeof AdminLoginRoute
   '/category/$slug': typeof CategorySlugRoute
+  '/danh-muc/$slug': typeof DanhMucSlugRoute
   '/guides/$slug': typeof GuidesSlugRoute
+  '/huong-dan/$slug': typeof HuongDanSlugRoute
+  '/nguoi-ban/$slug': typeof NguoiBanSlugRoute
   '/payment/cancel': typeof PaymentCancelRoute
   '/payment/success': typeof PaymentSuccessRoute
   '/product/$slug': typeof ProductSlugRoute
   '/read/$slug': typeof ReadSlugRoute
+  '/san-pham/$slug': typeof SanPhamSlugRoute
   '/seller/$sellerId': typeof SellerSellerIdRoute
   '/tag/$tag': typeof TagTagRoute
   '/admin/': typeof AdminIndexRoute
   '/guides/': typeof GuidesIndexRoute
+  '/huong-dan/': typeof HuongDanIndexRoute
+  '/nguoi-ban/': typeof NguoiBanIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -282,15 +336,21 @@ export interface FileRouteTypes {
     | '/withdrawal'
     | '/admin/login'
     | '/category/$slug'
+    | '/danh-muc/$slug'
     | '/guides/$slug'
+    | '/huong-dan/$slug'
+    | '/nguoi-ban/$slug'
     | '/payment/cancel'
     | '/payment/success'
     | '/product/$slug'
     | '/read/$slug'
+    | '/san-pham/$slug'
     | '/seller/$sellerId'
     | '/tag/$tag'
     | '/admin/'
     | '/guides/'
+    | '/huong-dan/'
+    | '/nguoi-ban/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -311,15 +371,21 @@ export interface FileRouteTypes {
     | '/withdrawal'
     | '/admin/login'
     | '/category/$slug'
+    | '/danh-muc/$slug'
     | '/guides/$slug'
+    | '/huong-dan/$slug'
+    | '/nguoi-ban/$slug'
     | '/payment/cancel'
     | '/payment/success'
     | '/product/$slug'
     | '/read/$slug'
+    | '/san-pham/$slug'
     | '/seller/$sellerId'
     | '/tag/$tag'
     | '/admin'
     | '/guides'
+    | '/huong-dan'
+    | '/nguoi-ban'
   id:
     | '__root__'
     | '/'
@@ -340,15 +406,21 @@ export interface FileRouteTypes {
     | '/withdrawal'
     | '/admin/login'
     | '/category/$slug'
+    | '/danh-muc/$slug'
     | '/guides/$slug'
+    | '/huong-dan/$slug'
+    | '/nguoi-ban/$slug'
     | '/payment/cancel'
     | '/payment/success'
     | '/product/$slug'
     | '/read/$slug'
+    | '/san-pham/$slug'
     | '/seller/$sellerId'
     | '/tag/$tag'
     | '/admin/'
     | '/guides/'
+    | '/huong-dan/'
+    | '/nguoi-ban/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -370,15 +442,21 @@ export interface RootRouteChildren {
   WithdrawalRoute: typeof WithdrawalRoute
   AdminLoginRoute: typeof AdminLoginRoute
   CategorySlugRoute: typeof CategorySlugRoute
+  DanhMucSlugRoute: typeof DanhMucSlugRoute
   GuidesSlugRoute: typeof GuidesSlugRoute
+  HuongDanSlugRoute: typeof HuongDanSlugRoute
+  NguoiBanSlugRoute: typeof NguoiBanSlugRoute
   PaymentCancelRoute: typeof PaymentCancelRoute
   PaymentSuccessRoute: typeof PaymentSuccessRoute
   ProductSlugRoute: typeof ProductSlugRoute
   ReadSlugRoute: typeof ReadSlugRoute
+  SanPhamSlugRoute: typeof SanPhamSlugRoute
   SellerSellerIdRoute: typeof SellerSellerIdRoute
   TagTagRoute: typeof TagTagRoute
   AdminIndexRoute: typeof AdminIndexRoute
   GuidesIndexRoute: typeof GuidesIndexRoute
+  HuongDanIndexRoute: typeof HuongDanIndexRoute
+  NguoiBanIndexRoute: typeof NguoiBanIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -516,6 +594,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CategorySlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/danh-muc/$slug': {
+      id: '/danh-muc/$slug'
+      path: '/danh-muc/$slug'
+      fullPath: '/danh-muc/$slug'
+      preLoaderRoute: typeof DanhMucSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/guides/': {
       id: '/guides/'
       path: '/guides'
@@ -528,6 +613,34 @@ declare module '@tanstack/react-router' {
       path: '/guides/$slug'
       fullPath: '/guides/$slug'
       preLoaderRoute: typeof GuidesSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/huong-dan/': {
+      id: '/huong-dan/'
+      path: '/huong-dan'
+      fullPath: '/huong-dan/'
+      preLoaderRoute: typeof HuongDanIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/huong-dan/$slug': {
+      id: '/huong-dan/$slug'
+      path: '/huong-dan/$slug'
+      fullPath: '/huong-dan/$slug'
+      preLoaderRoute: typeof HuongDanSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/nguoi-ban/': {
+      id: '/nguoi-ban/'
+      path: '/nguoi-ban'
+      fullPath: '/nguoi-ban/'
+      preLoaderRoute: typeof NguoiBanIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/nguoi-ban/$slug': {
+      id: '/nguoi-ban/$slug'
+      path: '/nguoi-ban/$slug'
+      fullPath: '/nguoi-ban/$slug'
+      preLoaderRoute: typeof NguoiBanSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/payment/cancel': {
@@ -556,6 +669,13 @@ declare module '@tanstack/react-router' {
       path: '/read/$slug'
       fullPath: '/read/$slug'
       preLoaderRoute: typeof ReadSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/san-pham/$slug': {
+      id: '/san-pham/$slug'
+      path: '/san-pham/$slug'
+      fullPath: '/san-pham/$slug'
+      preLoaderRoute: typeof SanPhamSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/seller/$sellerId': {
@@ -594,16 +714,32 @@ const rootRouteChildren: RootRouteChildren = {
   WithdrawalRoute: WithdrawalRoute,
   AdminLoginRoute: AdminLoginRoute,
   CategorySlugRoute: CategorySlugRoute,
+  DanhMucSlugRoute: DanhMucSlugRoute,
   GuidesSlugRoute: GuidesSlugRoute,
+  HuongDanSlugRoute: HuongDanSlugRoute,
+  NguoiBanSlugRoute: NguoiBanSlugRoute,
   PaymentCancelRoute: PaymentCancelRoute,
   PaymentSuccessRoute: PaymentSuccessRoute,
   ProductSlugRoute: ProductSlugRoute,
   ReadSlugRoute: ReadSlugRoute,
+  SanPhamSlugRoute: SanPhamSlugRoute,
   SellerSellerIdRoute: SellerSellerIdRoute,
   TagTagRoute: TagTagRoute,
   AdminIndexRoute: AdminIndexRoute,
   GuidesIndexRoute: GuidesIndexRoute,
+  HuongDanIndexRoute: HuongDanIndexRoute,
+  NguoiBanIndexRoute: NguoiBanIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}

@@ -114,7 +114,7 @@ export const RelatedProducts = ({ categoryId, currentProductId, categorySlug }: 
         </h2>
         {categorySlug && (
           <Link 
-            to={`/category/${categorySlug}`}
+            to={`/danh-muc/${categorySlug}`}
             className="text-sm text-primary hover:underline flex items-center gap-1"
           >
             Xem tất cả
@@ -129,7 +129,7 @@ export const RelatedProducts = ({ categoryId, currentProductId, categorySlug }: 
           const downloadUrl = getProductDownloadUrl(product.google_drive_link, product.download_only_link);
 
           return <article key={product.id} className="group">
-            <Link to={`/product/${product.slug}`} className="block" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
+            <Link to={`/san-pham/${product.slug}`} className="block" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
               <Card className="hover:shadow-lg transition-all duration-300 hover:-translate-y-1 flex flex-col h-full">
                 <div className="relative overflow-hidden rounded-t-lg aspect-[4/3] bg-muted">
                   <div className="w-full h-full group-hover:scale-105 transition-transform duration-300">

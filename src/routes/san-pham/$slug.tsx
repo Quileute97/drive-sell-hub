@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { buildHead, SITE_URL } from "@/lib/seoHead";
 import { fixVietnameseEncoding } from "@/lib/vietnameseText";
 
-export const Route = createFileRoute("/product/$slug")({
+export const Route = createFileRoute("/san-pham/$slug")({
   loader: async ({ params }) => {
     try {
       const { data } = await supabase
@@ -73,7 +73,7 @@ export const Route = createFileRoute("/product/$slug")({
     }
   },
   head: ({ params, loaderData }) => {
-    const path = `/product/${params.slug}`;
+    const path = `/san-pham/${params.slug}`;
     if (!loaderData) {
       return buildHead({
         title: "Sản phẩm digital",
@@ -156,7 +156,7 @@ export const Route = createFileRoute("/product/$slug")({
                 "@type": "ListItem",
                 position: 2,
                 name: loaderData.categoryName,
-                item: `${SITE_URL}/category/${loaderData.categorySlug}`,
+                item: `${SITE_URL}/danh-muc/${loaderData.categorySlug}`,
               },
             ]
           : []),

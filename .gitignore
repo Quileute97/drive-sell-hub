@@ -27,4 +27,6 @@ dist-ssr
 .wrangler
 .tanstack
 .nitro
+.output
 dist
+

@@ -30,22 +30,45 @@ const matchCase = (out: string, sample: string) =>
     ? out.toUpperCase()
     : out;
 
-export function fixVietnameseEncoding(input?: string | null): string {
-  const text = input ?? "";
-  if (!text || !BROKEN.test(text)) return text;
+// Specific common corrections for titles, medical titles, and misencoded terms
+const WORD_REPLACEMENTS: Array<[RegExp, string]> = [
+  [/\bBSCKII\b/gi, "BS.CKII"],
+  [/\bBSCKI\b/gi, "BS.CKI"],
+  [/\bBSCK1\b/gi, "BS.CKI"],
+  [/\bBSCK2\b/gi, "BS.CKII"],
+  [/\bBs\.CK/gi, "BS.CK"],
+  [/\bBs\s+CK/gi, "BS. CK"],
+  [/\bChâu Thò\b/g, "Châu Thị"],
+  [/\bThò Kim\b/g, "Thị Kim"],
+  [/\bThò ([A-ZÀ-Ỹ])/g, "Thị $1"],
+];
 
-  let out = "";
-  for (let i = 0; i < text.length; i++) {
-    const two = text.slice(i, i + 2);
-    const pair = PAIRS[two.toLowerCase()];
-    if (pair) {
-      out += matchCase(pair, two[0]!);
-      i++;
-      continue;
-    }
-    const one = text[i]!;
-    const single = SINGLES[one.toLowerCase()];
-    out += single ? matchCase(single, one) : one;
+export function fixVietnameseEncoding(input?: string | null): string {
+  let text = input ?? "";
+  if (!text) return text;
+
+  // 1. Fix common specific patterns first
+  for (const [pattern, replacement] of WORD_REPLACEMENTS) {
+    text = text.replace(pattern, replacement);
   }
-  return out;
+
+  // 2. Fix VNI/TCVN pair encodings if broken characters found
+  if (BROKEN.test(text)) {
+    let out = "";
+    for (let i = 0; i < text.length; i++) {
+      const two = text.slice(i, i + 2);
+      const pair = PAIRS[two.toLowerCase()];
+      if (pair) {
+        out += matchCase(pair, two[0]!);
+        i++;
+        continue;
+      }
+      const one = text[i]!;
+      const single = SINGLES[one.toLowerCase()];
+      out += single ? matchCase(single, one) : one;
+    }
+    text = out;
+  }
+
+  return text;
 }

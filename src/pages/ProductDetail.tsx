@@ -3,14 +3,16 @@ import { useParams, useNavigate, Link } from "@/lib/router-compat";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Star, Download, Eye, ArrowLeft, Share2, ShoppingCart, BookOpen } from "lucide-react";
+import { Star, Download, Eye, ArrowLeft, Share2, ShoppingCart, BookOpen, Pencil, Edit3 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { RelatedProducts } from "@/components/RelatedProducts";
 import { RecommendedProducts } from "@/components/RecommendedProducts";
 import { ProductReviews } from "@/components/ProductReviews";
+import EditProductForm from "@/components/EditProductForm";
 import { useCart } from "@/hooks/useCart";
 import { SEO } from "@/components/SEO";
 import { Breadcrumb } from "@/components/Breadcrumb";
@@ -71,6 +73,7 @@ interface ProductDetail {
   meta_description: string | null;
   created_at: string;
   updated_at: string;
+  status: string;
   profiles: {
     full_name: string;
     avatar_url: string;
@@ -94,11 +97,20 @@ interface Review {
 export default function ProductDetail() {
   const { slug } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [product, setProduct] = useState<ProductDetail | null>(null);
   const [reviews, setReviews] = useState<Review[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isEditing, setIsEditing] = useState(false);
   const { toast } = useToast();
   const { addToCart } = useCart();
+
+  const isOwner = Boolean(
+    user && product && (
+      user.id === product.seller_id ||
+      (user as any).role === 'admin'
+    )
+  );
 
   useEffect(() => {
     if (slug) {
@@ -116,10 +128,14 @@ export default function ProductDetail() {
           categories(name, slug)
         `)
         .eq('slug', slug!)
-        .eq('status', 'active')
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
+      if (!data) {
+        setProduct(null);
+        setLoading(false);
+        return;
+      }
       setProduct({
         ...(data as any),
         title: fixVietnameseEncoding((data as any)?.title),
@@ -615,6 +631,47 @@ export default function ProductDetail() {
       <Header />
       
       <main className="container mx-auto px-4 py-8">
+        {/* Seller Owner Banner */}
+        {isOwner && (
+          <div className="mb-6 rounded-xl border border-primary/30 bg-primary/5 dark:bg-primary/10 p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-xs">
+            <div className="flex items-start sm:items-center gap-3">
+              <div className="p-2.5 bg-primary/10 text-primary rounded-xl shrink-0">
+                <Pencil className="h-5 w-5" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="font-bold text-sm sm:text-base text-foreground">Bạn là người bán sản phẩm này</span>
+                  <Badge variant={product.status === 'active' ? 'default' : 'secondary'} className="text-xs">
+                    {product.status === 'active' ? 'Đang mở bán' : 'Bản nháp'}
+                  </Badge>
+                </div>
+                <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
+                  Bạn có thể chỉnh sửa mô tả chuẩn SEO, tiêu đề H1-H4, giá bán, hình ảnh và tệp tải xuống bất cứ lúc nào.
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2.5 shrink-0 self-end sm:self-center">
+              <Button
+                size="sm"
+                onClick={() => setIsEditing(true)}
+                className="gap-1.5 font-semibold shadow-sm"
+              >
+                <Pencil className="h-4 w-4" />
+                Chỉnh sửa sản phẩm
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                asChild
+              >
+                <Link to="/seller-dashboard">
+                  Quản lý kho
+                </Link>
+              </Button>
+            </div>
+          </div>
+        )}
+
         <Breadcrumb 
           items={[
             { 
@@ -847,6 +904,18 @@ export default function ProductDetail() {
                 <Share2 className="h-4 w-4 mr-2" />
                 Chia sẻ
               </Button>
+
+              {isOwner && (
+                <Button
+                  variant="outline"
+                  size="lg"
+                  className="w-full border-primary/40 text-primary hover:bg-primary/10 gap-2 font-semibold"
+                  onClick={() => setIsEditing(true)}
+                >
+                  <Pencil className="h-4 w-4" />
+                  Chỉnh sửa sản phẩm này
+                </Button>
+              )}
             </div>
 
           </div>
@@ -900,6 +969,30 @@ export default function ProductDetail() {
           currentCategoryId={product.category_id}
           title="Khám phá danh mục khác"
         />
+
+        {/* Edit Product Modal */}
+        {isEditing && product && (
+          <EditProductForm
+            product={product as any}
+            onClose={() => setIsEditing(false)}
+            onSuccess={() => {
+              setIsEditing(false);
+              fetchProduct();
+              toast({
+                title: "Thành công",
+                description: "Đã cập nhật thông tin sản phẩm thành công",
+              });
+            }}
+            onDelete={() => {
+              setIsEditing(false);
+              toast({
+                title: "Đã xóa",
+                description: "Sản phẩm đã được xóa",
+              });
+              navigate("/seller-dashboard");
+            }}
+          />
+        )}
       </main>
 
       <Footer />

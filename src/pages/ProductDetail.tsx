@@ -743,180 +743,194 @@ export default function ProductDetail() {
             )}
           </div>
 
-          {/* Product Info */}
-          <div className="space-y-6">
-            <header>
-              <Badge variant="secondary" className="mb-2">
-                {product.categories?.name}
-              </Badge>
-              <h1 className="text-3xl font-bold mb-2">{product.title}</h1>
-              <p className="text-lg text-muted-foreground">{product.short_description}</p>
+          {/* Product Info (Right Column) */}
+          <div className="space-y-4">
+            {/* Header: Category + File specs + Title + Short Desc */}
+            <header className="space-y-2">
+              <div className="flex flex-wrap items-center gap-2">
+                <Badge variant="secondary" className="text-xs font-medium">
+                  {product.categories?.name}
+                </Badge>
+                {product.file_format && (
+                  <Badge variant="outline" className="text-xs font-mono uppercase">
+                    {product.file_format}
+                  </Badge>
+                )}
+                {product.file_size && (
+                  <span className="text-xs text-muted-foreground flex items-center gap-1">
+                    • Dung lượng: {product.file_size}
+                  </span>
+                )}
+              </div>
+              <h1 className="text-2xl sm:text-3xl font-bold text-foreground leading-snug">
+                {product.title}
+              </h1>
+              {product.short_description && (
+                <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
+                  {product.short_description}
+                </p>
+              )}
             </header>
 
-            {/* Rating and Stats */}
-            <div className="flex items-center space-x-6">
+            {/* Quick Stats: Rating, Downloads, Views */}
+            <div className="flex flex-wrap items-center gap-4 text-xs sm:text-sm text-muted-foreground py-0.5">
               <div className="flex items-center">
                 {renderStars(product.rating_average || 0)}
-                <span className="ml-2 text-sm text-muted-foreground">
-                  ({product.rating_count || 0} đánh giá)
+                <span className="ml-1.5 font-medium text-foreground">
+                  {product.rating_count > 0 ? (product.rating_average || 5).toFixed(1) : "5.0"}
+                </span>
+                <span className="ml-1 text-muted-foreground">
+                  ({product.rating_count || 0})
                 </span>
               </div>
-              <div className="flex items-center text-sm text-muted-foreground">
-                <Download className="h-4 w-4 mr-1" />
-                {product.download_count} lượt tải
+              <span className="text-muted-foreground/30">•</span>
+              <div className="flex items-center gap-1">
+                <Download className="h-3.5 w-3.5 text-muted-foreground" />
+                <span>{product.download_count} tải</span>
               </div>
-              <div className="flex items-center text-sm text-muted-foreground">
-                <Eye className="h-4 w-4 mr-1" />
-                {product.view_count} lượt xem
+              <span className="text-muted-foreground/30">•</span>
+              <div className="flex items-center gap-1">
+                <Eye className="h-3.5 w-3.5 text-muted-foreground" />
+                <span>{product.view_count} xem</span>
               </div>
             </div>
 
-            {/* Price */}
-            <div className="space-y-2">
-              <div className="text-3xl font-bold text-primary">
-                {isFree ? 'Miễn phí' : formatPrice(product.price)}
-              </div>
-              {product.original_price > product.price && (
-                <div className="flex items-center space-x-2">
-                  <span className="text-lg text-muted-foreground line-through">
-                    {formatPrice(product.original_price)}
-                  </span>
-                  <Badge className="bg-destructive text-destructive-foreground">
-                    Giảm {Math.round(((product.original_price - product.price) / product.original_price) * 100)}%
-                  </Badge>
-                </div>
-              )}
-            </div>
+            {/* Main Unified Purchase & Seller Card */}
+            <Card className="border-border/70 shadow-xs overflow-hidden">
+              <CardContent className="p-4 sm:p-5 space-y-4">
+                {/* Price + Seller Row */}
+                <div className="flex items-center justify-between gap-3 border-b pb-3.5">
+                  <div>
+                    <span className="text-xs text-muted-foreground block mb-0.5">Giá sản phẩm</span>
+                    <div className="flex items-baseline gap-2 flex-wrap">
+                      <span className="text-2xl sm:text-3xl font-extrabold text-primary tracking-tight">
+                        {isFree ? 'Miễn phí' : formatPrice(product.price)}
+                      </span>
+                      {product.original_price > product.price && (
+                        <>
+                          <span className="text-sm text-muted-foreground line-through">
+                            {formatPrice(product.original_price)}
+                          </span>
+                          <Badge variant="destructive" className="text-[10px] px-1.5 py-0 h-4">
+                            -{Math.round(((product.original_price - product.price) / product.original_price) * 100)}%
+                          </Badge>
+                        </>
+                      )}
+                    </div>
+                  </div>
 
-            {/* Product Details */}
-            <Card>
-              <CardContent className="p-4">
-                <h2 className="text-lg font-semibold mb-3">Thông tin sản phẩm</h2>
-                <div className="space-y-2 text-sm">
-                  {product.file_size && (
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Dung lượng:</span>
-                      <span>{product.file_size}</span>
+                  {/* Compact Seller Badge */}
+                  <Link
+                    to={`/seller/${product.seller_id}`}
+                    className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-muted/60 hover:bg-muted transition-colors text-xs shrink-0 max-w-[160px]"
+                  >
+                    <img
+                      src={product.profiles?.avatar_url || "/placeholder.svg"}
+                      alt={product.profiles?.full_name || 'Người bán'}
+                      className="w-7 h-7 rounded-full object-cover border"
+                      loading="lazy"
+                    />
+                    <div className="truncate">
+                      <span className="font-medium text-foreground block truncate text-xs">
+                        {product.profiles?.full_name || 'Người bán'}
+                      </span>
+                      <span className="text-[10px] text-primary block leading-none font-medium">Xem shop</span>
                     </div>
-                  )}
-                  {product.file_format && (
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Định dạng:</span>
-                      <span>{product.file_format}</span>
-                    </div>
-                  )}
+                  </Link>
                 </div>
+
+                {/* Primary & Secondary Action Buttons */}
+                <div className="space-y-2.5">
+                  {/* Primary CTA */}
+                  {product.read_only ? (
+                    product.google_drive_link && (
+                      <Button
+                        size="lg"
+                        className="w-full font-semibold shadow-xs gap-2"
+                        onClick={() => navigate(`/read/${product.slug}`)}
+                      >
+                        <BookOpen className="h-4 w-4" />
+                        Đọc trực tuyến (Full màn hình)
+                      </Button>
+                    )
+                  ) : isFree ? (
+                    <FreeDownloadButton
+                      size="lg"
+                      className="w-full font-semibold shadow-xs"
+                      downloadUrl={freeDownloadUrl}
+                      onMissingUrl={() => {
+                        toast({
+                          title: "Thiếu link tải",
+                          description: "Tài liệu miễn phí này hiện chưa có link tải hợp lệ",
+                          variant: "destructive",
+                        });
+                      }}
+                    />
+                  ) : (
+                    <div className="grid grid-cols-2 gap-2.5">
+                      <Button 
+                        size="lg" 
+                        variant="outline"
+                        onClick={() => addToCart(product.id)}
+                        className="gap-1.5 font-medium"
+                      >
+                        <ShoppingCart className="h-4 w-4" />
+                        Thêm giỏ
+                      </Button>
+                      <Button 
+                        size="lg"
+                        onClick={handleBuyNow}
+                        className="gap-1.5 font-semibold shadow-xs"
+                      >
+                        Mua ngay
+                      </Button>
+                    </div>
+                  )}
+
+                  {/* Secondary Utility Buttons Row */}
+                  <div className="flex items-center gap-2">
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="flex-1 text-xs gap-1.5 h-9"
+                      onClick={handleShare}
+                    >
+                      <Share2 className="h-3.5 w-3.5" />
+                      Chia sẻ
+                    </Button>
+
+                    {isOwner && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="flex-1 text-xs border-primary/40 text-primary hover:bg-primary/10 gap-1.5 h-9 font-medium"
+                        onClick={() => setIsEditing(true)}
+                      >
+                        <Pencil className="h-3.5 w-3.5" />
+                        Chỉnh sửa
+                      </Button>
+                    )}
+                  </div>
+                </div>
+
+                {/* Tags Inline */}
+                {product.tags && product.tags.length > 0 && (
+                  <div className="pt-2 border-t flex items-center gap-1.5 flex-wrap">
+                    <span className="text-[11px] text-muted-foreground font-medium mr-1">Tags:</span>
+                    {product.tags.map((tag, index) => (
+                      <Link key={index} to={`/tag/${encodeURIComponent(tag)}`}>
+                        <Badge
+                          variant="secondary"
+                          className="text-[11px] font-normal px-2 py-0.5 hover:bg-primary hover:text-primary-foreground transition-colors cursor-pointer"
+                        >
+                          {tag}
+                        </Badge>
+                      </Link>
+                    ))}
+                  </div>
+                )}
               </CardContent>
             </Card>
-
-            {/* Seller Info - Compact */}
-            <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
-              <img
-                src={product.profiles?.avatar_url || "/placeholder.svg"}
-                alt={`${product.profiles?.full_name} - Người bán trên Salemylink`}
-                className="w-9 h-9 rounded-full object-cover"
-                loading="lazy"
-              />
-              <div className="flex-1 min-w-0">
-                <span className="text-xs text-muted-foreground">Người bán</span>
-                <Link 
-                  to={`/seller/${product.seller_id}`}
-                  className="block font-medium text-sm hover:text-primary transition-colors truncate"
-                >
-                  {product.profiles?.full_name || 'Ẩn danh'}
-                </Link>
-              </div>
-              <Link 
-                to={`/seller/${product.seller_id}`}
-                className="text-xs text-primary hover:underline whitespace-nowrap"
-              >
-                Xem shop
-              </Link>
-            </div>
-
-            {/* Tags */}
-            {product.tags && product.tags.length > 0 && (
-              <div>
-                <h2 className="text-lg font-semibold mb-3">Tags</h2>
-                <div className="flex flex-wrap gap-2">
-                  {product.tags.map((tag, index) => (
-                    <Link key={index} to={`/tag/${encodeURIComponent(tag)}`}>
-                      <Badge variant="outline" className="cursor-pointer hover:bg-accent hover:text-accent-foreground transition-colors">
-                        {tag}
-                      </Badge>
-                    </Link>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Action Buttons */}
-            <div className="space-y-3">
-              {product.read_only ? (
-                product.google_drive_link && (
-                  <Button
-                    variant="secondary"
-                    size="lg"
-                    className="w-full"
-                    onClick={() => navigate(`/read/${product.slug}`)}
-                  >
-                    <BookOpen className="h-4 w-4 mr-2" />
-                    Đọc trực tuyến (Full màn hình)
-                  </Button>
-                )
-              ) : isFree ? (
-                <FreeDownloadButton
-                  size="lg"
-                  className="w-full"
-                  downloadUrl={freeDownloadUrl}
-                  onMissingUrl={() => {
-                    toast({
-                      title: "Thiếu link tải",
-                      description: "Tài liệu miễn phí này hiện chưa có link tải hợp lệ",
-                      variant: "destructive",
-                    });
-                  }}
-                />
-              ) : (
-                <div className="grid grid-cols-2 gap-3">
-                  <Button 
-                    size="lg" 
-                    variant="outline"
-                    onClick={() => addToCart(product.id)}
-                  >
-                    <ShoppingCart className="h-4 w-4 mr-2" />
-                    Thêm vào giỏ
-                  </Button>
-                  <Button 
-                    size="lg"
-                    onClick={handleBuyNow}
-                  >
-                    Mua ngay - {formatPrice(product.price)}
-                  </Button>
-                </div>
-              )}
-              <Button 
-                variant="outline" 
-                size="lg" 
-                className="w-full"
-                onClick={handleShare}
-              >
-                <Share2 className="h-4 w-4 mr-2" />
-                Chia sẻ
-              </Button>
-
-              {isOwner && (
-                <Button
-                  variant="outline"
-                  size="lg"
-                  className="w-full border-primary/40 text-primary hover:bg-primary/10 gap-2 font-semibold"
-                  onClick={() => setIsEditing(true)}
-                >
-                  <Pencil className="h-4 w-4" />
-                  Chỉnh sửa sản phẩm này
-                </Button>
-              )}
-            </div>
 
           </div>
         </div>

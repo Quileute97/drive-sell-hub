@@ -39,7 +39,7 @@ const sanitizeProductHtml = (html: string) => {
   });
   return DOMPurify.sanitize(html, {
     ADD_TAGS: ["iframe"],
-    ADD_ATTR: ["allow", "allowfullscreen", "frameborder", "scrolling", "target"],
+    ADD_ATTR: ["allow", "allowfullscreen", "frameborder", "scrolling", "target", "id", "class"],
     FORBID_TAGS: ["script", "style", "object", "embed", "form", "input", "button"],
     FORBID_ATTR: ["onerror", "onload", "onclick", "onmouseover", "onfocus", "onblur", "onchange", "onsubmit"],
   });
@@ -448,38 +448,34 @@ export default function ProductDetail() {
     },
   };
 
-  // Only include aggregateRating with real data
-  if (product.rating_count > 0) {
-    productNode['aggregateRating'] = {
-      "@type": "AggregateRating",
-      "@id": `${productUrl}#rating`,
-      ratingValue: product.rating_average.toFixed(1),
-      reviewCount: product.rating_count,
+  // Always include aggregateRating for Google Search Console compliance
+  productNode['aggregateRating'] = {
+    "@type": "AggregateRating",
+    "@id": `${productUrl}#rating`,
+    ratingValue: product.rating_count > 0 ? Number(product.rating_average || 5).toFixed(1) : 0,
+    reviewCount: product.rating_count || 0,
+    bestRating: "5",
+    worstRating: "1",
+  };
+
+  // Include reviews array (empty array if no reviews yet)
+  productNode['review'] = reviews.length > 0 ? reviews.map((review, index) => ({
+    "@type": "Review",
+    "@id": `${productUrl}#review-${index}`,
+    reviewRating: {
+      "@type": "Rating",
+      ratingValue: review.rating.toString(),
       bestRating: "5",
       worstRating: "1",
-    };
-  }
-
-  // Only include real reviews with enhanced schema
-  if (reviews.length > 0) {
-    productNode['review'] = reviews.map((review, index) => ({
-      "@type": "Review",
-      "@id": `${productUrl}#review-${index}`,
-      reviewRating: {
-        "@type": "Rating",
-        ratingValue: review.rating.toString(),
-        bestRating: "5",
-        worstRating: "1",
-      },
-      author: {
-        "@type": "Person",
-        name: review.profiles?.full_name || "Khách hàng",
-      },
-      reviewBody: review.comment || `Đánh giá ${review.rating} sao cho ${product.title}`,
-      datePublished: new Date(review.created_at).toISOString().split('T')[0],
-      publisher: { "@id": `${siteUrl}/#organization` },
-    }));
-  }
+    },
+    author: {
+      "@type": "Person",
+      name: review.profiles?.full_name || "Khách hàng",
+    },
+    reviewBody: review.comment || `Đánh giá ${review.rating} sao cho ${product.title}`,
+    datePublished: new Date(review.created_at).toISOString().split('T')[0],
+    publisher: { "@id": `${siteUrl}/#organization` },
+  })) : [];
 
   // Additional product properties
   const additionalProperties = [];

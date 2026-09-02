@@ -7,11 +7,20 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { RichTextEditor } from '@/components/RichTextEditor';
 import { SEOScoreChecker } from '@/components/SEOScoreChecker';
+import { TableOfContents, injectHeadingIds } from '@/components/TableOfContents';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  DialogDescription,
+} from '@/components/ui/dialog';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery } from '@tanstack/react-query';
@@ -28,7 +37,10 @@ import {
   X,
   Plus,
   Eye,
-  Globe
+  Globe,
+  CheckCircle2,
+  Sparkles,
+  ExternalLink,
 } from 'lucide-react';
 import { TagInput } from '@/components/TagInput';
 
@@ -40,6 +52,7 @@ interface AddProductFormProps {
 const AddProductForm = ({ onClose, onSuccess }: AddProductFormProps) => {
   const { user } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showPreviewModal, setShowPreviewModal] = useState(false);
   const [tags, setTags] = useState<string[]>([]);
   const [currentTag, setCurrentTag] = useState('');
   const [images, setImages] = useState<string[]>([]);
@@ -228,14 +241,26 @@ const AddProductForm = ({ onClose, onSuccess }: AddProductFormProps) => {
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
       <div className="bg-background rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-        <div className="sticky top-0 bg-background border-b p-6 flex items-center justify-between">
+        <div className="sticky top-0 bg-background border-b p-4 sm:p-6 flex items-center justify-between z-10">
           <div>
-            <h2 className="text-2xl font-bold">Thêm sản phẩm mới</h2>
-            <p className="text-muted-foreground">Tạo sản phẩm với link Google Drive và SEO tối ưu</p>
+            <h2 className="text-xl sm:text-2xl font-bold">Thêm sản phẩm mới</h2>
+            <p className="text-xs sm:text-sm text-muted-foreground">Tạo sản phẩm với link Google Drive và SEO tối ưu</p>
           </div>
-          <Button variant="ghost" size="sm" onClick={onClose}>
-            <X className="h-4 w-4" />
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setShowPreviewModal(true)}
+              className="text-xs font-medium gap-1.5"
+            >
+              <Eye className="h-3.5 w-3.5 text-primary" />
+              <span>Xem trước</span>
+            </Button>
+            <Button variant="ghost" size="sm" onClick={onClose}>
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
 
         <form onSubmit={handleSubmit} className="p-6">
@@ -292,7 +317,19 @@ const AddProductForm = ({ onClose, onSuccess }: AddProductFormProps) => {
                   </div>
 
                   <div>
-                    <Label htmlFor="description">Mô tả chi tiết</Label>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <Label htmlFor="description" className="text-base font-semibold">Mô tả chi tiết chuẩn SEO</Label>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setShowPreviewModal(true)}
+                        className="h-7 text-xs text-primary hover:text-primary/80 gap-1 px-2"
+                      >
+                        <Eye className="h-3.5 w-3.5" />
+                        Xem trước bài đăng
+                      </Button>
+                    </div>
                     <RichTextEditor
                       value={formData.description}
                       onChange={(html) => handleInputChange('description', html)}
@@ -669,16 +706,128 @@ const AddProductForm = ({ onClose, onSuccess }: AddProductFormProps) => {
             </TabsContent>
           </Tabs>
 
-          <div className="flex justify-end gap-4 mt-8 pt-6 border-t">
-            <Button type="button" variant="outline" onClick={onClose}>
-              Hủy
+          <div className="flex flex-wrap items-center justify-between gap-4 mt-8 pt-6 border-t">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setShowPreviewModal(true)}
+              className="gap-1.5 text-primary border-primary/30 hover:bg-primary/10"
+            >
+              <Eye className="h-4 w-4" />
+              Xem trước bài đăng
             </Button>
-            <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? 'Đang tạo...' : 'Tạo sản phẩm'}
-            </Button>
+            <div className="flex items-center gap-3">
+              <Button type="button" variant="outline" onClick={onClose}>
+                Hủy
+              </Button>
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting ? 'Đang tạo...' : 'Tạo sản phẩm'}
+              </Button>
+            </div>
           </div>
         </form>
       </div>
+
+      {/* Live Preview Modal */}
+      <Dialog open={showPreviewModal} onOpenChange={setShowPreviewModal}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto p-0">
+          <DialogHeader className="p-6 border-b sticky top-0 bg-background z-10">
+            <div className="flex items-center justify-between">
+              <div>
+                <DialogTitle className="text-xl flex items-center gap-2">
+                  <Eye className="h-5 w-5 text-primary" />
+                  Xem trước trang sản phẩm
+                </DialogTitle>
+                <DialogDescription>
+                  Giao diện thực tế người mua sẽ nhìn thấy trên Salemylink
+                </DialogDescription>
+              </div>
+            </div>
+          </DialogHeader>
+
+          <div className="p-6 space-y-6">
+            {/* Header info */}
+            <div className="border rounded-xl p-5 bg-card space-y-4">
+              <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                <Badge variant="secondary">
+                  {categories.find(c => c.id === formData.category_id)?.name || 'Chưa chọn danh mục'}
+                </Badge>
+                {formData.file_format && (
+                  <Badge variant="outline">{formData.file_format}</Badge>
+                )}
+                {formData.file_size && (
+                  <span className="text-xs">Dung lượng: {formData.file_size}</span>
+                )}
+              </div>
+
+              <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
+                {formData.title || 'Tiêu đề sản phẩm chưa nhập'}
+              </h1>
+
+              {formData.short_description && (
+                <p className="text-muted-foreground text-sm leading-relaxed">
+                  {formData.short_description}
+                </p>
+              )}
+
+              <div className="flex items-center gap-3 pt-2 border-t">
+                <span className="text-2xl font-bold text-primary">
+                  {formData.price ? `${Number(formData.price).toLocaleString('vi-VN')} đ` : '0 đ'}
+                </span>
+                {formData.original_price && Number(formData.original_price) > Number(formData.price) && (
+                  <span className="text-sm text-muted-foreground line-through">
+                    {Number(formData.original_price).toLocaleString('vi-VN')} đ
+                  </span>
+                )}
+              </div>
+            </div>
+
+            {/* Images Preview */}
+            {images.length > 0 && (
+              <div className="border rounded-xl p-4 bg-card">
+                <h3 className="font-semibold text-sm mb-3">Hình ảnh minh họa ({images.length})</h3>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  {images.map((img, idx) => (
+                    <img
+                      key={idx}
+                      src={img}
+                      alt={`Ảnh ${idx + 1}`}
+                      className="rounded-lg object-cover h-28 w-full border"
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Article & Table of Contents */}
+            <div className="border rounded-xl p-6 bg-card space-y-4">
+              <h2 className="text-xl font-bold border-b pb-2 flex items-center gap-2">
+                <FileText className="h-5 w-5 text-primary" />
+                Mô tả chi tiết sản phẩm
+              </h2>
+
+              {/* Table of Contents */}
+              <TableOfContents htmlContent={formData.description || ''} defaultOpen={true} />
+
+              {/* Formatted HTML Description */}
+              {formData.description ? (
+                <div
+                  className="prose prose-sm sm:prose-base max-w-none"
+                  dangerouslySetInnerHTML={{ __html: injectHeadingIds(formData.description) }}
+                />
+              ) : (
+                <p className="text-muted-foreground italic text-sm py-4">Chưa có nội dung mô tả chi tiết.</p>
+              )}
+            </div>
+          </div>
+
+          <DialogFooter className="p-4 border-t sticky bottom-0 bg-background">
+            <Button onClick={() => setShowPreviewModal(false)}>
+              Quay lại chỉnh sửa
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

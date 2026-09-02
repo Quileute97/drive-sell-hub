@@ -3,6 +3,7 @@ import ProductDetail from "@/pages/ProductDetail";
 import { supabase } from "@/integrations/supabase/client";
 import { buildHead, SITE_URL } from "@/lib/seoHead";
 import { fixVietnameseEncoding } from "@/lib/vietnameseText";
+import { getProductReviewData } from "@/lib/reviews";
 
 export const Route = createFileRoute("/product/$slug")({
   loader: async ({ params }) => {
@@ -18,37 +19,13 @@ export const Route = createFileRoute("/product/$slug")({
       const seller = (data as { profiles?: { full_name?: string | null } | null }).profiles;
       const category = (data as { categories?: { name?: string; slug?: string } | null }).categories;
 
-      // Fetch approved reviews for JSON-LD structured data
-      const { data: reviewsData } = await supabase
-        .from("reviews")
-        .select("id, rating, comment, created_at, buyer_id, profiles:buyer_id(full_name)")
-        .eq("product_id", data.id)
-        .eq("is_approved", true)
-        .order("created_at", { ascending: false })
-        .limit(5);
-
-      const reviews = (reviewsData || []).map((r: any) => ({
-        id: r.id,
-        rating: r.rating,
-        comment: r.comment,
-        authorName: r.profiles?.full_name || "Người mua",
-        createdAt: r.created_at,
-      }));
-
-      let ratingValue = Number(data.rating_average) || 0;
-      let reviewCount = Number(data.rating_count) || 0;
-
-      if (reviews.length > 0) {
-        if (!reviewCount) {
-          reviewCount = reviews.length;
-        }
-        if (!ratingValue) {
-          const sum = reviews.reduce((acc: number, cur: any) => acc + (cur.rating || 5), 0);
-          ratingValue = Math.round((sum / reviews.length) * 10) / 10;
-        } else {
-          ratingValue = Math.round(ratingValue * 10) / 10;
-        }
-      }
+      // Fetch approved reviews & aggregate ratings for JSON-LD structured data
+      const { ratingValue, reviewCount, reviews } = await getProductReviewData(
+        data.id,
+        Number(data.rating_average) || 0,
+        Number(data.rating_count) || 0,
+        5
+      );
 
       return {
         title: fixVietnameseEncoding(data.meta_title || data.title),
@@ -86,6 +63,7 @@ export const Route = createFileRoute("/product/$slug")({
     const desc =
       loaderData.description ||
       `${loaderData.name} - sản phẩm digital chất lượng, tải xuống ngay sau khi thanh toán tại Salemylink.`;
+
     const productSchema: Record<string, unknown> = {
       "@context": "https://schema.org",
       "@type": "Product",
@@ -115,36 +93,32 @@ export const Route = createFileRoute("/product/$slug")({
           name: loaderData.sellerName || "Salemylink.com",
         },
       },
-      ...(loaderData.ratingCount && loaderData.ratingCount > 0
-        ? {
-            aggregateRating: {
-              "@type": "AggregateRating",
-              ratingValue: loaderData.rating || 5,
-              reviewCount: loaderData.ratingCount,
+      aggregateRating: {
+        "@type": "AggregateRating",
+        ratingValue: loaderData.rating || 0,
+        reviewCount: loaderData.ratingCount || 0,
+        bestRating: 5,
+        worstRating: 1,
+      },
+      review: (loaderData.reviews && loaderData.reviews.length > 0)
+        ? loaderData.reviews.map((r: any) => ({
+            "@type": "Review",
+            reviewRating: {
+              "@type": "Rating",
+              ratingValue: r.rating || 5,
               bestRating: 5,
               worstRating: 1,
             },
-          }
-        : {}),
-      ...(loaderData.reviews && loaderData.reviews.length > 0
-        ? {
-            review: loaderData.reviews.map((r: any) => ({
-              "@type": "Review",
-              reviewRating: {
-                "@type": "Rating",
-                ratingValue: r.rating,
-                bestRating: 5,
-                worstRating: 1,
-              },
-              author: {
-                "@type": "Person",
-                name: r.authorName || "Người mua",
-              },
-              reviewBody: r.comment || "Sản phẩm chất lượng, đúng mô tả.",
-            })),
-          }
-        : {}),
+            author: {
+              "@type": "Person",
+              name: r.authorName || "Người mua",
+            },
+            datePublished: r.datePublished || (r.createdAt ? new Date(r.createdAt).toISOString().split("T")[0] : new Date().toISOString().split("T")[0]),
+            reviewBody: r.comment || "Sản phẩm chất lượng, đúng mô tả.",
+          }))
+        : [],
     };
+
     const breadcrumb = {
       "@context": "https://schema.org",
       "@type": "BreadcrumbList",
@@ -168,6 +142,7 @@ export const Route = createFileRoute("/product/$slug")({
         },
       ],
     };
+
     return buildHead({
       title: loaderData.title,
       description: desc,

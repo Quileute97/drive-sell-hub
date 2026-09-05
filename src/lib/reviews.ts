@@ -6,7 +6,7 @@ export interface ProductReviewItem {
   comment: string;
   authorName: string;
   datePublished: string;
-  createdAt?: string;
+  createdAt?: string | undefined;
 }
 
 export interface ProductAggregateRating {
@@ -38,16 +38,18 @@ export async function getProductReviews(productId: string, limit = 5): Promise<P
       return [];
     }
 
-    return reviews.map((r: any) => ({
-      id: r.id,
+    const mappedReviews: ProductReviewItem[] = reviews.map((r: any) => ({
+      id: String(r.id),
       rating: Number(r.rating) || 5,
-      comment: r.comment || "Sản phẩm chất lượng, đúng mô tả.",
-      authorName: r.profiles?.full_name || "Người mua",
+      comment: String(r.comment || "Sản phẩm chất lượng, đúng mô tả."),
+      authorName: String(r.profiles?.full_name || "Người mua"),
       datePublished: r.created_at
-        ? new Date(r.created_at).toISOString().split("T")[0]
-        : new Date().toISOString().split("T")[0],
-      createdAt: r.created_at,
+        ? new Date(r.created_at).toISOString().slice(0, 10)
+        : new Date().toISOString().slice(0, 10),
+      createdAt: r.created_at ? String(r.created_at) : undefined,
     }));
+
+    return mappedReviews;
   } catch (err) {
     console.error("Error fetching product reviews:", err);
     return [];

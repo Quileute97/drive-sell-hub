@@ -1,27 +1,30 @@
-# Salemylink.com
+# Salemylink.com - Multilingual Digital Products Marketplace
 
-> Marketplace sản phẩm số Việt Nam: mua bán ebook, tài liệu, khóa học, mẫu thiết kế… giao hàng tự động qua Google Drive, thanh toán PayOS, hoa hồng người bán chỉ 5%.
+> Salemylink is the leading digital products marketplace in Vietnam and globally (supported languages: Vietnamese [Primary / Default], English, Chinese [Simplified], Spanish). It connects creators and buyers for ebooks, study materials, online courses, software source codes, Canva/Figma templates, and medical guides delivered automatically via Google Drive.
 
-Salemylink.com kết nối người mua và người bán sản phẩm digital tại Việt Nam. Người bán đăng sản phẩm với link Google Drive (preview hoặc download-only); người mua thanh toán bằng PayOS và nhận link tải tự động ngay sau khi giao dịch hoàn tất.
+## Supported Languages (Đa ngôn ngữ)
+- **Tiếng Việt (`vi` / `vi-VN`)**: Default / Primary language (`https://salemylink.com/`).
+- **English (`en` / `en-US`)**: English localized interface and metadata (`https://salemylink.com/?lang=en`).
+- **中文 (`zh` / `zh-CN`)**: Chinese simplified marketplace (`https://salemylink.com/?lang=zh`).
+- **Español (`es` / `es-ES`)**: Spanish localized marketplace (`https://salemylink.com/?lang=es`).
 
-## Pages
+Salemylink.com kết nối người mua và người bán sản phẩm digital tại Việt Nam và Quốc tế. Người bán đăng sản phẩm với link Google Drive (preview hoặc download-only); người mua thanh toán bảo mật bằng PayOS/Bank Transfer/Credit Card và nhận link tải tự động ngay sau khi giao dịch hoàn tất.
 
-- [Trang chủ](/): Sản phẩm nổi bật, danh mục và người bán mới.
-- [Tìm kiếm sản phẩm](/search): Tìm kiếm theo từ khoá, danh mục, tag.
-- [Danh mục](/category/ebook): Ví dụ — duyệt sản phẩm theo danh mục (ebook, khoá học, mẫu thiết kế…).
-- [Sản phẩm chi tiết](/product/sample-product): Trang chi tiết một sản phẩm (mô tả, đánh giá, link Google Drive).
-- [Tag](/tag/seo): Duyệt sản phẩm theo thẻ (tag).
-- [Người bán](/sellers): Danh sách người bán đã xác thực.
-- [Affiliate](/affiliate): Chương trình cộng tác viên — kiếm hoa hồng 5%.
-- [Cẩm nang học tập](/guides): Hướng dẫn học Y khoa, luyện IELTS, viết luận văn kèm ví dụ sản phẩm.
-- [Hướng dẫn học Y khoa](/guides/hoc-y-khoa): Lộ trình học Y khoa & tài liệu.
-- [Luyện thi IELTS](/guides/luyen-thi-ielts): Lộ trình IELTS 0–7.0.
-- [Viết luận văn tốt nghiệp](/guides/viet-luan-van): Hướng dẫn viết & bảo vệ luận văn.
-- [Giới thiệu](/about): Về Salemylink.com.
-- [Cách hoạt động](/how-it-works): Hướng dẫn mua hàng.
-- [Hướng dẫn người bán](/seller-guide): Cách trở thành seller và đăng sản phẩm.
+## Core Pages (Trang chính)
 
-## Optional
-
-- [Chính sách bảo mật](/privacy-policy): Privacy policy.
-- [Điều khoản dịch vụ](/terms-of-service): Terms of service.
+- [Trang chủ / Home](/) (Multilingual: `/?lang=en`, `/?lang=zh`, `/?lang=es`)
+- [Tìm kiếm sản phẩm / Search](/search)
+- [Danh mục / Categories](/category/ebook-sach)
+- [Sản phẩm chi tiết / Product](/san-pham/sample-product)
+- [Tag sản phẩm](/tag/ielts)
+- [Người bán uy tín / Top Sellers](/sellers)
+- [Chương trình Tiếp thị liên kết / Affiliate (5% Commission)](/affiliate)
+- [Cẩm nang & Hướng dẫn / Learning Guides](/guides)
+- [Hướng dẫn học Y khoa / Medical Study Guide](/guides/hoc-y-khoa)
+- [Luyện thi IELTS / IELTS Prep Guide](/guides/luyen-thi-ielts)
+- [Viết luận văn tốt nghiệp / Thesis Guide](/guides/viet-luan-van)
+- [Giới thiệu / About Salemylink](/about)
+- [Cách hoạt động / How it works](/how-it-works)
+- [Hướng dẫn người bán / Seller Guide](/seller-guide)
+- [Chính sách bảo mật / Privacy Policy](/privacy-policy)
+- [Điều khoản dịch vụ / Terms of Service](/terms-of-service)

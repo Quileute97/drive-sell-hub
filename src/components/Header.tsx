@@ -2,11 +2,13 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ShoppingCart, User, Search, LogOut, Heart } from "lucide-react";
 import { useAuth } from '@/contexts/AuthContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { Link, useNavigate } from '@/lib/router-compat';
 import { useCart } from '@/hooks/useCart';
 import { useWishlist } from '@/hooks/useWishlist';
 import { useUserRole } from '@/hooks/useUserRole';
 import { NotificationBell } from '@/components/NotificationBell';
+import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -21,6 +23,7 @@ export const Header = () => {
   const { totalItems } = useCart();
   const { count: wishlistCount } = useWishlist();
   const { isSeller, isAdmin } = useUserRole();
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -50,22 +53,25 @@ export const Header = () => {
           </Link>
 
           {/* Search Bar */}
-          <form onSubmit={handleSearch} className="hidden md:flex flex-1 max-w-md mx-8">
+          <form onSubmit={handleSearch} className="hidden md:flex flex-1 max-w-md mx-6">
             <div className="relative w-full">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
               <input
                 type="text"
-                aria-label="Tìm kiếm sản phẩm digital"
-                placeholder="Tìm kiếm sản phẩm digital..."
+                aria-label={t("nav.searchPlaceholder")}
+                placeholder={t("nav.searchPlaceholder")}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-input rounded-lg bg-background focus:outline-hidden focus:ring-2 focus:ring-primary/20 transition-smooth"
+                className="w-full pl-10 pr-4 py-2 text-sm border border-input rounded-lg bg-background focus:outline-hidden focus:ring-2 focus:ring-primary/20 transition-smooth"
               />
             </div>
           </form>
 
           {/* Right Navigation */}
-          <div className="flex items-center space-x-2 sm:space-x-4">
+          <div className="flex items-center space-x-2 sm:space-x-3">
+            {/* Language Switcher */}
+            <LanguageSwitcher variant="header" />
+
             {user && <NotificationBell />}
 
             <Link to="/wishlist">
@@ -73,7 +79,7 @@ export const Header = () => {
                 variant="ghost"
                 size="sm"
                 className="relative hidden sm:flex"
-                aria-label="Sản phẩm yêu thích"
+                aria-label={t("nav.wishlist")}
               >
                 <Heart className="h-4 w-4" />
                 {wishlistCount > 0 && (
@@ -87,7 +93,7 @@ export const Header = () => {
             <Link to="/cart">
               <Button variant="ghost" size="sm" className="hidden sm:flex relative">
                 <ShoppingCart className="h-4 w-4" />
-                <span className="ml-2">Giỏ hàng</span>
+                <span className="ml-2">{t("nav.cart")}</span>
                 {totalItems > 0 && (
                   <span className="absolute -top-2 -right-2 h-5 w-5 rounded-full bg-primary text-primary-foreground text-xs flex items-center justify-center">
                     {totalItems}
@@ -99,10 +105,10 @@ export const Header = () => {
             {user ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="sm" aria-label="Tài khoản">
+                  <Button variant="outline" size="sm" aria-label={t("nav.account")}>
                     <User className="h-4 w-4" />
                     <span className="ml-2 hidden sm:inline">
-                      {profile?.full_name || 'Tài khoản'}
+                      {profile?.full_name || t("nav.account")}
                     </span>
                   </Button>
                 </DropdownMenuTrigger>
@@ -110,7 +116,7 @@ export const Header = () => {
                   <DropdownMenuLabel>
                     <div className="flex flex-col space-y-1">
                       <p className="text-sm font-medium leading-none">
-                        {profile?.full_name || 'Người dùng'}
+                        {profile?.full_name || t("nav.account")}
                       </p>
                       <p className="text-xs leading-none text-muted-foreground">
                         {user.email}
@@ -119,44 +125,44 @@ export const Header = () => {
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem>
-                    Quản lý tài khoản
+                    {t("nav.accountManage")}
                   </DropdownMenuItem>
                   <DropdownMenuItem>
-                    Đơn hàng của tôi
+                    {t("nav.myOrders")}
                   </DropdownMenuItem>
                   {isSeller && (
                     <Link to="/seller-dashboard">
                       <DropdownMenuItem>
-                        Dashboard bán hàng
+                        {t("nav.sellerDashboard")}
                       </DropdownMenuItem>
                     </Link>
                   )}
                   {isAdmin && (
                     <Link to="/admin">
                       <DropdownMenuItem>
-                        Quản trị hệ thống
+                        {t("nav.admin")}
                       </DropdownMenuItem>
                     </Link>
                   )}
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={signOut} className="text-red-600">
                     <LogOut className="h-4 w-4 mr-2" />
-                    Đăng xuất
+                    {t("nav.logout")}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : (
               <Link to="/auth">
-                <Button variant="outline" size="sm" aria-label="Đăng nhập">
+                <Button variant="outline" size="sm" aria-label={t("nav.login")}>
                   <User className="h-4 w-4" />
-                  <span className="ml-2 hidden sm:inline">Đăng nhập</span>
+                  <span className="ml-2 hidden sm:inline">{t("nav.login")}</span>
                 </Button>
               </Link>
             )}
             
             <Link to="/seller-signup">
               <Button variant="hero" size="sm">
-                Đăng ký bán hàng
+                {t("nav.sellerAuth")}
               </Button>
             </Link>
           </div>

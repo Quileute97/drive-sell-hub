@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { useLocation } from '@/lib/router-compat';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export const SITE_URL = 'https://salemylink.com';
 
@@ -32,12 +33,13 @@ interface SEOProps {
 
 type MetaSpec =
   | { kind: 'meta-name'; key: string; content: string }
-  | { kind: 'meta-property'; key: string; content: string };
+  | { kind: 'meta-property'; key: string; content: string }
+  | { kind: 'meta-http-equiv'; key: string; content: string };
 
 const SEO_ATTR = 'data-seo-managed';
 
 function upsertMeta(spec: MetaSpec) {
-  const attr = spec.kind === 'meta-name' ? 'name' : 'property';
+  const attr = spec.kind === 'meta-name' ? 'name' : spec.kind === 'meta-property' ? 'property' : 'http-equiv';
   let el = document.head.querySelector<HTMLMetaElement>(`meta[${attr}="${spec.key}"]`);
   if (!el) {
     el = document.createElement('meta');
@@ -46,6 +48,21 @@ function upsertMeta(spec: MetaSpec) {
     document.head.appendChild(el);
   }
   el.setAttribute('content', spec.content);
+}
+
+function upsertLink(rel: string, href: string, hrefLang?: string) {
+  const selector = hrefLang
+    ? `link[rel="${rel}"][hreflang="${hrefLang}"]`
+    : `link[rel="${rel}"]:not([hreflang])`;
+  let el = document.head.querySelector<HTMLLinkElement>(selector);
+  if (!el) {
+    el = document.createElement('link');
+    el.rel = rel;
+    if (hrefLang) el.hreflang = hrefLang;
+    el.setAttribute(SEO_ATTR, 'true');
+    document.head.appendChild(el);
+  }
+  el.href = href;
 }
 
 export const SEO = ({
@@ -71,8 +88,11 @@ export const SEO = ({
   productCategory,
 }: SEOProps) => {
   const location = useLocation();
-  // Canonical: explicit url, else current path on the production domain (query params stripped)
-  const canonicalUrl = url || `${SITE_URL}${location.pathname === '/' ? '/' : location.pathname.replace(/\/+$/, '')}`;
+  const { language, langMeta } = useLanguage();
+
+  // Clean path without query parameters for canonical
+  const cleanPath = location.pathname === '/' ? '/' : location.pathname.replace(/\/+$/, '');
+  const canonicalUrl = url || `${SITE_URL}${cleanPath}`;
 
   const fullTitle = title.includes('Salemylink') ? title : `${title} | Salemylink`;
 
@@ -88,6 +108,7 @@ export const SEO = ({
 
   useEffect(() => {
     document.title = fullTitle;
+    document.documentElement.lang = language || 'vi';
 
     const robots = noindex
       ? 'noindex, nofollow'
@@ -98,6 +119,9 @@ export const SEO = ({
       { kind: 'meta-name', key: 'keywords', content: keywords },
       { kind: 'meta-name', key: 'robots', content: robots },
       { kind: 'meta-name', key: 'googlebot', content: robots },
+      { kind: 'meta-name', key: 'bingbot', content: robots },
+      { kind: 'meta-name', key: 'baiduspider', content: robots },
+      { kind: 'meta-name', key: 'yandexbot', content: robots },
       { kind: 'meta-property', key: 'og:type', content: type === 'product' ? 'product' : type },
       { kind: 'meta-property', key: 'og:url', content: canonicalUrl },
       { kind: 'meta-property', key: 'og:title', content: socialTitle },
@@ -106,7 +130,7 @@ export const SEO = ({
       { kind: 'meta-property', key: 'og:image:width', content: '1200' },
       { kind: 'meta-property', key: 'og:image:height', content: '630' },
       { kind: 'meta-property', key: 'og:image:alt', content: title },
-      { kind: 'meta-property', key: 'og:locale', content: 'vi_VN' },
+      { kind: 'meta-property', key: 'og:locale', content: langMeta?.ogLocale || 'vi_VN' },
       { kind: 'meta-property', key: 'og:site_name', content: 'Salemylink.com' },
       { kind: 'meta-name', key: 'twitter:card', content: 'summary_large_image' },
       { kind: 'meta-name', key: 'twitter:url', content: canonicalUrl },
@@ -118,6 +142,8 @@ export const SEO = ({
       { kind: 'meta-name', key: 'twitter:creator', content: '@salemylink' },
       { kind: 'meta-name', key: 'author', content: author || 'Salemylink.com' },
       { kind: 'meta-name', key: 'publisher', content: 'Salemylink.com' },
+      { kind: 'meta-name', key: 'language', content: 'Vietnamese, English, Chinese, Spanish' },
+      { kind: 'meta-http-equiv', key: 'content-language', content: 'vi, en, zh, es' },
     ];
 
     if (type === 'product' && productPrice) {
@@ -129,7 +155,7 @@ export const SEO = ({
         {
           kind: 'meta-name',
           key: 'twitter:data1',
-          content: `${new Intl.NumberFormat('vi-VN').format(productPrice)} ${productCurrency}`,
+          content: `${new Intl.NumberFormat(langMeta?.locale || 'vi-VN').format(productPrice)} ${productCurrency}`,
         },
       );
       if (productBrand) metas.push({ kind: 'meta-property', key: 'product:brand', content: productBrand });
@@ -148,15 +174,24 @@ export const SEO = ({
 
     metas.forEach(upsertMeta);
 
-    // Canonical link
-    let canonical = document.head.querySelector<HTMLLinkElement>('link[rel="canonical"]');
-    if (!canonical) {
-      canonical = document.createElement('link');
-      canonical.rel = 'canonical';
-      canonical.setAttribute(SEO_ATTR, 'true');
-      document.head.appendChild(canonical);
+    if (!noindex) {
+      // Canonical link
+      upsertLink('canonical', canonicalUrl);
+
+      // Multilingual hreflang alternate links
+      const basePath = cleanPath;
+      const separator = basePath.includes('?') ? '&' : '?';
+
+      upsertLink('alternate', `${SITE_URL}${basePath}`, 'vi');
+      upsertLink('alternate', `${SITE_URL}${basePath}`, 'vi-VN');
+      upsertLink('alternate', `${SITE_URL}${basePath}${separator}lang=en`, 'en');
+      upsertLink('alternate', `${SITE_URL}${basePath}${separator}lang=en`, 'en-US');
+      upsertLink('alternate', `${SITE_URL}${basePath}${separator}lang=zh`, 'zh');
+      upsertLink('alternate', `${SITE_URL}${basePath}${separator}lang=zh`, 'zh-CN');
+      upsertLink('alternate', `${SITE_URL}${basePath}${separator}lang=es`, 'es');
+      upsertLink('alternate', `${SITE_URL}${basePath}${separator}lang=es`, 'es-ES');
+      upsertLink('alternate', `${SITE_URL}${basePath}`, 'x-default');
     }
-    canonical.href = canonicalUrl;
 
     // Structured data (JSON-LD)
     const existingLd = document.head.querySelector<HTMLScriptElement>(`script[type="application/ld+json"][${SEO_ATTR}]`);
@@ -177,6 +212,7 @@ export const SEO = ({
     optimizedDescription,
     keywords,
     canonicalUrl,
+    cleanPath,
     noindex,
     type,
     image,
@@ -194,6 +230,8 @@ export const SEO = ({
     productBrand,
     productCategory,
     structuredDataJson,
+    language,
+    langMeta,
   ]);
 
   return null;

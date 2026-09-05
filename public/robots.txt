@@ -1,5 +1,5 @@
 # Robots.txt for salemylink.com
-# Nền tảng bán sản phẩm Digital hàng đầu Việt Nam
+# Salemylink - Marketplace sản phẩm Digital Việt Nam & Quốc Tế (Multilingual: VI, EN, ZH, ES)
 
 # Allow all search engines to crawl
 User-agent: *
@@ -14,32 +14,51 @@ Disallow: /payment/
 Disallow: /auth/
 Disallow: /seller-auth/
 
-# Allow specific search engines
+# Google Search
 User-agent: Googlebot
 Allow: /
 Crawl-delay: 0
 
+# Bing Search
 User-agent: Bingbot
 Allow: /
 Crawl-delay: 0
 
-User-agent: Slurp
+# Baidu Search (Chinese markets)
+User-agent: Baiduspider
 Allow: /
+Crawl-delay: 0
 
+# Yandex Search
+User-agent: YandexBot
+Allow: /
+Crawl-delay: 0
+
+# DuckDuckGo & Yahoo
 User-agent: DuckDuckBot
+Allow: /
+User-agent: Slurp
 Allow: /
 
 # Social media crawlers
 User-agent: Twitterbot
 Allow: /
-
 User-agent: facebookexternalhit
 Allow: /
-
 User-agent: LinkedInBot
 Allow: /
 
-# Sitemap location (served from your domain via proxy)
+# AI Crawlers & LLMs
+User-agent: GPTBot
+Allow: /
+User-agent: ClaudeBot
+Allow: /
+User-agent: PerplexityBot
+Allow: /
+User-agent: Google-Extended
+Allow: /
+
+# Multilingual XML Sitemap
 Sitemap: https://salemylink.com/sitemap.xml
 
 # IndexNow verification

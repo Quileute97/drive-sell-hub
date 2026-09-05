@@ -5,6 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { VerifiedBadge } from '@/components/VerifiedBadge';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface Stats {
   products: number;
@@ -29,6 +30,7 @@ const compact = (n: number) =>
 export const TrustSignals = () => {
   const [stats, setStats] = useState<Stats | null>(null);
   const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
+  const { t, language } = useLanguage();
 
   useEffect(() => {
     let cancelled = false;
@@ -99,17 +101,22 @@ export const TrustSignals = () => {
 
   if (!stats) return null;
 
+  const statLabels = {
+    products: language === 'en' ? 'Active Products' : language === 'zh' ? '在售商品' : language === 'es' ? 'Productos Activos' : 'Sản phẩm đang bán',
+    sellers: language === 'en' ? 'Active Creators' : language === 'zh' ? '活跃创作者' : language === 'es' ? 'Creadores Activos' : 'Người bán hoạt động',
+    downloads: language === 'en' ? 'Successful Downloads' : language === 'zh' ? '成功下载次数' : language === 'es' ? 'Descargas Exitosas' : 'Lượt tải thành công',
+    avgRating: language === 'en' ? `Average from ${stats.ratingCount} reviews` : language === 'zh' ? `${stats.ratingCount} 条好评综合评分` : language === 'es' ? `Promedio de ${stats.ratingCount} reseñas` : `Điểm trung bình từ ${stats.ratingCount} đánh giá`,
+    noRating: language === 'en' ? 'No ratings yet' : language === 'zh' ? '暂无评分' : language === 'es' ? 'Sin calificaciones' : 'Chưa có đánh giá',
+  };
+
   const items = [
-    { icon: Package, value: compact(stats.products), label: 'Sản phẩm đang bán' },
-    { icon: Users, value: compact(stats.sellers), label: 'Người bán hoạt động' },
-    { icon: Download, value: compact(stats.downloads), label: 'Lượt tải thành công' },
+    { icon: Package, value: compact(stats.products), label: statLabels.products },
+    { icon: Users, value: compact(stats.sellers), label: statLabels.sellers },
+    { icon: Download, value: compact(stats.downloads), label: statLabels.downloads },
     {
       icon: Star,
       value: stats.ratingCount > 0 ? stats.rating.toFixed(1) : '—',
-      label:
-        stats.ratingCount > 0
-          ? `Điểm trung bình từ ${stats.ratingCount} đánh giá`
-          : 'Chưa có đánh giá',
+      label: stats.ratingCount > 0 ? statLabels.avgRating : statLabels.noRating,
     },
   ];
 
@@ -118,13 +125,19 @@ export const TrustSignals = () => {
       <div className="container mx-auto px-4">
         <div className="mb-10 text-center">
           <h2 id="trust-heading" className="text-2xl lg:text-3xl font-bold">
-            Vì sao người mua tin tưởng
+            {language === 'en' ? 'Why Buyers Trust' : language === 'zh' ? '为何用户信赖' : language === 'es' ? 'Por Qué Confían en' : 'Vì sao người mua tin tưởng'}
             <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
               {' '}Salemylink
             </span>
           </h2>
           <p className="mt-3 text-muted-foreground">
-            Số liệu dưới đây được lấy trực tiếp từ hệ thống, cập nhật theo thời gian thực.
+            {language === 'en'
+              ? 'Real-time metrics sourced directly from verified transactions and platform activity.'
+              : language === 'zh'
+              ? '所有数据均来自系统真实交易与平台活跃指标实时更新。'
+              : language === 'es'
+              ? 'Métricas en tiempo real obtenidas directamente de transacciones verificadas.'
+              : 'Số liệu dưới đây được lấy trực tiếp từ hệ thống, cập nhật theo thời gian thực.'}
           </p>
         </div>
 
@@ -146,15 +159,15 @@ export const TrustSignals = () => {
         <div className="mb-10 flex flex-wrap items-center justify-center gap-x-6 gap-y-3 text-sm text-muted-foreground">
           <span className="inline-flex items-center gap-2">
             <ShieldCheck className="h-4 w-4 text-primary" />
-            Thanh toán qua cổng PayOS
+            {t("trust.safePayment")}
           </span>
           <span className="inline-flex items-center gap-2">
             <ShieldCheck className="h-4 w-4 text-primary" />
-            Giao hàng tự động sau khi thanh toán
+            {t("trust.instantDelivery")}
           </span>
           <span className="inline-flex items-center gap-2">
             <VerifiedBadge verified />
-            Người bán được xác minh
+            {t("trust.qualityVerified")}
           </span>
         </div>
 

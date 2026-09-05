@@ -16,12 +16,13 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { LanguageProvider } from "@/contexts/LanguageContext";
 import { AffiliateTracker } from "@/components/AffiliateTracker";
 import { reportLovableError } from "@/lib/lovable-error-reporting";
 import NotFound from "@/pages/NotFound";
 import appCss from "../styles.css?url";
 
-// Structured data preserved from index.html (single @graph script tag)
+// Structured data preserved from index.html (single @graph script tag) with multilingual support
 const structuredData = {
   "@context": "https://schema.org",
   "@graph": [
@@ -31,8 +32,8 @@ const structuredData = {
       url: "https://salemylink.com",
       name: "Salemylink.com",
       alternateName: ["Salemylink", "Sale My Link"],
-      description: "Nền tảng bán sản phẩm digital hàng đầu Việt Nam",
-      inLanguage: "vi-VN",
+      description: "Nền tảng bán sản phẩm digital hàng đầu Việt Nam - Digital Products Marketplace",
+      inLanguage: ["vi-VN", "en-US", "zh-CN", "es-ES"],
       potentialAction: {
         "@type": "SearchAction",
         target: {
@@ -56,12 +57,12 @@ const structuredData = {
       image: "https://salemylink.com/og-image.png",
       description: "Nền tảng thương mại điện tử hàng đầu cho sản phẩm digital tại Việt Nam.",
       foundingDate: "2024",
-      areaServed: { "@type": "Country", name: "Vietnam" },
+      areaServed: [{ "@type": "Country", name: "Vietnam" }, { "@type": "AdministrativeArea", name: "Worldwide" }],
       contactPoint: {
         "@type": "ContactPoint",
         contactType: "customer service",
         email: "support@salemylink.com",
-        availableLanguage: ["Vietnamese", "English"],
+        availableLanguage: ["Vietnamese", "English", "Chinese", "Spanish"],
       },
     },
     {
@@ -69,10 +70,10 @@ const structuredData = {
       name: "Salemylink.com",
       url: "https://salemylink.com",
       description: "Marketplace sản phẩm digital - Mua bán ebook, tài liệu, khóa học online",
-      currenciesAccepted: "VND",
+      currenciesAccepted: "VND, USD",
       paymentAccepted: "Credit Card, Bank Transfer, PayOS",
-      priceRange: "₫₫",
-      areaServed: "VN",
+      priceRange: "₫₫ / $$",
+      areaServed: "Worldwide",
     },
   ],
 };
@@ -104,6 +105,9 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         content: "Salemylink - Marketplace sản phẩm digital Việt Nam",
       },
       { property: "og:locale", content: "vi_VN" },
+      { property: "og:locale:alternate", content: "en_US" },
+      { property: "og:locale:alternate", content: "zh_CN" },
+      { property: "og:locale:alternate", content: "es_ES" },
       { property: "og:site_name", content: "Salemylink.com" },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:url", content: "https://salemylink.com/" },
@@ -120,15 +124,35 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         name: "googlebot",
         content: "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
       },
+      {
+        name: "bingbot",
+        content: "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+      },
+      {
+        name: "baiduspider",
+        content: "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+      },
+      {
+        name: "yandexbot",
+        content: "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+      },
       { name: "theme-color", content: "#0f3a7e" },
       { name: "format-detection", content: "telephone=no" },
       { name: "geo.region", content: "VN" },
       { name: "geo.placename", content: "Vietnam" },
-      { name: "language", content: "Vietnamese" },
+      { name: "language", content: "Vietnamese, English, Chinese, Spanish" },
+      { httpEquiv: "content-language", content: "vi, en, zh, es" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
       { rel: "alternate", hrefLang: "vi", href: "https://salemylink.com/" },
+      { rel: "alternate", hrefLang: "vi-VN", href: "https://salemylink.com/" },
+      { rel: "alternate", hrefLang: "en", href: "https://salemylink.com/?lang=en" },
+      { rel: "alternate", hrefLang: "en-US", href: "https://salemylink.com/?lang=en" },
+      { rel: "alternate", hrefLang: "zh", href: "https://salemylink.com/?lang=zh" },
+      { rel: "alternate", hrefLang: "zh-CN", href: "https://salemylink.com/?lang=zh" },
+      { rel: "alternate", hrefLang: "es", href: "https://salemylink.com/?lang=es" },
+      { rel: "alternate", hrefLang: "es-ES", href: "https://salemylink.com/?lang=es" },
       { rel: "alternate", hrefLang: "x-default", href: "https://salemylink.com/" },
       { rel: "preconnect", href: "https://dfalphamyvdfewixrnju.supabase.co" },
       { rel: "preconnect", href: "https://drive.google.com" },
@@ -178,7 +202,7 @@ function RootShell({ children }: { children: React.ReactNode }) {
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
 
-  // ported from main.tsx — Web Vitals monitoring after app mounts
+  // Web Vitals monitoring after app mounts
   useEffect(() => {
     import("@/lib/webVitals").then(({ initWebVitals }) => {
       initWebVitals();
@@ -187,14 +211,16 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <AffiliateTracker />
-          <Outlet />
-        </TooltipProvider>
-      </AuthProvider>
+      <LanguageProvider>
+        <AuthProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            <AffiliateTracker />
+            <Outlet />
+          </TooltipProvider>
+        </AuthProvider>
+      </LanguageProvider>
     </QueryClientProvider>
   );
 }

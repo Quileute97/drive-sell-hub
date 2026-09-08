@@ -72,12 +72,6 @@ export async function getAggregateRating(
       .eq("is_approved", true);
 
     if (error || !data || data.length === 0) {
-      if (fallbackCount > 0 && fallbackRating > 0) {
-        return {
-          ratingValue: Math.round(Number(fallbackRating) * 10) / 10,
-          reviewCount: Math.round(Number(fallbackCount)),
-        };
-      }
       return { ratingValue: 0, reviewCount: 0 };
     }
 
@@ -91,8 +85,8 @@ export async function getAggregateRating(
   } catch (err) {
     console.error("Error calculating aggregate rating:", err);
     return {
-      ratingValue: fallbackCount > 0 && fallbackRating > 0 ? Math.round(Number(fallbackRating) * 10) / 10 : 0,
-      reviewCount: fallbackCount > 0 && fallbackRating > 0 ? Math.round(Number(fallbackCount)) : 0,
+      ratingValue: 0,
+      reviewCount: 0,
     };
   }
 }

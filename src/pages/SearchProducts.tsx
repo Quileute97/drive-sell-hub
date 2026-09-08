@@ -295,10 +295,10 @@ export default function SearchProducts() {
                 "name": product.profiles?.full_name || "Salemylink"
               }
             },
-            ...(product.rating_count > 0 ? {
+            ...(product.rating_count > 0 && product.rating_average > 0 ? {
               "aggregateRating": {
                 "@type": "AggregateRating",
-                "ratingValue": product.rating_average.toFixed(1),
+                "ratingValue": Number(product.rating_average).toFixed(1),
                 "reviewCount": product.rating_count,
                 "bestRating": "5",
                 "worstRating": "1"

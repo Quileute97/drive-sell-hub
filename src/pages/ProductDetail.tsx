@@ -464,34 +464,44 @@ export default function ProductDetail() {
     },
   };
 
-  // Always include aggregateRating for Google Search Console compliance
-  productNode['aggregateRating'] = {
-    "@type": "AggregateRating",
-    "@id": `${productUrl}#rating`,
-    ratingValue: product.rating_count > 0 ? Number(product.rating_average || 5).toFixed(1) : 0,
-    reviewCount: product.rating_count || 0,
-    bestRating: "5",
-    worstRating: "1",
-  };
+  // Only include aggregateRating and review when product has >= 1 approved reviews or positive rating count
+  const effectiveReviewCount = reviews.length > 0 
+    ? reviews.length 
+    : (product.rating_count && product.rating_count > 0 && product.rating_average && Number(product.rating_average) > 0 ? product.rating_count : 0);
+  const effectiveRatingValue = reviews.length > 0
+    ? Math.round((reviews.reduce((acc, r) => acc + (Number(r.rating) || 5), 0) / reviews.length) * 10) / 10
+    : (product.rating_average && Number(product.rating_average) > 0 ? Math.round(Number(product.rating_average) * 10) / 10 : 0);
 
-  // Include reviews array (empty array if no reviews yet)
-  productNode['review'] = reviews.length > 0 ? reviews.map((review, index) => ({
-    "@type": "Review",
-    "@id": `${productUrl}#review-${index}`,
-    reviewRating: {
-      "@type": "Rating",
-      ratingValue: review.rating.toString(),
+  if (effectiveReviewCount > 0 && effectiveRatingValue > 0) {
+    productNode['aggregateRating'] = {
+      "@type": "AggregateRating",
+      "@id": `${productUrl}#rating`,
+      ratingValue: effectiveRatingValue.toFixed(1),
+      reviewCount: effectiveReviewCount,
       bestRating: "5",
       worstRating: "1",
-    },
-    author: {
-      "@type": "Person",
-      name: review.profiles?.full_name || "Khách hàng",
-    },
-    reviewBody: review.comment || `Đánh giá ${review.rating} sao cho ${product.title}`,
-    datePublished: new Date(review.created_at).toISOString().split('T')[0],
-    publisher: { "@id": `${siteUrl}/#organization` },
-  })) : [];
+    };
+
+    if (reviews.length > 0) {
+      productNode['review'] = reviews.map((review, index) => ({
+        "@type": "Review",
+        "@id": `${productUrl}#review-${index}`,
+        reviewRating: {
+          "@type": "Rating",
+          ratingValue: (review.rating || 5).toString(),
+          bestRating: "5",
+          worstRating: "1",
+        },
+        author: {
+          "@type": "Person",
+          name: review.profiles?.full_name || "Khách hàng",
+        },
+        reviewBody: review.comment || `Đánh giá ${review.rating} sao cho ${product.title}`,
+        datePublished: new Date(review.created_at).toISOString().split('T')[0],
+        publisher: { "@id": `${siteUrl}/#organization` },
+      }));
+    }
+  }
 
   // Additional product properties
   const additionalProperties = [];

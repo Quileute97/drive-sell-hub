@@ -9,7 +9,6 @@ const corsHeaders = {
 
 const SITE_URL = 'https://salemylink.com'
 
-// Helper to escape XML special characters
 function escapeXml(str: string): string {
   if (!str) return ''
   return str
@@ -20,249 +19,197 @@ function escapeXml(str: string): string {
     .replace(/'/g, '&apos;')
 }
 
-// Helper to get Google Drive thumbnail URL
-function getGoogleDriveThumbnail(driveUrl: string): string | null {
-  if (!driveUrl) return null
-  const fileIdMatch = driveUrl.match(/\/file\/d\/([a-zA-Z0-9-_]+)/)
-  if (fileIdMatch) {
-    return `https://drive.google.com/thumbnail?id=${fileIdMatch[1]}&sz=w800`
+function generateUrlXml(routePath: string, priority = '0.8', changefreq = 'weekly', lastmod = '2026-09-08', image: { loc: string; title?: string } | null = null) {
+  const cleanPath = routePath === '/' ? '' : routePath
+  const canonicalUrl = `${SITE_URL}${cleanPath || '/'}`
+  const baseForParams = cleanPath ? `${SITE_URL}${cleanPath}` : `${SITE_URL}/`
+  const sep = baseForParams.includes('?') ? '&' : '?'
+
+  let xml = `  <url>
+    <loc>${escapeXml(canonicalUrl)}</loc>
+    <xhtml:link rel="alternate" hreflang="vi" href="${escapeXml(SITE_URL + (cleanPath || '/'))}"/>
+    <xhtml:link rel="alternate" hreflang="vi-VN" href="${escapeXml(SITE_URL + (cleanPath || '/'))}"/>
+    <xhtml:link rel="alternate" hreflang="en" href="${escapeXml(baseForParams + sep + 'lang=en')}"/>
+    <xhtml:link rel="alternate" hreflang="en-US" href="${escapeXml(baseForParams + sep + 'lang=en')}"/>
+    <xhtml:link rel="alternate" hreflang="zh" href="${escapeXml(baseForParams + sep + 'lang=zh')}"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="${escapeXml(baseForParams + sep + 'lang=zh')}"/>
+    <xhtml:link rel="alternate" hreflang="es" href="${escapeXml(baseForParams + sep + 'lang=es')}"/>
+    <xhtml:link rel="alternate" hreflang="es-ES" href="${escapeXml(baseForParams + sep + 'lang=es')}"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="${escapeXml(SITE_URL + (cleanPath || '/'))}"/>
+    <lastmod>${lastmod}</lastmod>
+    <changefreq>${changefreq}</changefreq>
+    <priority>${priority}</priority>`
+
+  if (image && image.loc) {
+    xml += `
+    <image:image>
+      <image:loc>${escapeXml(image.loc)}</image:loc>
+      ${image.title ? `<image:title>${escapeXml(image.title)}</image:title>` : ''}
+    </image:image>`
   }
-  return null
+
+  xml += `\n  </url>`
+  return xml
 }
 
+const coreStaticRoutes = [
+  { path: '/', priority: '1.0', changefreq: 'daily' },
+  { path: '/about', priority: '0.8', changefreq: 'monthly' },
+  { path: '/how-it-works', priority: '0.8', changefreq: 'monthly' },
+  { path: '/seller-guide', priority: '0.8', changefreq: 'monthly' },
+  { path: '/search', priority: '0.8', changefreq: 'daily' },
+  { path: '/sellers', priority: '0.8', changefreq: 'weekly' },
+  { path: '/nguoi-ban', priority: '0.8', changefreq: 'weekly' },
+  { path: '/affiliate', priority: '0.8', changefreq: 'monthly' },
+  { path: '/guides', priority: '0.8', changefreq: 'weekly' },
+  { path: '/huong-dan', priority: '0.8', changefreq: 'weekly' },
+  { path: '/privacy-policy', priority: '0.4', changefreq: 'yearly' },
+  { path: '/terms-of-service', priority: '0.4', changefreq: 'yearly' },
+]
+
+const popularTags = [
+  'ielts',
+  'y khoa',
+  'luận văn',
+  'toeic',
+  'react',
+  'canva',
+  'excel',
+  'english',
+  'yds',
+  'tool',
+  'nội khoa',
+  'hóa sinh',
+  'nhi khoa',
+  'ngoại khoa',
+  'dược',
+  'giải phẫu',
+  'tiểu luận',
+  'đồ án',
+  'python',
+  'photoshop',
+  'powerpoint',
+  'marketing',
+  'sản khoa',
+  'đề thi',
+]
+
+const guideSlugs = [
+  'cach-mua-tai-lieu-hoc-tap-online-an-toan',
+  'top-10-tai-lieu-ielts-mien-phi-tot-nhat-2026',
+  'hoc-y-khoa-tu-zero',
+  'viet-luan-van-tieng-anh-band-7',
+  'de-thi-vao-10-cac-tinh-2026',
+  'hoc-y-khoa',
+  'luyen-thi-ielts',
+  'viet-luan-van',
+  'kinh-nghiem-mua-tai-lieu-online',
+  'tai-lieu-on-thi-vao-10',
+]
+
 Deno.serve(async (req) => {
-  // Handle CORS preflight
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }
 
   try {
-    console.log('Generating dynamic sitemap...')
-    
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!
     const supabaseKey = Deno.env.get('SUPABASE_ANON_KEY')!
     const supabase = createClient(supabaseUrl, supabaseKey)
+    const today = new Date().toISOString().split('T')[0]
 
     // Fetch active categories
-    const { data: categories, error: catError } = await supabase
+    const { data: categories } = await supabase
       .from('categories')
       .select('slug, name, updated_at')
       .eq('is_active', true)
       .order('sort_order', { ascending: true })
 
-    if (catError) {
-      console.error('Error fetching categories:', catError)
-    }
-
-    // Fetch active products with more details
-    const { data: products, error: prodError } = await supabase
+    // Fetch products
+    const { data: products } = await supabase
       .from('products')
-      .select('slug, title, updated_at, rating_average, rating_count, view_count, download_count, google_drive_link, thumbnail_url, is_featured')
-      .eq('status', 'active')
+      .select('slug, title, updated_at, created_at, thumbnail_url, view_count, download_count, is_featured')
       .order('created_at', { ascending: false })
 
-    if (prodError) {
-      console.error('Error fetching products:', prodError)
-    }
-
     // Fetch seller profiles
-    const { data: sellers, error: sellerError } = await supabase
+    const { data: sellers } = await supabase
       .from('profiles')
       .select('user_id, full_name, updated_at')
       .eq('role', 'seller')
 
-    if (sellerError) {
-      console.error('Error fetching sellers:', sellerError)
+    const urlEntries: string[] = []
+
+    // 1. Static Routes
+    for (const r of coreStaticRoutes) {
+      urlEntries.push(generateUrlXml(r.path, r.priority, r.changefreq, today))
     }
 
-    console.log(`Found ${categories?.length || 0} categories, ${products?.length || 0} products, ${sellers?.length || 0} sellers`)
+    // 2. Categories
+    if (categories && categories.length > 0) {
+      for (const cat of categories) {
+        const lastmod = cat.updated_at ? new Date(cat.updated_at).toISOString().split('T')[0] : today
+        urlEntries.push(generateUrlXml(`/danh-muc/${cat.slug}`, '0.85', 'weekly', lastmod))
+        urlEntries.push(generateUrlXml(`/category/${cat.slug}`, '0.80', 'weekly', lastmod))
+      }
+    }
 
-    const today = new Date().toISOString().split('T')[0]
+    // 3. Tags
+    for (const tag of popularTags) {
+      urlEntries.push(generateUrlXml(`/tag/${encodeURIComponent(tag)}`, '0.70', 'weekly', today))
+    }
 
-    // Generate sitemap XML with image extension
-    let sitemap = `<?xml version="1.0" encoding="UTF-8"?>
+    // 4. Guides
+    for (const gSlug of guideSlugs) {
+      urlEntries.push(generateUrlXml(`/huong-dan/${gSlug}`, '0.85', 'weekly', today))
+      urlEntries.push(generateUrlXml(`/guides/${gSlug}`, '0.80', 'weekly', today))
+    }
+
+    // 5. Sellers
+    if (sellers && sellers.length > 0) {
+      for (const seller of sellers) {
+        const sellerId = seller.user_id
+        const lastmod = seller.updated_at ? new Date(seller.updated_at).toISOString().split('T')[0] : today
+        urlEntries.push(generateUrlXml(`/nguoi-ban/${sellerId}`, '0.70', 'weekly', lastmod))
+        urlEntries.push(generateUrlXml(`/seller/${sellerId}`, '0.65', 'weekly', lastmod))
+      }
+    }
+
+    // 6. Products
+    if (products && products.length > 0) {
+      for (const prod of products) {
+        const lastmod = prod.updated_at
+          ? new Date(prod.updated_at).toISOString().split('T')[0]
+          : (prod.created_at ? new Date(prod.created_at).toISOString().split('T')[0] : today)
+
+        let priority = 0.70
+        if (prod.is_featured) {
+          priority = 0.95
+        } else if ((prod.download_count || 0) > 30 || (prod.view_count || 0) > 100) {
+          priority = 0.90
+        } else if ((prod.download_count || 0) > 10 || (prod.view_count || 0) > 30) {
+          priority = 0.80
+        }
+
+        const img = prod.thumbnail_url
+          ? { loc: prod.thumbnail_url, title: prod.title }
+          : null
+
+        urlEntries.push(generateUrlXml(`/san-pham/${prod.slug}`, priority.toFixed(2), 'weekly', lastmod, img))
+        urlEntries.push(generateUrlXml(`/product/${prod.slug}`, (Math.max(priority - 0.05, 0.5)).toFixed(2), 'weekly', lastmod, img))
+      }
+    }
+
+    const xmlContent = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
         xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"
-        xmlns:xhtml="http://www.w3.org/1999/xhtml"
-        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9
-        http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
-
-  <!-- Homepage -->
-  <url>
-    <loc>${SITE_URL}/</loc>
-    <lastmod>${today}</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>1.0</priority>
-    <image:image>
-      <image:loc>${SITE_URL}/og-image.png</image:loc>
-      <image:title>Salemylink.com - Nền tảng bán sản phẩm Digital</image:title>
-    </image:image>
-  </url>
-
-  <!-- Static Pages -->
-  <url>
-    <loc>${SITE_URL}/about</loc>
-    <lastmod>${today}</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-
-  <url>
-    <loc>${SITE_URL}/how-it-works</loc>
-    <lastmod>${today}</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-
-  <url>
-    <loc>${SITE_URL}/seller-guide</loc>
-    <lastmod>${today}</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-
-  <url>
-    <loc>${SITE_URL}/search</loc>
-    <lastmod>${today}</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.7</priority>
-  </url>
-
-  <url>
-    <loc>${SITE_URL}/sellers</loc>
-    <lastmod>${today}</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-
-  <url>
-    <loc>${SITE_URL}/privacy-policy</loc>
-    <lastmod>${today}</lastmod>
-    <changefreq>yearly</changefreq>
-    <priority>0.4</priority>
-  </url>
-
-  <url>
-    <loc>${SITE_URL}/terms-of-service</loc>
-    <lastmod>${today}</lastmod>
-    <changefreq>yearly</changefreq>
-    <priority>0.4</priority>
-  </url>
-
-  <url>
-    <loc>${SITE_URL}/auth</loc>
-    <lastmod>${today}</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.5</priority>
-  </url>
-
-  <url>
-    <loc>${SITE_URL}/seller-auth</loc>
-    <lastmod>${today}</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.5</priority>
-  </url>
-`
-
-    // Add category pages
-    if (categories && categories.length > 0) {
-      sitemap += `
-  <!-- Category Pages (${categories.length} categories) -->`
-      for (const category of categories) {
-        const lastmod = category.updated_at 
-          ? new Date(category.updated_at).toISOString().split('T')[0]
-          : today
-        sitemap += `
-  <url>
-    <loc>${SITE_URL}/category/${escapeXml(category.slug)}</loc>
-    <lastmod>${lastmod}</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>`
-      }
-    }
-
-    // Add seller profile pages
-    if (sellers && sellers.length > 0) {
-      sitemap += `
-
-  <!-- Seller Profile Pages (${sellers.length} sellers) -->`
-      for (const seller of sellers) {
-        const lastmod = seller.updated_at 
-          ? new Date(seller.updated_at).toISOString().split('T')[0]
-          : today
-        sitemap += `
-  <url>
-    <loc>${SITE_URL}/seller/${seller.user_id}</loc>
-    <lastmod>${lastmod}</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
-  </url>`
-      }
-    }
-
-    // Add product pages with images
-    if (products && products.length > 0) {
-      sitemap += `
-
-  <!-- Product Pages (${products.length} products) -->`
-      for (const product of products) {
-        const lastmod = product.updated_at 
-          ? new Date(product.updated_at).toISOString().split('T')[0]
-          : today
-        
-        // Calculate priority based on popularity and featured status
-        let priority = 0.7
-        if (product.is_featured) {
-          priority = 0.95
-        } else if (product.view_count > 100 || product.download_count > 50 || product.rating_count > 10) {
-          priority = 0.9
-        } else if (product.view_count > 50 || product.download_count > 20 || product.rating_count > 5) {
-          priority = 0.85
-        } else if (product.view_count > 20 || product.download_count > 10) {
-          priority = 0.8
-        }
-        
-        // Get image URL
-        const imageUrl = product.thumbnail_url || getGoogleDriveThumbnail(product.google_drive_link)
-        
-        sitemap += `
-  <url>
-    <loc>${SITE_URL}/product/${escapeXml(product.slug)}</loc>
-    <lastmod>${lastmod}</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>${priority.toFixed(2)}</priority>`
-        
-        // Add image if available
-        if (imageUrl) {
-          sitemap += `
-    <image:image>
-      <image:loc>${escapeXml(imageUrl)}</image:loc>
-      <image:title>${escapeXml(product.title)}</image:title>
-    </image:image>`
-        }
-        
-        sitemap += `
-  </url>`
-      }
-    }
-
-    sitemap += `
-
+        xmlns:xhtml="http://www.w3.org/1999/xhtml">
+${urlEntries.join('\n')}
 </urlset>`
 
-    console.log('Sitemap generated successfully with', 
-      (categories?.length || 0), 'categories,',
-      (products?.length || 0), 'products,',
-      (sellers?.length || 0), 'sellers'
-    )
-
-    return new Response(sitemap, {
+    return new Response(xmlContent, {
       status: 200,
-      headers: corsHeaders
+      headers: corsHeaders,
     })
-
   } catch (error) {
     console.error('Error generating sitemap:', error)
     return new Response(

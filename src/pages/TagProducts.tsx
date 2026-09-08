@@ -165,10 +165,10 @@ export default function TagProducts() {
                   availability: "https://schema.org/InStock",
                   url: `${siteUrl}/product/${p.slug}`,
                 },
-                ...(p.rating_count > 0 ? {
+                ...(p.rating_count > 0 && p.rating_average > 0 ? {
                   aggregateRating: {
                     "@type": "AggregateRating",
-                    ratingValue: p.rating_average.toFixed(1),
+                    ratingValue: Number(p.rating_average).toFixed(1),
                     reviewCount: p.rating_count,
                     bestRating: "5",
                     worstRating: "1",

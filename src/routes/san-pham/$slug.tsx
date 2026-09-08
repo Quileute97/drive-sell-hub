@@ -93,30 +93,36 @@ export const Route = createFileRoute("/san-pham/$slug")({
           name: loaderData.sellerName || "Salemylink.com",
         },
       },
-      aggregateRating: {
-        "@type": "AggregateRating",
-        ratingValue: loaderData.rating || 0,
-        reviewCount: loaderData.ratingCount || 0,
-        bestRating: 5,
-        worstRating: 1,
-      },
-      review: (loaderData.reviews && loaderData.reviews.length > 0)
-        ? loaderData.reviews.map((r: any) => ({
-            "@type": "Review",
-            reviewRating: {
-              "@type": "Rating",
-              ratingValue: r.rating || 5,
+      ...(loaderData.ratingCount && loaderData.ratingCount > 0 && loaderData.rating && loaderData.rating > 0
+        ? {
+            aggregateRating: {
+              "@type": "AggregateRating",
+              ratingValue: Math.round(Number(loaderData.rating) * 10) / 10,
+              reviewCount: Math.round(Number(loaderData.ratingCount)),
               bestRating: 5,
               worstRating: 1,
             },
-            author: {
-              "@type": "Person",
-              name: r.authorName || "Người mua",
-            },
-            datePublished: r.datePublished || (r.createdAt ? new Date(r.createdAt).toISOString().split("T")[0] : new Date().toISOString().split("T")[0]),
-            reviewBody: r.comment || "Sản phẩm chất lượng, đúng mô tả.",
-          }))
-        : [],
+            ...(loaderData.reviews && loaderData.reviews.length > 0
+              ? {
+                  review: loaderData.reviews.map((r: any) => ({
+                    "@type": "Review",
+                    reviewRating: {
+                      "@type": "Rating",
+                      ratingValue: r.rating || 5,
+                      bestRating: 5,
+                      worstRating: 1,
+                    },
+                    author: {
+                      "@type": "Person",
+                      name: r.authorName || "Người mua",
+                    },
+                    datePublished: r.datePublished || (r.createdAt ? new Date(r.createdAt).toISOString().split("T")[0] : new Date().toISOString().split("T")[0]),
+                    reviewBody: r.comment || "Sản phẩm chất lượng, đúng mô tả.",
+                  })),
+                }
+              : {}),
+          }
+        : {}),
     };
 
     const breadcrumb = {

@@ -75,7 +75,7 @@ export async function getAggregateRating(
       if (fallbackCount > 0 && fallbackRating > 0) {
         return {
           ratingValue: Math.round(Number(fallbackRating) * 10) / 10,
-          reviewCount: Number(fallbackCount),
+          reviewCount: Math.round(Number(fallbackCount)),
         };
       }
       return { ratingValue: 0, reviewCount: 0 };
@@ -91,8 +91,8 @@ export async function getAggregateRating(
   } catch (err) {
     console.error("Error calculating aggregate rating:", err);
     return {
-      ratingValue: fallbackRating ? Math.round(Number(fallbackRating) * 10) / 10 : 0,
-      reviewCount: fallbackCount || 0,
+      ratingValue: fallbackCount > 0 && fallbackRating > 0 ? Math.round(Number(fallbackRating) * 10) / 10 : 0,
+      reviewCount: fallbackCount > 0 && fallbackRating > 0 ? Math.round(Number(fallbackCount)) : 0,
     };
   }
 }
@@ -134,8 +134,8 @@ export async function getProductReviewData(
   } catch (err) {
     console.error("Error in getProductReviewData:", err);
     return {
-      ratingValue: fallbackRating ? Math.round(Number(fallbackRating) * 10) / 10 : 0,
-      reviewCount: fallbackCount || 0,
+      ratingValue: fallbackCount > 0 && fallbackRating > 0 ? Math.round(Number(fallbackRating) * 10) / 10 : 0,
+      reviewCount: fallbackCount > 0 && fallbackRating > 0 ? Math.round(Number(fallbackCount)) : 0,
       reviews: [],
     };
   }

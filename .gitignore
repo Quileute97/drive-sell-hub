@@ -29,4 +29,5 @@ dist-ssr
 .nitro
 .output
 dist
+supabase/.temp
 

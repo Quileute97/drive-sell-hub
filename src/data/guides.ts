@@ -533,6 +533,8 @@ export const getGuideBySlug = (slug: string): Guide | undefined => {
     "hoc-y-khoa": "hoc-y-khoa-tu-zero",
     "luyen-thi-ielts": "top-10-tai-lieu-ielts-mien-phi-tot-nhat-2026",
     "viet-luan-van": "viet-luan-van-tieng-anh-band-7",
+    "kinh-nghiem-mua-tai-lieu-online": "cach-mua-tai-lieu-hoc-tap-online-an-toan",
+    "tai-lieu-on-thi-vao-10": "de-thi-vao-10-cac-tinh-2026",
   };
 
   const targetSlug = aliasMap[slug];

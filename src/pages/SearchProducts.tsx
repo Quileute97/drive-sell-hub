@@ -269,43 +269,18 @@ export default function SearchProducts() {
         "description": `${products.length} sản phẩm digital phù hợp`,
         "numberOfItems": products.length,
         "itemListOrder": "https://schema.org/ItemListOrderDescending",
-        "itemListElement": products.slice(0, 20).map((product, index) => ({
-          "@type": "ListItem",
-          "position": index + 1,
-          "item": {
-            "@type": "Product",
-            "@id": `${siteUrl}/product/${product.slug}`,
+        "itemListElement": products.slice(0, 20).map((product, index) => {
+          const imgUrl = product.thumbnail_url
+            ? (product.thumbnail_url.startsWith("http") ? product.thumbnail_url : `${siteUrl}${product.thumbnail_url.startsWith("/") ? "" : "/"}${product.thumbnail_url}`)
+            : (getGoogleDriveThumbnail(product.google_drive_link, 600) || `${siteUrl}/og-image.png`);
+          return {
+            "@type": "ListItem",
+            "position": index + 1,
             "name": product.title,
-            "description": product.short_description || product.description?.substring(0, 160),
-            "url": `${siteUrl}/product/${product.slug}`,
-            "image": product.thumbnail_url || getGoogleDriveThumbnail(product.google_drive_link, 600),
-            "category": product.categories?.name,
-            "brand": {
-              "@type": "Brand",
-              "name": product.profiles?.full_name || "Salemylink"
-            },
-            "offers": {
-              "@type": "Offer",
-              "price": product.price,
-              "priceCurrency": "VND",
-              "availability": "https://schema.org/InStock",
-              "url": `${siteUrl}/product/${product.slug}`,
-              "seller": {
-                "@type": "Organization",
-                "name": product.profiles?.full_name || "Salemylink"
-              }
-            },
-            ...(product.rating_count > 0 && product.rating_average > 0 ? {
-              "aggregateRating": {
-                "@type": "AggregateRating",
-                "ratingValue": Number(product.rating_average).toFixed(1),
-                "reviewCount": product.rating_count,
-                "bestRating": "5",
-                "worstRating": "1"
-              }
-            } : {})
-          }
-        }))
+            "url": `${siteUrl}/san-pham/${product.slug}`,
+            "image": imgUrl,
+          };
+        })
       }] : []),
       {
         "@type": "WebSite",

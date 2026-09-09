@@ -176,7 +176,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         crossOrigin: "anonymous",
       },
       // Structured data - combined @graph
-      { type: "application/ld+json", children: JSON.stringify(structuredData) },
+      { type: "application/ld+json", id: "root-structured-data", children: JSON.stringify(structuredData) },
     ],
   }),
   shellComponent: RootShell,

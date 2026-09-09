@@ -145,37 +145,18 @@ export default function TagProducts() {
             "@type": "ItemList",
             "@id": `${canonicalUrl}#itemlist`,
             numberOfItems: products.length,
-            itemListElement: products.slice(0, 20).map((p, i) => ({
-              "@type": "ListItem",
-              position: i + 1,
-              url: `${siteUrl}/product/${p.slug}`,
-              item: {
-                "@type": "Product",
-                "@id": `${siteUrl}/product/${p.slug}#product`,
+            itemListElement: products.slice(0, 20).map((p, i) => {
+              const imgUrl = p.thumbnail_url
+                ? (p.thumbnail_url.startsWith("http") ? p.thumbnail_url : `${siteUrl}${p.thumbnail_url.startsWith("/") ? "" : "/"}${p.thumbnail_url}`)
+                : `${siteUrl}/og-image.png`;
+              return {
+                "@type": "ListItem",
+                position: i + 1,
                 name: p.title,
-                url: `${siteUrl}/product/${p.slug}`,
-                ...(p.short_description ? { description: p.short_description } : {}),
-                image: p.thumbnail_url || `${siteUrl}/placeholder.svg`,
-                ...(p.categories ? { category: p.categories.name } : {}),
-                ...(p.profiles?.full_name ? { brand: { "@type": "Brand", name: p.profiles.full_name } } : {}),
-                offers: {
-                  "@type": "Offer",
-                  price: p.price.toString(),
-                  priceCurrency: "VND",
-                  availability: "https://schema.org/InStock",
-                  url: `${siteUrl}/product/${p.slug}`,
-                },
-                ...(p.rating_count > 0 && p.rating_average > 0 ? {
-                  aggregateRating: {
-                    "@type": "AggregateRating",
-                    ratingValue: Number(p.rating_average).toFixed(1),
-                    reviewCount: p.rating_count,
-                    bestRating: "5",
-                    worstRating: "1",
-                  },
-                } : {}),
-              },
-            })),
+                url: `${siteUrl}/san-pham/${p.slug}`,
+                image: imgUrl,
+              };
+            }),
           }]
         : []),
     ],

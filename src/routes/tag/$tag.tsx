@@ -41,13 +41,18 @@ export const Route = createFileRoute("/tag/$tag")({
         "@type": "ItemList",
         name: seo.title,
         numberOfItems: items.length,
-        itemListElement: items.map((p, i) => ({
-          "@type": "ListItem",
-          position: i + 1,
-          name: fixVietnameseEncoding(p.title),
-          url: `${SITE_URL}/product/${p.slug}`,
-          ...(p.thumbnail_url ? { image: p.thumbnail_url } : {}),
-        })),
+        itemListElement: items.map((p, i) => {
+          const imgUrl = p.thumbnail_url
+            ? (p.thumbnail_url.startsWith("http") ? p.thumbnail_url : `${SITE_URL}${p.thumbnail_url.startsWith("/") ? "" : "/"}${p.thumbnail_url}`)
+            : `${SITE_URL}/og-image.png`;
+          return {
+            "@type": "ListItem",
+            position: i + 1,
+            name: fixVietnameseEncoding(p.title),
+            url: `${SITE_URL}/san-pham/${p.slug}`,
+            image: imgUrl,
+          };
+        }),
       });
     }
     return buildHead({

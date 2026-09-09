@@ -297,7 +297,10 @@ export default function ProductDetail() {
   }
 
   const siteUrl = "https://salemylink.com";
-  const productUrl = `${siteUrl}/product/${product.slug}`;
+  const currentPath = typeof window !== 'undefined' && window.location.pathname.startsWith('/product/')
+    ? `/product/${product.slug}`
+    : `/san-pham/${product.slug}`;
+  const productUrl = `${siteUrl}${currentPath}`;
   
   // SEO title: "Tên sản phẩm | Salemylink" (ignore too-short/placeholder meta_title)
   const cleanText = (s?: string | null) =>
@@ -325,15 +328,22 @@ export default function ProductDetail() {
     ? `${baseDesc} — ${categoryName}. Tải ngay tại Salemylink.`
     : `${product.title} - ${categoryName}. Tải xuống ngay sau khi thanh toán. An toàn, nhanh chóng trên Salemylink.`;
 
+  const rawImages = [product.thumbnail_url, ...(product.images || [])].filter(Boolean) as string[];
+  const productImages = rawImages.length > 0
+    ? rawImages.map(img => img.startsWith('http') ? img : `${siteUrl}${img.startsWith('/') ? '' : '/'}${img}`)
+    : [`${siteUrl}/og-image.png`];
+  const mainImage = productImages[0];
 
-  const productImages = [product.thumbnail_url, ...(product.images || [])].filter(Boolean);
-  const mainImage = productImages[0] || `${siteUrl}/og-image.png`;
+  const rawDesc = cleanText(product.description) || cleanText(product.short_description) || metaDescription;
+  const productDescription = rawDesc.length >= 10 ? rawDesc : `${product.title} - ${categoryName}. Tải xuống ngay sau khi thanh toán tại Salemylink.`;
 
-  const datePublished = new Date(product.created_at).toISOString();
-  const dateModified = new Date(product.updated_at).toISOString();
+  const validFrom = product.created_at
+    ? new Date(product.created_at).toISOString().split('T')[0]
+    : new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
   const priceValidUntil = new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString().split('T')[0];
   const isFree = isFreeProduct(product.price);
   const freeDownloadUrl = getProductDownloadUrl(product.google_drive_link, product.download_only_link);
+  const productId = product.id || product.slug.slice(0, 36);
 
   // Build structured data using @graph pattern (Google recommended - avoids duplicate @context)
   const graphNodes: Record<string, any>[] = [];
@@ -384,7 +394,7 @@ export default function ProductDetail() {
       "@type": "ListItem",
       position: 2,
       name: product.categories.name,
-      item: `${siteUrl}/category/${product.categories.slug}`,
+      item: `${siteUrl}/danh-muc/${product.categories.slug}`,
     });
   }
   breadcrumbItems.push({
@@ -405,10 +415,11 @@ export default function ProductDetail() {
     "@type": "Product",
     "@id": `${productUrl}#product`,
     name: product.title,
-    description: product.description || product.short_description || metaDescription,
-    image: productImages.length > 0 ? productImages : [mainImage],
+    description: productDescription.slice(0, 300),
+    image: productImages,
     url: productUrl,
-    sku: product.slug,
+    sku: productId,
+    mpn: productId,
     category: product.categories?.name,
     brand: {
       "@type": "Brand",
@@ -418,8 +429,9 @@ export default function ProductDetail() {
       "@type": "Offer",
       "@id": `${productUrl}#offer`,
       url: productUrl,
-      price: product.price.toString(),
+      price: String(product.price || 0),
       priceCurrency: "VND",
+      validFrom: validFrom,
       priceValidUntil: priceValidUntil,
       availability: "https://schema.org/InStock",
       itemCondition: "https://schema.org/NewCondition",
@@ -446,13 +458,13 @@ export default function ProductDetail() {
             "@type": "QuantitativeValue",
             minValue: 0,
             maxValue: 0,
-            unitCode: "DAY",
+            unitCode: "d",
           },
           transitTime: {
             "@type": "QuantitativeValue",
             minValue: 0,
             maxValue: 0,
-            unitCode: "DAY",
+            unitCode: "d",
           },
         },
       },
@@ -461,20 +473,23 @@ export default function ProductDetail() {
         applicableCountry: "VN",
         returnPolicyCategory: "https://schema.org/MerchantReturnNotPermitted",
         merchantReturnDays: 0,
+        returnMethod: "https://schema.org/ReturnNotPermitted",
+        returnFees: "https://schema.org/ReturnFeesCustomerResponsibility",
       },
     },
   };
 
   // Only include aggregateRating and review when product has >= 1 approved reviews
   if (reviews.length > 0) {
-    const avgRating = Math.round((reviews.reduce((acc, r) => acc + (Number(r.rating) || 5), 0) / reviews.length) * 10) / 10;
+    const rawAvg = reviews.reduce((acc, r) => acc + (Number(r.rating) || 5), 0) / reviews.length;
+    const avgRating = Math.min(5, Math.max(1, Math.round(rawAvg * 10) / 10));
     productNode['aggregateRating'] = {
       "@type": "AggregateRating",
       "@id": `${productUrl}#rating`,
-      ratingValue: avgRating.toFixed(1),
+      ratingValue: avgRating,
       reviewCount: reviews.length,
-      bestRating: "5",
-      worstRating: "1",
+      bestRating: 5,
+      worstRating: 1,
     };
 
     productNode['review'] = reviews.map((review, index) => ({
@@ -482,9 +497,9 @@ export default function ProductDetail() {
       "@id": `${productUrl}#review-${index + 1}`,
       reviewRating: {
         "@type": "Rating",
-        ratingValue: (review.rating || 5).toString(),
-        bestRating: "5",
-        worstRating: "1",
+        ratingValue: Math.min(5, Math.max(1, Number(review.rating) || 5)),
+        bestRating: 5,
+        worstRating: 1,
       },
       author: {
         "@type": "Person",
@@ -578,12 +593,6 @@ export default function ProductDetail() {
     breadcrumb: { "@id": `${productUrl}#breadcrumb` },
     mainEntity: { "@id": `${productUrl}#product` },
     inLanguage: "vi",
-    potentialAction: {
-      "@type": "BuyAction",
-      target: productUrl,
-      "price": product.price.toString(),
-      "priceCurrency": "VND",
-    },
   });
 
   // Combined structured data using @graph

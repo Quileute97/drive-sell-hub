@@ -123,7 +123,12 @@ export function buildHead(input: HeadInput) {
 
   if (structuredData) {
     head.scripts = [
-      { type: "application/ld+json", children: JSON.stringify(structuredData) },
+      {
+        type: "application/ld+json",
+        id: "page-structured-data",
+        "data-seo-managed": "true",
+        children: JSON.stringify(structuredData),
+      },
     ];
   }
 

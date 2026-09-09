@@ -28,6 +28,8 @@ export const Route = createFileRoute("/product/$slug")({
       );
 
       return {
+        id: data.id,
+        createdAt: data.created_at,
         title: fixVietnameseEncoding(data.meta_title || data.title),
         description: fixVietnameseEncoding(
           data.meta_description ||
@@ -60,11 +62,30 @@ export const Route = createFileRoute("/product/$slug")({
         type: "product",
       });
     }
+    const rawDesc = loaderData.description ? loaderData.description.trim() : "";
     const desc =
-      loaderData.description ||
-      `${loaderData.name} - sản phẩm digital chất lượng, tải xuống ngay sau khi thanh toán tại Salemylink.`;
+      rawDesc.length >= 10
+        ? rawDesc
+        : `${loaderData.name} - sản phẩm digital chất lượng cao, tải xuống ngay sau khi thanh toán tại Salemylink.`;
 
+    const validFrom = loaderData.createdAt
+      ? new Date(loaderData.createdAt).toISOString().split("T")[0]
+      : new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split("T")[0];
     const priceValidUntil = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split("T")[0];
+
+    const rawImage = loaderData.image;
+    const finalImage = rawImage
+      ? (rawImage.startsWith("http") ? rawImage : `${SITE_URL}${rawImage.startsWith("/") ? "" : "/"}${rawImage}`)
+      : `${SITE_URL}/og-image.png`;
+
+    const productId = loaderData.id || params.slug.slice(0, 36);
+
+    const hasValidReviews =
+      loaderData.reviews &&
+      loaderData.reviews.length > 0 &&
+      loaderData.rating &&
+      Number(loaderData.rating) >= 1 &&
+      Number(loaderData.rating) <= 5;
 
     const productSchema: Record<string, unknown> = {
       "@context": "https://schema.org",
@@ -73,8 +94,9 @@ export const Route = createFileRoute("/product/$slug")({
       name: loaderData.name,
       description: desc.slice(0, 300),
       url: `${SITE_URL}${path}`,
-      sku: params.slug,
-      ...(loaderData.image ? { image: loaderData.image } : {}),
+      sku: productId,
+      mpn: productId,
+      image: [finalImage],
       ...(loaderData.categoryName ? { category: loaderData.categoryName } : {}),
       ...(loaderData.fileFormat ? { encodingFormat: loaderData.fileFormat } : {}),
       brand: {
@@ -87,8 +109,9 @@ export const Route = createFileRoute("/product/$slug")({
       offers: {
         "@type": "Offer",
         "@id": `${SITE_URL}${path}#offer`,
-        price: loaderData.price,
+        price: String(loaderData.price || 0),
         priceCurrency: "VND",
+        validFrom,
         priceValidUntil,
         availability: "https://schema.org/InStock",
         itemCondition: "https://schema.org/NewCondition",
@@ -116,13 +139,13 @@ export const Route = createFileRoute("/product/$slug")({
               "@type": "QuantitativeValue",
               minValue: 0,
               maxValue: 0,
-              unitCode: "DAY",
+              unitCode: "d",
             },
             transitTime: {
               "@type": "QuantitativeValue",
               minValue: 0,
               maxValue: 0,
-              unitCode: "DAY",
+              unitCode: "d",
             },
           },
         },
@@ -131,15 +154,17 @@ export const Route = createFileRoute("/product/$slug")({
           applicableCountry: "VN",
           returnPolicyCategory: "https://schema.org/MerchantReturnNotPermitted",
           merchantReturnDays: 0,
+          returnMethod: "https://schema.org/ReturnNotPermitted",
+          returnFees: "https://schema.org/ReturnFeesCustomerResponsibility",
         },
       },
-      ...(loaderData.reviews && loaderData.reviews.length > 0 && loaderData.rating && loaderData.rating > 0
+      ...(hasValidReviews
         ? {
             aggregateRating: {
               "@type": "AggregateRating",
               "@id": `${SITE_URL}${path}#rating`,
-              ratingValue: Math.round(Number(loaderData.rating) * 10) / 10,
-              reviewCount: loaderData.reviews.length,
+              ratingValue: Math.min(5, Math.max(1, Math.round(Number(loaderData.rating) * 10) / 10)),
+              reviewCount: Math.max(1, loaderData.reviews.length),
               bestRating: 5,
               worstRating: 1,
             },
@@ -148,7 +173,7 @@ export const Route = createFileRoute("/product/$slug")({
               "@id": `${SITE_URL}${path}#review-${idx + 1}`,
               reviewRating: {
                 "@type": "Rating",
-                ratingValue: r.rating || 5,
+                ratingValue: Math.min(5, Math.max(1, Number(r.rating) || 5)),
                 bestRating: 5,
                 worstRating: 1,
               },

@@ -66,13 +66,18 @@ export const Route = createFileRoute("/nguoi-ban/$slug")({
         "@type": "ItemList",
         name: `Top sản phẩm nổi bật của ${sellerName}`,
         numberOfItems: products.length,
-        itemListElement: products.map((p, i) => ({
-          "@type": "ListItem",
-          position: i + 1,
-          name: fixVietnameseEncoding(p.title),
-          url: `${SITE_URL}/san-pham/${p.slug}`,
-          ...(p.thumbnail_url ? { image: p.thumbnail_url } : {}),
-        })),
+        itemListElement: products.map((p, i) => {
+          const imgUrl = p.thumbnail_url
+            ? (p.thumbnail_url.startsWith("http") ? p.thumbnail_url : `${SITE_URL}${p.thumbnail_url.startsWith("/") ? "" : "/"}${p.thumbnail_url}`)
+            : `${SITE_URL}/og-image.png`;
+          return {
+            "@type": "ListItem",
+            position: i + 1,
+            name: fixVietnameseEncoding(p.title),
+            url: `${SITE_URL}/san-pham/${p.slug}`,
+            image: imgUrl,
+          };
+        }),
       });
     }
 

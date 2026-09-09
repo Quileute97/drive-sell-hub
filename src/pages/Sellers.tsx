@@ -113,41 +113,28 @@ export default function Sellers() {
         "@type": "ItemList",
         "name": "Danh sách người bán",
         "numberOfItems": sellers.length,
-        "itemListElement": sellers.slice(0, 20).map((seller, index) => ({
-          "@type": "ListItem",
-          "position": index + 1,
-          "item": {
-            "@type": "Person",
-            "@id": `${siteUrl}/seller/${seller.user_id}`,
-            "name": seller.full_name || "Người bán",
-            "url": `${siteUrl}/seller/${seller.user_id}`,
-            "image": seller.avatar_url || undefined,
-            "jobTitle": "Digital Product Seller",
-            "worksFor": {
-              "@type": "Organization",
-              "name": "Salemylink.com"
+        "itemListElement": sellers.slice(0, 20).map((seller, index) => {
+          const imgUrl = seller.avatar_url
+            ? (seller.avatar_url.startsWith("http") ? seller.avatar_url : `${siteUrl}${seller.avatar_url.startsWith("/") ? "" : "/"}${seller.avatar_url}`)
+            : `${siteUrl}/og-image.png`;
+          return {
+            "@type": "ListItem",
+            "position": index + 1,
+            "item": {
+              "@type": "Person",
+              "@id": `${siteUrl}/nguoi-ban/${seller.user_id}`,
+              "name": seller.full_name || "Người bán",
+              "url": `${siteUrl}/nguoi-ban/${seller.user_id}`,
+              "image": imgUrl,
+              "jobTitle": "Digital Product Seller",
+              "worksFor": {
+                "@type": "Organization",
+                "name": "Salemylink.com"
+              }
             }
-          }
-        }))
+          };
+        })
       }
-    },
-    {
-      "@context": "https://schema.org",
-      "@type": "BreadcrumbList",
-      "itemListElement": [
-        {
-          "@type": "ListItem",
-          "position": 1,
-          "name": "Trang chủ",
-          "item": siteUrl
-        },
-        {
-          "@type": "ListItem",
-          "position": 2,
-          "name": "Người bán",
-          "item": pageUrl
-        }
-      ]
     }
   ];
 

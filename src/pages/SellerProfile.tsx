@@ -225,20 +225,18 @@ export default function SellerProfile() {
       "@type": "ItemList",
       "name": `Sản phẩm của ${seller.full_name || 'Cửa hàng'}`,
       "numberOfItems": products.length,
-      "itemListElement": products.slice(0, 10).map((product, index) => ({
-        "@type": "ListItem",
-        "position": index + 1,
-        "item": {
-          "@type": "Product",
+      "itemListElement": products.slice(0, 10).map((product, index) => {
+        const imgUrl = product.thumbnail_url
+          ? (product.thumbnail_url.startsWith('http') ? product.thumbnail_url : `${siteUrl}${product.thumbnail_url.startsWith('/') ? '' : '/'}${product.thumbnail_url}`)
+          : `${siteUrl}/og-image.png`;
+        return {
+          "@type": "ListItem",
+          "position": index + 1,
           "name": product.title,
-          "url": `${siteUrl}/product/${product.slug}`,
-          "offers": {
-            "@type": "Offer",
-            "price": product.price,
-            "priceCurrency": "VND"
-          }
-        }
-      }))
+          "url": `${siteUrl}/san-pham/${product.slug}`,
+          "image": imgUrl,
+        };
+      })
     }] : [])
   ];
 

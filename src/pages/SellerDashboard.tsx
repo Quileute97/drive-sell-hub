@@ -403,7 +403,7 @@ const SellerDashboard = () => {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => window.open(`/product/${product.slug}`, '_blank')}>
+                          <DropdownMenuItem onClick={() => window.open(`/san-pham/${product.slug}`, '_blank')}>
                             <Eye className="h-4 w-4 mr-2" />
                             Xem chi tiết
                           </DropdownMenuItem>

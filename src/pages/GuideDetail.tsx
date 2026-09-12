@@ -51,9 +51,9 @@ export default function GuideDetail() {
     })();
   }, [guide]);
 
-  if (!guide) return <Navigate to="/guides" replace />;
+  if (!guide) return <Navigate to="/huong-dan" replace />;
 
-  const url = `${BASE}/guides/${guide.slug}`;
+  const url = `${BASE}/huong-dan/${guide.slug}`;
   const formatPrice = (p: number) =>
     new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(p);
 
@@ -94,7 +94,7 @@ export default function GuideDetail() {
             "@type": "BreadcrumbList",
             itemListElement: [
               { "@type": "ListItem", position: 1, name: "Trang chủ", item: BASE },
-              { "@type": "ListItem", position: 2, name: "Cẩm nang", item: `${BASE}/guides` },
+              { "@type": "ListItem", position: 2, name: "Cẩm nang", item: `${BASE}/huong-dan` },
               { "@type": "ListItem", position: 3, name: guide.category, item: url },
             ],
           },
@@ -114,7 +114,7 @@ export default function GuideDetail() {
       <main className="container mx-auto px-4 py-8 max-w-5xl">
         <Breadcrumb
           items={[
-            { label: "Cẩm nang", href: "/guides" },
+            { label: "Cẩm nang", href: "/huong-dan" },
             { label: guide.category },
           ]}
         />
@@ -162,7 +162,7 @@ export default function GuideDetail() {
                 {products.map((p) => (
                   <Link
                     key={p.id}
-                    to={`/product/${p.slug}`}
+                    to={`/san-pham/${p.slug}`}
                     className="group border rounded-lg overflow-hidden hover:shadow-md transition-shadow bg-card"
                   >
                     <div className="aspect-[4/3] bg-muted overflow-hidden">
@@ -187,7 +187,7 @@ export default function GuideDetail() {
               </div>
               {guide.categorySlug && (
                 <div className="mt-6 text-center">
-                  <Link to={`/category/${guide.categorySlug}`}>
+                  <Link to={`/danh-muc/${guide.categorySlug}`}>
                     <Button variant="outline">
                       Xem thêm trong danh mục {guide.category}
                       <ArrowRight className="h-4 w-4 ml-2" />
@@ -219,7 +219,7 @@ export default function GuideDetail() {
               <h2 className="text-2xl font-bold mb-4">Hướng dẫn liên quan</h2>
               <div className="grid sm:grid-cols-2 gap-4">
                 {related.map((r) => (
-                  <Link key={r.slug} to={`/guides/${r.slug}`} className="group">
+                  <Link key={r.slug} to={`/huong-dan/${r.slug}`} className="group">
                     <Card className="h-full hover:shadow-md transition-shadow">
                       <CardContent className="p-5 flex items-start gap-3">
                         <BookOpen className="h-5 w-5 text-primary flex-shrink-0 mt-1" />

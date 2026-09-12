@@ -42,12 +42,12 @@ export async function submitToIndexNow(urls: string | string[]): Promise<boolean
  * Notify IndexNow when a product is created or updated.
  */
 export function notifyProductChange(slug: string) {
-  submitToIndexNow(`${SITE_URL}/product/${slug}`);
+  submitToIndexNow(`${SITE_URL}/san-pham/${slug}`);
 }
 
 /**
  * Notify IndexNow when a category page changes.
  */
 export function notifyCategoryChange(slug: string) {
-  submitToIndexNow(`${SITE_URL}/category/${slug}`);
+  submitToIndexNow(`${SITE_URL}/danh-muc/${slug}`);
 }

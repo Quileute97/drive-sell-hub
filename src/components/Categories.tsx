@@ -142,8 +142,8 @@ export const Categories = () => {
             const IconComponent = iconMap[category.icon] || BookOpen;
             return (
               <Link 
-                key={category.id}
-                to={`/category/${category.slug}`}
+                key={category.id} 
+                to={`/danh-muc/${category.slug}`}
               >
                 <Card 
                   className="group cursor-pointer hover:shadow-xl transition-all duration-300 hover:-translate-y-2 border-2 hover:border-primary/20 h-full"

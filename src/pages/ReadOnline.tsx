@@ -31,13 +31,13 @@ const ReadOnline = () => {
       }
       if (!data.read_only) {
         toast({ title: "Sản phẩm không hỗ trợ đọc trực tuyến", variant: "destructive" });
-        navigate(`/product/${slug}`);
+        navigate(`/san-pham/${slug}`);
         return;
       }
       const url = getGoogleDrivePreviewUrl(data.google_drive_link);
       if (!url) {
         toast({ title: "Không có link để xem trước", variant: "destructive" });
-        navigate(`/product/${slug}`);
+        navigate(`/san-pham/${slug}`);
         return;
       }
       setTitle(data.title);
@@ -106,7 +106,7 @@ const ReadOnline = () => {
       <header className="border-b bg-card px-4 py-3 flex items-center justify-between gap-3">
         <div className="flex items-center gap-2 min-w-0">
           <Button variant="ghost" size="sm" asChild>
-            <Link to={`/product/${slug}`}>
+            <Link to={`/san-pham/${slug}`}>
               <ArrowLeft className="h-4 w-4 mr-1" />
               Quay lại
             </Link>

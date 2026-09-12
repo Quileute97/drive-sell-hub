@@ -211,7 +211,7 @@ export const TrustSignals = () => {
                       </div>
                       {t.product && (
                         <Link
-                          to={`/product/${t.product.slug}`}
+                          to={`/san-pham/${t.product.slug}`}
                           className="block truncate text-xs text-muted-foreground hover:text-primary"
                         >
                           {t.product.title}

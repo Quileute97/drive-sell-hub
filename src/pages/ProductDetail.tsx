@@ -335,9 +335,7 @@ export default function ProductDetail() {
   }
 
   const siteUrl = "https://salemylink.com";
-  const currentPath = typeof window !== 'undefined' && window.location.pathname.startsWith('/product/')
-    ? `/product/${product.slug}`
-    : `/san-pham/${product.slug}`;
+  const currentPath = `/san-pham/${product.slug}`;
   const productUrl = `${siteUrl}${currentPath}`;
   
   // SEO title: "Tên sản phẩm | Salemylink" (ignore too-short/placeholder meta_title)
@@ -720,7 +718,7 @@ export default function ProductDetail() {
           items={[
             { 
               label: product.categories?.name || 'Danh mục', 
-              href: product.categories?.slug ? `/category/${product.categories.slug}` : undefined 
+              href: product.categories?.slug ? `/danh-muc/${product.categories.slug}` : undefined 
             },
             { label: product.title }
           ]}
@@ -865,7 +863,7 @@ export default function ProductDetail() {
 
                   {/* Compact Seller Badge */}
                   <Link
-                    to={`/seller/${product.seller_id}`}
+                    to={`/nguoi-ban/${product.seller_id}`}
                     className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-muted/60 hover:bg-muted transition-colors text-xs shrink-0 max-w-[160px]"
                   >
                     <img

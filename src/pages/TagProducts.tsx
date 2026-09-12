@@ -256,7 +256,7 @@ export default function TagProducts() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {products.map((product) => (
               <Card key={product.id} className="group hover:shadow-lg transition-all duration-300 overflow-hidden">
-                <Link to={`/product/${product.slug}`}>
+                <Link to={`/san-pham/${product.slug}`}>
                   <div className="relative overflow-hidden">
                     <ProductThumbnail
                       thumbnailUrl={product.thumbnail_url}
@@ -272,13 +272,13 @@ export default function TagProducts() {
                   </div>
                 </Link>
                 <CardContent className="p-4">
-                  <Link to={`/product/${product.slug}`}>
+                  <Link to={`/san-pham/${product.slug}`}>
                     <h3 className="font-semibold text-sm line-clamp-2 hover:text-primary transition-colors mb-1">
                       {product.title}
                     </h3>
                   </Link>
                   {product.categories && (
-                    <Link to={`/category/${product.categories.slug}`} className="text-xs text-muted-foreground hover:text-primary">
+                    <Link to={`/danh-muc/${product.categories.slug}`} className="text-xs text-muted-foreground hover:text-primary">
                       {product.categories.name}
                     </Link>
                   )}

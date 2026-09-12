@@ -154,7 +154,7 @@ export const ProductList = () => {
               return <Card 
                 key={product.id} 
                 className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-1 cursor-pointer flex flex-col h-full"
-                onClick={() => navigate(`/product/${product.slug}`)}
+                onClick={() => navigate(`/san-pham/${product.slug}`)}
               >
                 <div className="relative overflow-hidden rounded-t-lg aspect-[4/3] bg-muted">
                   <div className="w-full h-full group-hover:scale-105 transition-transform duration-300">
@@ -179,7 +179,7 @@ export const ProductList = () => {
                 <CardContent className="p-4 flex-grow flex flex-col">
                   <div className="mb-2 flex items-center gap-2 flex-wrap">
                     <Link 
-                      to={`/category/${product.categories?.slug}`}
+                      to={`/danh-muc/${product.categories?.slug}`}
                       onClick={(e) => e.stopPropagation()}
                     >
                       <Badge variant="secondary" className="text-xs hover:bg-primary hover:text-primary-foreground transition-colors cursor-pointer">

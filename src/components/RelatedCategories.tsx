@@ -95,7 +95,7 @@ export const RelatedCategories = ({
           {categories.map((cat) => (
             <Link
               key={cat.id}
-              to={`/category/${cat.slug}`}
+              to={`/danh-muc/${cat.slug}`}
               className="group block p-4 rounded-lg border bg-card hover:border-primary hover:shadow-md transition-all duration-200"
             >
               <div className="flex items-start justify-between mb-2">

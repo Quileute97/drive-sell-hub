@@ -252,7 +252,7 @@ export default function SearchProducts() {
             "@type": "ListItem",
             "position": 2,
             "name": categoryName,
-            "item": `${siteUrl}/category/${currentCategorySlug}`
+            "item": `${siteUrl}/danh-muc/${currentCategorySlug}`
           }] : []),
           {
             "@type": "ListItem",
@@ -383,7 +383,7 @@ export default function SearchProducts() {
             {categories.map((category) => (
               <Link
                 key={category.id}
-                to={`/category/${category.slug}`}
+                to={`/danh-muc/${category.slug}`}
                 className="text-sm px-3 py-1.5 rounded-full bg-muted hover:bg-primary hover:text-primary-foreground transition-colors"
               >
                 {category.name}
@@ -429,7 +429,7 @@ export default function SearchProducts() {
                 return <article 
                   key={product.id} 
                   className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-1 cursor-pointer flex flex-col h-full rounded-lg border bg-card text-card-foreground shadow-xs"
-                  onClick={() => navigate(`/product/${product.slug}`)}
+                  onClick={() => navigate(`/san-pham/${product.slug}`)}
                 >
                   <div className="relative overflow-hidden rounded-t-lg aspect-[4/3] bg-muted">
                     <div className="w-full h-full group-hover:scale-105 transition-transform duration-300">
@@ -453,7 +453,7 @@ export default function SearchProducts() {
                   <CardContent className="p-4 flex-grow flex flex-col">
                     <div className="mb-2 flex items-center gap-2 flex-wrap">
                       <Link
-                        to={`/category/${product.categories?.slug}`}
+                        to={`/danh-muc/${product.categories?.slug}`}
                         onClick={(e) => e.stopPropagation()}
                       >
                         <Badge variant="secondary" className="text-xs hover:bg-primary hover:text-primary-foreground transition-colors cursor-pointer">

@@ -11,7 +11,7 @@ import { BookOpen, ArrowRight } from "lucide-react";
 const BASE = "https://salemylink.com";
 
 export default function Guides() {
-  const url = `${BASE}/guides`;
+  const url = `${BASE}/huong-dan`;
 
   return (
     <div className="min-h-screen">
@@ -31,7 +31,7 @@ export default function Guides() {
             hasPart: GUIDES.map((g) => ({
               "@type": "Article",
               headline: g.title,
-              url: `${BASE}/guides/${g.slug}`,
+              url: `${BASE}/huong-dan/${g.slug}`,
               description: g.description,
             })),
           },
@@ -61,7 +61,7 @@ export default function Guides() {
 
         <section className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {GUIDES.map((g) => (
-            <Link key={g.slug} to={`/guides/${g.slug}`} className="group">
+            <Link key={g.slug} to={`/huong-dan/${g.slug}`} className="group">
               <Card className="h-full hover:shadow-lg transition-shadow">
                 <CardContent className="p-6 flex flex-col h-full">
                   <div className="flex items-center gap-2 mb-3">

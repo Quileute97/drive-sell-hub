@@ -19,7 +19,7 @@ const NotFound = () => {
 
   const popularPages = [
     { title: "Tìm kiếm sản phẩm Digital", href: "/search", icon: Search, description: "Khám phá hàng ngàn sản phẩm digital chất lượng" },
-    { title: "Danh sách người bán", href: "/sellers", icon: ShoppingBag, description: "Xem các seller uy tín trên Salemylink" },
+    { title: "Danh sách người bán", href: "/nguoi-ban", icon: ShoppingBag, description: "Xem các seller uy tín trên Salemylink" },
     { title: "Hướng dẫn mua hàng", href: "/how-it-works", icon: BookOpen, description: "Tìm hiểu cách mua và bán sản phẩm" },
     { title: "Câu hỏi thường gặp", href: "/about", icon: HelpCircle, description: "Tìm hiểu thêm về Salemylink.com" },
   ];

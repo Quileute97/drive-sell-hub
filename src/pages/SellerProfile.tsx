@@ -170,9 +170,7 @@ export default function SellerProfile() {
   }
 
   const siteUrl = "https://salemylink.com";
-  const currentPath = typeof window !== 'undefined' && window.location.pathname.startsWith('/seller/')
-    ? `/seller/${seller.user_id}`
-    : `/nguoi-ban/${seller.user_id}`;
+  const currentPath = `/nguoi-ban/${seller.user_id}`;
   const sellerUrl = `${siteUrl}${currentPath}`;
   
   const sellerStructuredData = [
@@ -344,7 +342,7 @@ export default function SellerProfile() {
                 return (
                   <Link 
                     key={product.id} 
-                    to={`/product/${product.slug}`}
+                    to={`/san-pham/${product.slug}`}
                     className="group"
                   >
                     <Card className="overflow-hidden h-full transition-all duration-300 hover:shadow-lg hover:-translate-y-1">

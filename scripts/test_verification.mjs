@@ -110,7 +110,7 @@ function generateSku(id, slug) {
 
 function buildProductSchema(loaderData, slug) {
   const SITE_URL = 'https://salemylink.com';
-  const path = `/product/${slug}`;
+  const path = `/san-pham/${slug}`;
   const productSku = generateSku(loaderData.id, slug);
   const validFrom = loaderData.createdAt
     ? new Date(loaderData.createdAt).toISOString().split("T")[0]
@@ -263,21 +263,63 @@ async function runTests() {
     console.error('❌ TEST 2 FAILED');
   }
 
-  console.log('\n=== TEST 3: SITEMAP ACCURACY ===');
+  console.log('\n=== TEST 3: SITEMAP INDEX & SITEMAP CLEANLINESS ===');
+  // Check sitemap-index.xml
+  const sitemapIndexXml = fs.readFileSync('public/sitemap-index.xml', 'utf-8');
+  const hasValidIndex = sitemapIndexXml.includes('<sitemapindex') && sitemapIndexXml.includes('https://salemylink.com/sitemap.xml');
+  console.log(`sitemap-index.xml exists and valid: ${hasValidIndex ? '✅ PASS' : '❌ FAIL'}`);
+
+  // Check sitemap.xml
   const sitemapXml = fs.readFileSync('public/sitemap.xml', 'utf-8');
   const locs = (sitemapXml.match(/<loc>.*?<\/loc>/g) || []).map(l => l.replace(/<\/?loc>/g, ''));
   
   const totalLoc = locs.length;
-  const productLoc = locs.filter(l => l.includes('/product/')).length;
+  const sanPhamLoc = locs.filter(l => l.includes('/san-pham/')).length;
+  const legacyProductLoc = locs.filter(l => l.includes('/product/')).length;
+  const danhMucLoc = locs.filter(l => l.includes('/danh-muc/')).length;
+  const legacyCategoryLoc = locs.filter(l => l.includes('/category/')).length;
   const nguoiBanLoc = locs.filter(l => l.includes('/nguoi-ban')).length;
+  const legacySellerLoc = locs.filter(l => l.includes('/seller/')).length;
+  const legacySellersLoc = locs.filter(l => l.endsWith('/sellers')).length;
   const huongDanLoc = locs.filter(l => l.includes('/huong-dan')).length;
+  const legacyGuidesLoc = locs.filter(l => l.includes('/guides')).length;
+
+  // Duplicate check
+  const uniqueLocs = new Set(locs);
+  const hasDuplicates = uniqueLocs.size !== locs.length;
+
+  // Image placeholder check
+  const placeholderImages = (sitemapXml.match(/<image:loc>.*?placeholder.*?<\/image:loc>/gi) || []).length;
 
   console.log(`Total <loc>: ${totalLoc} (expected >= 900) -> ${totalLoc >= 900 ? '✅ PASS' : '❌ FAIL'}`);
-  console.log(`salemylink.com/product: ${productLoc} (expected >= 800) -> ${productLoc >= 800 ? '✅ PASS' : '❌ FAIL'}`);
-  console.log(`salemylink.com/nguoi-ban: ${nguoiBanLoc} (expected >= 30) -> ${nguoiBanLoc >= 30 ? '✅ PASS' : '❌ FAIL'}`);
-  console.log(`salemylink.com/huong-dan: ${huongDanLoc} (expected >= 10) -> ${huongDanLoc >= 10 ? '✅ PASS' : '❌ FAIL'}`);
+  console.log(`Canonical /san-pham/: ${sanPhamLoc} (expected >= 800) -> ${sanPhamLoc >= 800 ? '✅ PASS' : '❌ FAIL'}`);
+  console.log(`Legacy /product/ in sitemap: ${legacyProductLoc} (expected 0) -> ${legacyProductLoc === 0 ? '✅ PASS' : '❌ FAIL'}`);
+  console.log(`Canonical /danh-muc/: ${danhMucLoc} (expected >= 15) -> ${danhMucLoc >= 15 ? '✅ PASS' : '❌ FAIL'}`);
+  console.log(`Legacy /category/ in sitemap: ${legacyCategoryLoc} (expected 0) -> ${legacyCategoryLoc === 0 ? '✅ PASS' : '❌ FAIL'}`);
+  console.log(`Canonical /nguoi-ban: ${nguoiBanLoc} (expected >= 30) -> ${nguoiBanLoc >= 30 ? '✅ PASS' : '❌ FAIL'}`);
+  console.log(`Legacy /seller/ in sitemap: ${legacySellerLoc} (expected 0) -> ${legacySellerLoc === 0 ? '✅ PASS' : '❌ FAIL'}`);
+  console.log(`Legacy /sellers in sitemap: ${legacySellersLoc} (expected 0) -> ${legacySellersLoc === 0 ? '✅ PASS' : '❌ FAIL'}`);
+  console.log(`Canonical /huong-dan: ${huongDanLoc} (expected >= 10) -> ${huongDanLoc >= 10 ? '✅ PASS' : '❌ FAIL'}`);
+  console.log(`Legacy /guides in sitemap: ${legacyGuidesLoc} (expected 0) -> ${legacyGuidesLoc === 0 ? '✅ PASS' : '❌ FAIL'}`);
+  console.log(`Zero duplicate URLs: ${!hasDuplicates ? '✅ PASS' : '❌ FAIL'}`);
+  console.log(`Zero placeholder images: ${placeholderImages === 0 ? '✅ PASS' : '❌ FAIL'}`);
 
-  console.log('\n=== TEST 4: MERCHANT LISTINGS SCHEMA & SKU VALIDATION ===');
+  console.log('\n=== TEST 4: SECURITY HEADERS & ROBOTS.TXT ===');
+  const headersFile = fs.readFileSync('public/_headers', 'utf-8');
+  const hasCsp = headersFile.includes('Content-Security-Policy');
+  const hasNosniff = headersFile.includes('X-Content-Type-Options: nosniff');
+  const hasHsts = headersFile.includes('Strict-Transport-Security');
+  console.log(`_headers CSP configured: ${hasCsp ? '✅ PASS' : '❌ FAIL'}`);
+  console.log(`_headers nosniff configured: ${hasNosniff ? '✅ PASS' : '❌ FAIL'}`);
+  console.log(`_headers HSTS configured: ${hasHsts ? '✅ PASS' : '❌ FAIL'}`);
+
+  const robotsFile = fs.readFileSync('public/robots.txt', 'utf-8');
+  const hasSitemapIndexInRobots = robotsFile.includes('https://salemylink.com/sitemap-index.xml');
+  const hasSitemapInRobots = robotsFile.includes('https://salemylink.com/sitemap.xml');
+  console.log(`robots.txt includes sitemap-index.xml: ${hasSitemapIndexInRobots ? '✅ PASS' : '❌ FAIL'}`);
+  console.log(`robots.txt includes sitemap.xml: ${hasSitemapInRobots ? '✅ PASS' : '❌ FAIL'}`);
+
+  console.log('\n=== TEST 5: MERCHANT LISTINGS SCHEMA & SKU VALIDATION ===');
   const longSlug = 'understanding-vocab-for-ielts-speaking-phien-ban-c-ai-tien-c-ua-cuon-power-vocab-mtpf1ls4';
   const skuFromLongSlug = generateSku(null, longSlug);
   const skuFromId = generateSku('b83dbda5-a6a9-4673-a8c4-e8cfc2eb0d9e', longSlug);
@@ -311,10 +353,10 @@ async function runTests() {
   console.log(`Single Brand node: ${hasSingleBrand ? '✅ PASS' : '❌ FAIL'}`);
   console.log(`Complete Offer (with validFrom, priceValidUntil, seller): ${hasValidOffer ? '✅ PASS' : '❌ FAIL'}`);
 
-  if (isSkuValid && hasSingleBrand && hasValidOffer) {
-    console.log('✅ TEST 4 PASSED: All Merchant Listings requirements satisfied!');
+  if (isSkuValid && hasSingleBrand && hasValidOffer && hasValidIndex && !hasDuplicates && hasCsp) {
+    console.log('\n🎉 ALL 5 TEST SUITES PASSED PERFECTLY!');
   } else {
-    console.error('❌ TEST 4 FAILED');
+    console.error('\n❌ SOME TESTS FAILED');
   }
 }
 

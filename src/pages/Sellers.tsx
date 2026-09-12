@@ -78,9 +78,7 @@ export default function Sellers() {
   };
 
   const siteUrl = "https://salemylink.com";
-  const currentPath = typeof window !== 'undefined' && window.location.pathname.startsWith('/sellers')
-    ? '/sellers'
-    : '/nguoi-ban';
+  const currentPath = "/nguoi-ban";
   const pageUrl = `${siteUrl}${currentPath}`;
 
   // Structured data for sellers page

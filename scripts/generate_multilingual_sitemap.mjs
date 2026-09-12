@@ -25,10 +25,8 @@ const coreStaticRoutes = [
   { path: '/how-it-works', priority: '0.8', changefreq: 'monthly' },
   { path: '/seller-guide', priority: '0.8', changefreq: 'monthly' },
   { path: '/search', priority: '0.8', changefreq: 'daily' },
-  { path: '/sellers', priority: '0.8', changefreq: 'weekly' },
   { path: '/nguoi-ban', priority: '0.8', changefreq: 'weekly' },
   { path: '/affiliate', priority: '0.8', changefreq: 'monthly' },
-  { path: '/guides', priority: '0.8', changefreq: 'weekly' },
   { path: '/huong-dan', priority: '0.8', changefreq: 'weekly' },
   { path: '/privacy-policy', priority: '0.4', changefreq: 'yearly' },
   { path: '/terms-of-service', priority: '0.4', changefreq: 'yearly' },
@@ -74,7 +72,7 @@ const guideSlugs = [
   'tai-lieu-on-thi-vao-10',
 ];
 
-function generateUrlXml(routePath, priority = '0.8', changefreq = 'weekly', lastmod = '2026-09-08', image = null) {
+function generateUrlXml(routePath, priority = '0.8', changefreq = 'weekly', lastmod = '2026-09-12', image = null) {
   const cleanPath = routePath === '/' ? '' : routePath;
   const canonicalUrl = `${SITE_URL}${cleanPath || '/'}`;
   const baseForParams = cleanPath ? `${SITE_URL}${cleanPath}` : `${SITE_URL}/`;
@@ -154,7 +152,7 @@ async function fetchAllFromSupabase(table, select, filter = '') {
 }
 
 export async function generateFullSitemap() {
-  console.log('Generating comprehensive sitemap from Supabase data...');
+  console.log('Generating clean canonical sitemap from Supabase data...');
   const today = new Date().toISOString().split('T')[0];
 
   // 1. Fetch products
@@ -183,16 +181,15 @@ export async function generateFullSitemap() {
 
   const urlEntries = [];
 
-  // Add Core Static Routes
+  // Add Core Static Routes (Canonical only)
   for (const r of coreStaticRoutes) {
     urlEntries.push(generateUrlXml(r.path, r.priority, r.changefreq, today));
   }
 
-  // Add Category Routes (/danh-muc/ and /category/)
+  // Add Category Routes (/danh-muc/ only)
   for (const cat of categories) {
     const lastmod = cat.updated_at ? new Date(cat.updated_at).toISOString().split('T')[0] : today;
     urlEntries.push(generateUrlXml(`/danh-muc/${cat.slug}`, '0.85', 'weekly', lastmod));
-    urlEntries.push(generateUrlXml(`/category/${cat.slug}`, '0.80', 'weekly', lastmod));
   }
 
   // Add Tag Routes (/tag/)
@@ -200,21 +197,19 @@ export async function generateFullSitemap() {
     urlEntries.push(generateUrlXml(`/tag/${encodeURIComponent(tag)}`, '0.70', 'weekly', today));
   }
 
-  // Add Guide Routes (/huong-dan/ and /guides/)
+  // Add Guide Routes (/huong-dan/ only)
   for (const gSlug of guideSlugs) {
     urlEntries.push(generateUrlXml(`/huong-dan/${gSlug}`, '0.85', 'weekly', today));
-    urlEntries.push(generateUrlXml(`/guides/${gSlug}`, '0.80', 'weekly', today));
   }
 
-  // Add Seller Routes (/nguoi-ban/ and /seller/)
+  // Add Seller Routes (/nguoi-ban/ only)
   for (const seller of sellers) {
     const sellerId = seller.user_id || seller.id;
     const lastmod = seller.updated_at ? new Date(seller.updated_at).toISOString().split('T')[0] : today;
     urlEntries.push(generateUrlXml(`/nguoi-ban/${sellerId}`, '0.70', 'weekly', lastmod));
-    urlEntries.push(generateUrlXml(`/seller/${sellerId}`, '0.65', 'weekly', lastmod));
   }
 
-  // Add Product Routes (/san-pham/ and /product/)
+  // Add Product Routes (/san-pham/ only)
   for (const prod of products) {
     const lastmod = prod.updated_at
       ? new Date(prod.updated_at).toISOString().split('T')[0]
@@ -229,12 +224,16 @@ export async function generateFullSitemap() {
       priority = 0.80;
     }
 
-    const img = prod.thumbnail_url
-      ? { loc: prod.thumbnail_url, title: prod.title }
-      : null;
+    // Clean image handling: filter out placeholders and resolve absolute URL
+    let img = null;
+    if (prod.thumbnail_url && !prod.thumbnail_url.includes('placeholder')) {
+      const fullImgLoc = prod.thumbnail_url.startsWith('http')
+        ? prod.thumbnail_url
+        : `${SITE_URL}${prod.thumbnail_url.startsWith('/') ? '' : '/'}${prod.thumbnail_url}`;
+      img = { loc: fullImgLoc, title: prod.title };
+    }
 
     urlEntries.push(generateUrlXml(`/san-pham/${prod.slug}`, priority.toFixed(2), 'weekly', lastmod, img));
-    urlEntries.push(generateUrlXml(`/product/${prod.slug}`, (Math.max(priority - 0.05, 0.5)).toFixed(2), 'weekly', lastmod, img));
   }
 
   const xmlContent = `<?xml version="1.0" encoding="UTF-8"?>
@@ -246,7 +245,21 @@ ${urlEntries.join('\n')}
 
   const outputPath = path.resolve(__dirname, '../public/sitemap.xml');
   fs.writeFileSync(outputPath, xmlContent, 'utf-8');
-  console.log(`\n🎉 Generated ${urlEntries.length} URLs in sitemap at: ${outputPath}`);
+  console.log(`\n🎉 Generated ${urlEntries.length} canonical URLs in sitemap at: ${outputPath}`);
+
+  // Also write/update public/sitemap-index.xml
+  const indexXml = `<?xml version="1.0" encoding="UTF-8"?>
+<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <sitemap>
+    <loc>${SITE_URL}/sitemap.xml</loc>
+    <lastmod>${today}</lastmod>
+  </sitemap>
+</sitemapindex>
+`;
+  const indexPath = path.resolve(__dirname, '../public/sitemap-index.xml');
+  fs.writeFileSync(indexPath, indexXml, 'utf-8');
+  console.log(`🎉 Generated sitemap index at: ${indexPath}`);
+
   return urlEntries.length;
 }
 

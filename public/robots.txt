@@ -1,11 +1,8 @@
 # Robots.txt for salemylink.com
 # Salemylink - Marketplace sản phẩm Digital Việt Nam & Quốc Tế (Multilingual: VI, EN, ZH, ES)
 
-# Allow all search engines to crawl
 User-agent: *
 Allow: /
-
-# Disallow private/admin pages
 Disallow: /admin/
 Disallow: /seller-dashboard/
 Disallow: /cart/
@@ -13,52 +10,110 @@ Disallow: /checkout/
 Disallow: /payment/
 Disallow: /auth/
 Disallow: /seller-auth/
+Disallow: /read/
 
-# Google Search
+# Search Engine Crawlers (Follow explicit disallow paths)
 User-agent: Googlebot
 Allow: /
-Crawl-delay: 0
+Disallow: /admin/
+Disallow: /seller-dashboard/
+Disallow: /cart/
+Disallow: /checkout/
+Disallow: /payment/
+Disallow: /auth/
+Disallow: /seller-auth/
+Disallow: /read/
 
-# Bing Search
 User-agent: Bingbot
 Allow: /
-Crawl-delay: 0
+Disallow: /admin/
+Disallow: /seller-dashboard/
+Disallow: /cart/
+Disallow: /checkout/
+Disallow: /payment/
+Disallow: /auth/
+Disallow: /seller-auth/
+Disallow: /read/
 
-# Baidu Search (Chinese markets)
 User-agent: Baiduspider
 Allow: /
-Crawl-delay: 0
+Disallow: /admin/
+Disallow: /seller-dashboard/
+Disallow: /cart/
+Disallow: /checkout/
+Disallow: /payment/
+Disallow: /auth/
+Disallow: /seller-auth/
+Disallow: /read/
 
-# Yandex Search
 User-agent: YandexBot
 Allow: /
-Crawl-delay: 0
+Disallow: /admin/
+Disallow: /seller-dashboard/
+Disallow: /cart/
+Disallow: /checkout/
+Disallow: /payment/
+Disallow: /auth/
+Disallow: /seller-auth/
+Disallow: /read/
 
-# DuckDuckGo & Yahoo
-User-agent: DuckDuckBot
-Allow: /
-User-agent: Slurp
-Allow: /
-
-# Social media crawlers
+# Social Media Bots
 User-agent: Twitterbot
 Allow: /
+
 User-agent: facebookexternalhit
 Allow: /
+
 User-agent: LinkedInBot
 Allow: /
 
 # AI Crawlers & LLMs
 User-agent: GPTBot
 Allow: /
+Disallow: /admin/
+Disallow: /seller-dashboard/
+Disallow: /cart/
+Disallow: /checkout/
+Disallow: /payment/
+Disallow: /auth/
+Disallow: /seller-auth/
+Disallow: /read/
+
 User-agent: ClaudeBot
 Allow: /
+Disallow: /admin/
+Disallow: /seller-dashboard/
+Disallow: /cart/
+Disallow: /checkout/
+Disallow: /payment/
+Disallow: /auth/
+Disallow: /seller-auth/
+Disallow: /read/
+
 User-agent: PerplexityBot
 Allow: /
+Disallow: /admin/
+Disallow: /seller-dashboard/
+Disallow: /cart/
+Disallow: /checkout/
+Disallow: /payment/
+Disallow: /auth/
+Disallow: /seller-auth/
+Disallow: /read/
+
 User-agent: Google-Extended
 Allow: /
+Disallow: /admin/
+Disallow: /seller-dashboard/
+Disallow: /cart/
+Disallow: /checkout/
+Disallow: /payment/
+Disallow: /auth/
+Disallow: /seller-auth/
+Disallow: /read/
 
-# Multilingual XML Sitemap
+# XML Sitemaps
+Sitemap: https://salemylink.com/sitemap-index.xml
 Sitemap: https://salemylink.com/sitemap.xml
 
 # IndexNow verification

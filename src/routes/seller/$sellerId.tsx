@@ -1,13 +1,11 @@
-import { createFileRoute } from "@tanstack/react-router";
-import SellerProfile from "@/pages/SellerProfile";
-import { buildHead } from "@/lib/seoHead";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/seller/$sellerId")({
-  head: ({ params }) =>
-    buildHead({
-      title: "Gian hàng người bán",
-      description: "Xem hồ sơ người bán, sản phẩm và đánh giá trên Salemylink.",
-      path: `/seller/${params.sellerId}`,
-    }),
-  component: SellerProfile,
+  beforeLoad: ({ params }) => {
+    throw redirect({
+      to: "/nguoi-ban/$slug",
+      params: { slug: params.sellerId },
+      statusCode: 301,
+    });
+  },
 });

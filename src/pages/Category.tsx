@@ -130,7 +130,7 @@ export default function Category() {
   }
 
   const siteUrl = "https://salemylink.com";
-  const categoryUrl = `${siteUrl}/category/${category.slug}`;
+  const categoryUrl = `${siteUrl}/danh-muc/${category.slug}`;
   const categoryImage = category.image_url || `${siteUrl}/og-image.png`;
 
   // SEO meta — per-slug overrides with generic fallback
@@ -347,7 +347,7 @@ export default function Category() {
                 >
                   <Card
                     className="cursor-pointer hover:shadow-xl transition-all duration-300 hover:-translate-y-2 h-full"
-                    onClick={() => navigate(`/product/${product.slug}`)}
+                    onClick={() => navigate(`/san-pham/${product.slug}`)}
                   >
                     <div className="relative overflow-hidden rounded-t-lg aspect-[4/3] bg-muted">
                       <div className="w-full h-full group-hover:scale-105 transition-transform duration-300">

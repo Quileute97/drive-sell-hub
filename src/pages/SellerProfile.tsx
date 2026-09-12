@@ -39,21 +39,29 @@ interface ProductItem {
   };
 }
 
-export default function SellerProfile() {
+export default function SellerProfile({
+  initialSeller,
+  initialProducts,
+}: {
+  initialSeller?: any;
+  initialProducts?: any[];
+}) {
   const { sellerId } = useParams();
-  const [seller, setSeller] = useState<SellerInfo | null>(null);
-  const [products, setProducts] = useState<ProductItem[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [seller, setSeller] = useState<SellerInfo | null>(initialSeller || null);
+  const [products, setProducts] = useState<ProductItem[]>(initialProducts || []);
+  const [loading, setLoading] = useState(!initialSeller);
   const [stats, setStats] = useState({
-    totalProducts: 0,
+    totalProducts: initialProducts?.length || 0,
     totalDownloads: 0,
     totalViews: 0,
-    avgRating: 0
+    avgRating: 0,
   });
 
   useEffect(() => {
     if (sellerId) {
       fetchSellerData();
+    } else if (!initialSeller) {
+      setLoading(false);
     }
   }, [sellerId]);
 

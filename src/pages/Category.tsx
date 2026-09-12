@@ -41,17 +41,25 @@ interface Category {
   updated_at: string;
 }
 
-export default function Category() {
+export default function Category({
+  initialCategory,
+  initialProducts,
+}: {
+  initialCategory?: Category | null;
+  initialProducts?: Product[];
+}) {
   const { slug } = useParams();
   const navigate = useNavigate();
-  const [category, setCategory] = useState<Category | null>(null);
-  const [products, setProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [category, setCategory] = useState<Category | null>(initialCategory || null);
+  const [products, setProducts] = useState<Product[]>(initialProducts || []);
+  const [loading, setLoading] = useState(!initialCategory);
   const { toast } = useToast();
 
   useEffect(() => {
     if (slug) {
       fetchCategoryAndProducts();
+    } else if (!initialCategory) {
+      setLoading(false);
     }
   }, [slug]);
 
@@ -343,29 +351,32 @@ export default function Category() {
               {products.map((product, index) => (
                 <article 
                   key={product.id}
-                  className="group"
+                  className="group flex flex-col h-full"
                 >
                   <Card
-                    className="cursor-pointer hover:shadow-xl transition-all duration-300 hover:-translate-y-2 h-full"
-                    onClick={() => navigate(`/san-pham/${product.slug}`)}
+                    className="hover:shadow-xl transition-all duration-300 hover:-translate-y-2 h-full flex flex-col overflow-hidden"
                   >
-                    <div className="relative overflow-hidden rounded-t-lg aspect-[4/3] bg-muted">
-                      <div className="w-full h-full group-hover:scale-105 transition-transform duration-300">
-                        <ProductThumbnail
-                          googleDriveLink={product.google_drive_link}
-                          thumbnailUrl={product.thumbnail_url}
-                          fileFormat={product.file_format}
-                          title={product.title}
-                          size={600}
-                          loading={index < 4 ? "eager" : "lazy"}
-                          fetchPriority={index < 4 ? "high" : "auto"}
-                        />
-                      </div>
+                    <div className="relative overflow-hidden aspect-[4/3] bg-muted">
+                      <Link to={`/san-pham/${product.slug}`} className="block w-full h-full">
+                        <div className="w-full h-full group-hover:scale-105 transition-transform duration-300">
+                          <ProductThumbnail
+                            googleDriveLink={product.google_drive_link}
+                            thumbnailUrl={product.thumbnail_url}
+                            fileFormat={product.file_format}
+                            title={product.title}
+                            size={600}
+                            loading={index < 4 ? "eager" : "lazy"}
+                            fetchPriority={index < 4 ? "high" : "auto"}
+                          />
+                        </div>
+                      </Link>
                     </div>
-                    <CardContent className="p-4">
-                      <h2 className="font-semibold mb-2 line-clamp-2 group-hover:text-primary transition-colors text-base">
-                        {product.title}
-                      </h2>
+                    <CardContent className="p-4 flex-grow flex flex-col">
+                      <Link to={`/san-pham/${product.slug}`} className="block mb-2">
+                        <h2 className="font-semibold line-clamp-2 group-hover:text-primary transition-colors text-base min-h-[3rem]">
+                          {product.title}
+                        </h2>
+                      </Link>
                       {product.short_description && (
                         <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
                           {product.short_description}

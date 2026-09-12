@@ -176,7 +176,7 @@ export const ProductThumbnail = ({
 
     return (
       <div className={`w-full h-full flex flex-col items-center justify-center ${config.bgColor} ${className}`}>
-        <IconComponent className={`w-16 h-16 md:w-20 md:h-20 ${config.color} mb-3`} strokeWidth={1.5} />
+        <IconComponent className={`w-16 h-16 ${config.color} mb-2`} />
         <span className={`text-sm font-semibold ${config.color} px-3 py-1 rounded-full bg-white/80 dark:bg-black/30`}>
           {config.label}
         </span>
@@ -186,24 +186,16 @@ export const ProductThumbnail = ({
   
   return (
     <div className={`w-full h-full relative ${className}`}>
-      {/* Loading skeleton */}
-      {!imageLoaded && (
-        <div className="absolute inset-0 bg-muted animate-pulse flex items-center justify-center">
-          <IconComponent className={`w-12 h-12 ${config.color} opacity-50`} />
-        </div>
-      )}
-      
       <img
         src={uniqueSources[currentSrcIndex]}
         alt={`${title}${config.label && config.label !== 'FILE' ? ` - ${config.label}` : ''} | Tải xuống tại Salemylink`}
         title={title}
-        className={`w-full h-full object-cover transition-opacity duration-300 ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
+        className="w-full h-full object-cover"
         loading={loading}
         fetchPriority={fetchPriority}
         decoding="async"
         width={size}
         height={Math.round(size * 0.75)}
-        onLoad={() => setImageLoaded(true)}
         onError={handleError}
       />
     </div>

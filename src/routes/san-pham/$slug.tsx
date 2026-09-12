@@ -12,28 +12,20 @@ export const Route = createFileRoute("/san-pham/$slug")({
       const slug = decodeURIComponent(params.slug || "").trim().replace(/\/$/, "");
       const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(slug);
 
-      let { data } = await supabase
+      let query = supabase
         .from("products")
         .select(
-          "id, title, short_description, description, price, thumbnail_url, meta_title, meta_description, rating_average, rating_count, created_at, updated_at, file_format, profiles!products_seller_id_fkey(full_name), categories(name, slug)",
-        )
-        .eq("slug", slug)
-        .maybeSingle();
+          "id, slug, title, short_description, description, price, original_price, thumbnail_url, images, google_drive_link, download_only_link, read_only, meta_title, meta_description, rating_average, rating_count, download_count, view_count, file_size, file_format, tags, seller_id, category_id, created_at, updated_at, status, profiles!products_seller_id_fkey(full_name, avatar_url), categories(id, name, slug)"
+        );
 
-      if (!data && isUuid) {
-        const res = await supabase
-          .from("products")
-          .select(
-            "id, title, short_description, description, price, thumbnail_url, meta_title, meta_description, rating_average, rating_count, created_at, updated_at, file_format, profiles!products_seller_id_fkey(full_name), categories(name, slug)",
-          )
-          .eq("id", slug)
-          .maybeSingle();
-        data = res.data;
-      }
+      let { data } = isUuid
+        ? await query.or(`id.eq.${slug},slug.eq."${slug}"`).maybeSingle()
+        : await query.eq("slug", slug).maybeSingle();
 
       if (!data) return null;
-      const seller = (data as { profiles?: { full_name?: string | null } | null }).profiles;
-      const category = (data as { categories?: { name?: string; slug?: string } | null }).categories;
+
+      const seller = (data as any).profiles;
+      const category = (data as any).categories;
 
       // Fetch approved reviews & aggregate ratings for JSON-LD structured data
       const { ratingValue, reviewCount, reviews } = await getProductReviewData(
@@ -43,26 +35,33 @@ export const Route = createFileRoute("/san-pham/$slug")({
         5
       );
 
+      const plainDescription = (data.description || "").replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
+
       return {
+        ...data,
         id: data.id,
-        createdAt: data.created_at,
-        updatedAt: data.updated_at,
-        title: fixVietnameseEncoding(data.meta_title || data.title),
-        description: fixVietnameseEncoding(
-          data.meta_description ||
-            data.short_description ||
-            (data.description || "").replace(/<[^>]*>/g, "").slice(0, 300),
-        ),
-        price: data.price,
-        image: data.thumbnail_url || null,
-        rating: ratingValue,
-        ratingCount: reviewCount,
-        reviews,
+        slug: data.slug,
+        title: fixVietnameseEncoding(data.title),
         name: fixVietnameseEncoding(data.title),
+        metaTitle: data.meta_title ? fixVietnameseEncoding(data.meta_title) : null,
+        metaDescription: data.meta_description ? fixVietnameseEncoding(data.meta_description) : null,
+        shortDescription: data.short_description ? fixVietnameseEncoding(data.short_description) : null,
+        plainDescription,
+        price: Number(data.price) || 0,
+        original_price: data.original_price ? Number(data.original_price) : null,
+        thumbnail_url: data.thumbnail_url || null,
+        images: data.images || [],
+        ratingAverage: Number(data.rating_average) || 0,
+        ratingCount: reviewCount,
+        ratingValue,
+        reviews,
         sellerName: seller?.full_name || null,
+        sellerAvatar: seller?.avatar_url || null,
         categoryName: category?.name || null,
         categorySlug: category?.slug || null,
         fileFormat: data.file_format || null,
+        createdAt: data.created_at,
+        updatedAt: data.updated_at,
       };
     } catch {
       return null;
@@ -73,25 +72,41 @@ export const Route = createFileRoute("/san-pham/$slug")({
     const path = `/san-pham/${rawSlug}`;
     if (!loaderData) {
       return buildHead({
-        title: "Sản phẩm digital",
+        title: "Sản phẩm digital | Salemylink",
         description:
           "Chi tiết sản phẩm digital trên Salemylink: ebook, tài liệu, khóa học, source code. Tải ngay sau khi thanh toán.",
         path,
         type: "product",
       });
     }
-    const rawDesc = loaderData.description ? loaderData.description.trim() : "";
+
+    const formattedPrice =
+      Number(loaderData.price) === 0
+        ? "Miễn phí"
+        : new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(loaderData.price);
+
+    // Unique Title for every product
+    const customTitle = loaderData.metaTitle;
+    const title = customTitle && customTitle.length >= 15
+      ? (customTitle.includes("Salemylink") ? customTitle : `${customTitle} | Salemylink`)
+      : `${loaderData.name} - ${formattedPrice} | Salemylink`;
+
+    // Unique Meta Description for every product
+    const categoryInfo = loaderData.categoryName ? ` (${loaderData.categoryName})` : "";
+    const formatInfo = loaderData.fileFormat ? ` định dạng ${loaderData.fileFormat}` : "";
+    const customDesc = loaderData.metaDescription || loaderData.shortDescription;
     const desc =
-      rawDesc.length >= 10
-        ? rawDesc
-        : `${loaderData.name} - sản phẩm digital chất lượng cao, tải xuống ngay sau khi thanh toán tại Salemylink.`;
+      customDesc && customDesc.length >= 20
+        ? `${customDesc} — Tải ngay tại Salemylink.`
+        : `${loaderData.name}${categoryInfo}${formatInfo}. Giao dịch an toàn, tải xuống ngay sau khi thanh toán qua Google Drive trên Salemylink.`;
 
     const defaultValidFrom = safeIsoDate(Date.now() - 30 * 24 * 60 * 60 * 1000);
     const validFrom = safeIsoDate(loaderData.createdAt, defaultValidFrom);
     const priceValidUntil = safeIsoDate(Date.now() + 365 * 24 * 60 * 60 * 1000);
 
-    const rawImage = loaderData.image;
-    const finalImage = rawImage && typeof rawImage === "string" && !rawImage.includes("placeholder")
+    const rawImage = loaderData.thumbnail_url;
+    const hasRealImage = Boolean(rawImage && typeof rawImage === "string" && !rawImage.includes("placeholder"));
+    const finalImage = hasRealImage
       ? (rawImage.startsWith("http") ? rawImage : `${SITE_URL}${rawImage.startsWith("/") ? "" : "/"}${rawImage}`)
       : `${SITE_URL}/og-image.png`;
 
@@ -106,7 +121,7 @@ export const Route = createFileRoute("/san-pham/$slug")({
       url: `${SITE_URL}${path}`,
       sku: productSku,
       mpn: productSku,
-      image: [finalImage],
+      ...(hasRealImage ? { image: [finalImage] } : {}),
       ...(loaderData.categoryName ? { category: loaderData.categoryName } : {}),
       ...(loaderData.fileFormat ? { encodingFormat: loaderData.fileFormat } : {}),
       brand: {
@@ -165,23 +180,20 @@ export const Route = createFileRoute("/san-pham/$slug")({
           returnFees: "https://schema.org/ReturnFeesCustomerResponsibility",
         },
       },
-      aggregateRating: {
+    };
+
+    // Only add aggregateRating and review if real reviews exist in the database
+    if (loaderData.ratingCount > 0 && loaderData.reviews && loaderData.reviews.length > 0) {
+      productSchema.aggregateRating = {
         "@type": "AggregateRating",
         "@id": `${SITE_URL}${path}#rating`,
-        ratingValue: Math.min(5, Math.max(1, Math.round(Number(loaderData.rating || 5) * 10) / 10)),
-        reviewCount: Math.max(1, Number(loaderData.ratingCount || loaderData.reviews?.length || 1)),
-        ratingCount: Math.max(1, Number(loaderData.ratingCount || loaderData.reviews?.length || 1)),
+        ratingValue: Math.min(5, Math.max(1, Math.round(Number(loaderData.ratingValue || loaderData.ratingAverage || 5) * 10) / 10)),
+        reviewCount: Number(loaderData.ratingCount),
+        ratingCount: Number(loaderData.ratingCount),
         bestRating: 5,
         worstRating: 1,
-      },
-      review: (loaderData.reviews && loaderData.reviews.length > 0 ? loaderData.reviews : [
-        {
-          rating: 5,
-          authorName: "Khách hàng đã xác thực",
-          datePublished: validFrom,
-          comment: `Sản phẩm ${loaderData.name} chất lượng cao, đúng như mô tả và tải xuống tức thì.`,
-        }
-      ]).map((r: any, idx: number) => ({
+      };
+      productSchema.review = loaderData.reviews.map((r: any, idx: number) => ({
         "@type": "Review",
         "@id": `${SITE_URL}${path}#review-${idx + 1}`,
         reviewRating: {
@@ -201,8 +213,8 @@ export const Route = createFileRoute("/san-pham/$slug")({
           name: "Salemylink.com",
           url: SITE_URL,
         },
-      })),
-    };
+      }));
+    }
 
     const breadcrumb = {
       "@context": "https://schema.org",
@@ -229,13 +241,18 @@ export const Route = createFileRoute("/san-pham/$slug")({
     };
 
     return buildHead({
-      title: loaderData.title,
+      title,
       description: desc,
       path,
       type: "product",
-      image: loaderData.image || undefined,
+      image: hasRealImage ? finalImage : undefined,
       structuredData: [productSchema, breadcrumb],
     });
   },
-  component: ProductDetail,
+  component: ProductRoutePage,
 });
+
+function ProductRoutePage() {
+  const loaderData = Route.useLoaderData();
+  return <ProductDetail initialProduct={loaderData} />;
+}

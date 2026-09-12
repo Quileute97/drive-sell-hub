@@ -21,11 +21,12 @@ interface Review {
 
 interface ProductReviewsProps {
   productId: string;
+  initialReviews?: Review[];
 }
 
-export const ProductReviews = ({ productId }: ProductReviewsProps) => {
-  const [reviews, setReviews] = useState<Review[]>([]);
-  const [loading, setLoading] = useState(true);
+export const ProductReviews = ({ productId, initialReviews }: ProductReviewsProps) => {
+  const [reviews, setReviews] = useState<Review[]>(initialReviews || []);
+  const [loading, setLoading] = useState(!initialReviews && typeof window !== 'undefined');
   const [userHasPurchased, setUserHasPurchased] = useState(false);
   const [userReview, setUserReview] = useState<Review | null>(null);
   const [showReviewForm, setShowReviewForm] = useState(false);

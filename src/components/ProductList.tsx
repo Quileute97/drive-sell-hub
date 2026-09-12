@@ -43,15 +43,17 @@ interface Product {
   };
 }
 
-export const ProductList = () => {
-  const [products, setProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
+export const ProductList = ({ initialProducts }: { initialProducts?: Product[] }) => {
+  const [products, setProducts] = useState<Product[]>(initialProducts || []);
+  const [loading, setLoading] = useState(!initialProducts);
   const navigate = useNavigate();
   const { toast } = useToast();
   const { addToCart } = useCart();
 
   useEffect(() => {
-    fetchProducts();
+    if (!initialProducts || initialProducts.length === 0) {
+      fetchProducts();
+    }
   }, []);
 
   const fetchProducts = async () => {
@@ -151,55 +153,60 @@ export const ProductList = () => {
               const isFree = isFreeProduct(product.price);
               const downloadUrl = getProductDownloadUrl(product.google_drive_link, product.download_only_link);
 
-              return <Card 
-                key={product.id} 
-                className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-1 cursor-pointer flex flex-col h-full"
-                onClick={() => navigate(`/san-pham/${product.slug}`)}
-              >
-                <div className="relative overflow-hidden rounded-t-lg aspect-[4/3] bg-muted">
-                  <div className="w-full h-full group-hover:scale-105 transition-transform duration-300">
-                    <ProductThumbnail
-                      googleDriveLink={product.google_drive_link}
-                      thumbnailUrl={product.thumbnail_url}
-                      fileFormat={product.file_format}
-                      title={product.title}
-                      size={600}
-                      loading={index < 4 ? "eager" : "lazy"}
-                      fetchPriority={index < 2 ? "high" : "auto"}
-                    />
-                  </div>
-                  {product.original_price > product.price && (
-                    <Badge className="absolute top-3 left-3 bg-destructive text-destructive-foreground shadow-md z-10">
-                      -{Math.round(((product.original_price - product.price) / product.original_price) * 100)}%
-                    </Badge>
-                  )}
-                  <WishlistButton productId={product.id} />
-                </div>
+              return (
+                <article key={product.id} className="group flex flex-col h-full">
+                  <Card 
+                    className="hover:shadow-lg transition-all duration-300 hover:-translate-y-1 flex flex-col h-full overflow-hidden"
+                  >
+                    <div className="relative overflow-hidden aspect-[4/3] bg-muted">
+                      <Link to={`/san-pham/${product.slug}`} className="block w-full h-full">
+                        <div className="w-full h-full group-hover:scale-105 transition-transform duration-300">
+                          <ProductThumbnail
+                            googleDriveLink={product.google_drive_link}
+                            thumbnailUrl={product.thumbnail_url}
+                            fileFormat={product.file_format}
+                            title={product.title}
+                            size={600}
+                            loading={index < 4 ? "eager" : "lazy"}
+                            fetchPriority={index < 2 ? "high" : "auto"}
+                          />
+                        </div>
+                      </Link>
+                      {product.original_price > product.price && (
+                        <Badge className="absolute top-3 left-3 bg-destructive text-destructive-foreground shadow-md z-10">
+                          -{Math.round(((product.original_price - product.price) / product.original_price) * 100)}%
+                        </Badge>
+                      )}
+                      <WishlistButton productId={product.id} />
+                    </div>
 
-                <CardContent className="p-4 flex-grow flex flex-col">
-                  <div className="mb-2 flex items-center gap-2 flex-wrap">
-                    <Link 
-                      to={`/danh-muc/${product.categories?.slug}`}
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <Badge variant="secondary" className="text-xs hover:bg-primary hover:text-primary-foreground transition-colors cursor-pointer">
-                        {product.categories?.name}
-                      </Badge>
-                    </Link>
-                    {product.file_format && (
-                      <Badge variant="outline" className="text-xs font-medium bg-primary/10 text-primary border-primary/20">
-                        {product.file_format.toUpperCase()}
-                      </Badge>
-                    )}
-                  </div>
-                  
-                  <h3 className="font-semibold text-lg mb-2 line-clamp-2 min-h-[3.5rem]">
-                    {product.title}
-                  </h3>
-                  
-                  <p className="text-sm text-muted-foreground mb-3 line-clamp-2 min-h-[2.5rem]">
-                    {product.short_description || product.description}
-                  </p>
+                    <CardContent className="p-4 flex-grow flex flex-col">
+                      <div className="mb-2 flex items-center gap-2 flex-wrap">
+                        {product.categories && (
+                          <Link 
+                            to={`/danh-muc/${product.categories.slug}`}
+                          >
+                            <Badge variant="secondary" className="text-xs hover:bg-primary hover:text-primary-foreground transition-colors cursor-pointer">
+                              {product.categories.name}
+                            </Badge>
+                          </Link>
+                        )}
+                        {product.file_format && (
+                          <Badge variant="outline" className="text-xs font-medium bg-primary/10 text-primary border-primary/20">
+                            {product.file_format.toUpperCase()}
+                          </Badge>
+                        )}
+                      </div>
+                      
+                      <Link to={`/san-pham/${product.slug}`} className="block mb-2">
+                        <h3 className="font-semibold text-lg line-clamp-2 min-h-[3.5rem] group-hover:text-primary transition-colors">
+                          {product.title}
+                        </h3>
+                      </Link>
+                      
+                      <p className="text-sm text-muted-foreground mb-3 line-clamp-2 min-h-[2.5rem]">
+                        {product.short_description || product.description}
+                      </p>
 
                   {product.rating_count > 0 && (
                     <div className="flex items-center mb-3">
@@ -287,11 +294,12 @@ export const ProductList = () => {
                     </Button>
                   )}
                 </CardFooter>
-
-                </Card>;
-            })}
-          </div>
-        )}
+              </Card>
+            </article>
+          );
+        })}
+      </div>
+    )}
 
         <div className="text-center mt-12">
           <a href="/search" className="inline-block">

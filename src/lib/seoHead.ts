@@ -97,19 +97,10 @@ export function buildHead(input: HeadInput) {
     // Canonical points to default primary Vietnamese URL
     links.push({ rel: "canonical", href: canonical });
 
-    // Hreflang tags for Vietnamese (Primary / Default), English, Chinese, Spanish, and x-default fallback
-    const basePath = cleanPath || "/";
-    const separator = basePath.includes("?") ? "&" : "?";
-
-    links.push({ rel: "alternate", hrefLang: "vi", href: `${SITE_URL}${basePath}` });
-    links.push({ rel: "alternate", hrefLang: "vi-VN", href: `${SITE_URL}${basePath}` });
-    links.push({ rel: "alternate", hrefLang: "en", href: `${SITE_URL}${basePath}${separator}lang=en` });
-    links.push({ rel: "alternate", hrefLang: "en-US", href: `${SITE_URL}${basePath}${separator}lang=en` });
-    links.push({ rel: "alternate", hrefLang: "zh", href: `${SITE_URL}${basePath}${separator}lang=zh` });
-    links.push({ rel: "alternate", hrefLang: "zh-CN", href: `${SITE_URL}${basePath}${separator}lang=zh` });
-    links.push({ rel: "alternate", hrefLang: "es", href: `${SITE_URL}${basePath}${separator}lang=es` });
-    links.push({ rel: "alternate", hrefLang: "es-ES", href: `${SITE_URL}${basePath}${separator}lang=es` });
-    links.push({ rel: "alternate", hrefLang: "x-default", href: `${SITE_URL}${basePath}` });
+    // Hreflang tags for Vietnamese (Primary / Default) and x-default fallback
+    links.push({ rel: "alternate", hrefLang: "vi", href: canonical });
+    links.push({ rel: "alternate", hrefLang: "vi-VN", href: canonical });
+    links.push({ rel: "alternate", hrefLang: "x-default", href: canonical });
   }
 
   const head: {

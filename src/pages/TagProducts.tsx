@@ -35,18 +35,31 @@ interface Product {
   categories: { id: string; name: string; slug: string };
 }
 
-export default function TagProducts() {
+export default function TagProducts({ initialProducts }: { initialProducts?: Product[] }) {
   const { tag } = useParams<{ tag: string }>();
   const decodedTag = decodeURIComponent(tag || "");
-  const [products, setProducts] = useState<Product[]>([]);
-  const [relatedTags, setRelatedTags] = useState<string[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [products, setProducts] = useState<Product[]>(initialProducts || []);
+  const [relatedTags, setRelatedTags] = useState<string[]>(() => {
+    if (!initialProducts || initialProducts.length === 0) return [];
+    const tagSet = new Set<string>();
+    initialProducts.forEach((p) => {
+      (p.tags || []).forEach((t: string) => {
+        if (t.toLowerCase() !== decodedTag.toLowerCase()) tagSet.add(t);
+      });
+    });
+    return Array.from(tagSet).slice(0, 15);
+  });
+  const [loading, setLoading] = useState(!initialProducts);
   const [sortBy, setSortBy] = useState("newest");
   const { toast } = useToast();
   const { addToCart } = useCart();
 
   useEffect(() => {
-    if (decodedTag) fetchProducts();
+    if (decodedTag) {
+      fetchProducts();
+    } else if (!initialProducts) {
+      setLoading(false);
+    }
   }, [decodedTag, sortBy]);
 
   const fetchProducts = async () => {

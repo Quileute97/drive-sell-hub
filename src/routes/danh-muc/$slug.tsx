@@ -10,24 +10,43 @@ export const Route = createFileRoute("/danh-muc/$slug")({
     try {
       const { data: category } = await supabase
         .from("categories")
-        .select("id, name, description")
+        .select("*")
         .eq("slug", params.slug)
         .maybeSingle();
-      if (!category) return { name: null, description: null, items: [] };
-      const { data } = await supabase
+
+      if (!category) {
+        return {
+          category: null,
+          products: [],
+          name: null,
+          description: null,
+          items: [],
+        };
+      }
+
+      const { data: products } = await supabase
         .from("products")
-        .select("title, slug, thumbnail_url, price, rating_average, rating_count")
+        .select("id, slug, title, short_description, price, original_price, rating_average, rating_count, download_count, view_count, google_drive_link, thumbnail_url, created_at, updated_at, file_format")
         .eq("status", "active")
         .eq("category_id", category.id)
-        .order("download_count", { ascending: false })
-        .limit(20);
+        .order("created_at", { ascending: false })
+        .limit(24);
+
       return {
+        category,
+        products: products || [],
         name: category.name as string,
         description: category.description as string | null,
-        items: data || [],
+        items: products || [],
       };
     } catch {
-      return { name: null, description: null, items: [] };
+      return {
+        category: null,
+        products: [],
+        name: null,
+        description: null,
+        items: [],
+      };
     }
   },
   head: ({ params, loaderData }) => {
@@ -67,15 +86,33 @@ export const Route = createFileRoute("/danh-muc/$slug")({
         name: seo.title,
         numberOfItems: items.length,
         itemListElement: items.map((p, i) => {
-          const imgUrl = p.thumbnail_url
+          const imgUrl = p.thumbnail_url && !p.thumbnail_url.includes("placeholder")
             ? (p.thumbnail_url.startsWith("http") ? p.thumbnail_url : `${SITE_URL}${p.thumbnail_url.startsWith("/") ? "" : "/"}${p.thumbnail_url}`)
             : `${SITE_URL}/og-image.png`;
           return {
             "@type": "ListItem",
             position: i + 1,
-            name: fixVietnameseEncoding(p.title),
-            url: `${SITE_URL}/san-pham/${p.slug}`,
-            image: imgUrl,
+            item: {
+              "@type": "Product",
+              name: fixVietnameseEncoding(p.title),
+              url: `${SITE_URL}/san-pham/${p.slug}`,
+              image: imgUrl,
+              offers: {
+                "@type": "Offer",
+                price: String(p.price || 0),
+                priceCurrency: "VND",
+                availability: "https://schema.org/InStock",
+              },
+              ...(p.rating_count && Number(p.rating_count) > 0
+                ? {
+                    aggregateRating: {
+                      "@type": "AggregateRating",
+                      ratingValue: Math.min(5, Math.max(1, Math.round(Number(p.rating_average || 5) * 10) / 10)),
+                      reviewCount: Number(p.rating_count),
+                    },
+                  }
+                : {}),
+            },
           };
         }),
       },
@@ -93,5 +130,10 @@ export const Route = createFileRoute("/danh-muc/$slug")({
       structuredData: [breadcrumb, collectionPage],
     });
   },
-  component: Category,
+  component: CategoryRoutePage,
 });
+
+function CategoryRoutePage() {
+  const loaderData = Route.useLoaderData();
+  return <Category initialCategory={loaderData?.category} initialProducts={loaderData?.products} />;
+}

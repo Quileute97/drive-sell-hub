@@ -9,9 +9,30 @@ interface TagCount {
   count: number;
 }
 
+const defaultPopularTags: TagCount[] = [
+  { tag: "ielts", count: 48 },
+  { tag: "y khoa", count: 35 },
+  { tag: "luận văn", count: 28 },
+  { tag: "toeic", count: 24 },
+  { tag: "react", count: 20 },
+  { tag: "canva", count: 18 },
+  { tag: "excel", count: 16 },
+  { tag: "english", count: 15 },
+  { tag: "nội khoa", count: 14 },
+  { tag: "hóa sinh", count: 12 },
+  { tag: "nhi khoa", count: 12 },
+  { tag: "ngoại khoa", count: 11 },
+  { tag: "python", count: 10 },
+  { tag: "photoshop", count: 10 },
+  { tag: "powerpoint", count: 9 },
+  { tag: "tiểu luận", count: 9 },
+  { tag: "đồ án", count: 8 },
+  { tag: "marketing", count: 8 },
+];
+
 export function PopularTags() {
-  const [tags, setTags] = useState<TagCount[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [tags, setTags] = useState<TagCount[]>(defaultPopularTags);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     fetchPopularTags();

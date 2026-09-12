@@ -18,17 +18,19 @@ interface RecommendedProductsProps {
   excludeIds?: string[];
   limit?: number;
   title?: string;
+  initialProducts?: ProductCardData[];
 }
 
 export const RecommendedProducts = ({
   excludeIds = [],
   limit = 4,
   title = 'Gợi ý dành cho bạn',
+  initialProducts,
 }: RecommendedProductsProps) => {
   const { user } = useAuth();
   const { productIds: wishlistIds, loading: wishlistLoading } = useWishlist();
-  const [products, setProducts] = useState<ProductCardData[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [products, setProducts] = useState<ProductCardData[]>(initialProducts || []);
+  const [loading, setLoading] = useState(!initialProducts && typeof window !== 'undefined');
 
   useEffect(() => {
     if (wishlistLoading) return;
@@ -108,7 +110,7 @@ export const RecommendedProducts = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, wishlistLoading, wishlistIds.join(','), excludeIds.join(','), limit]);
 
-  if (!loading && products.length === 0) return null;
+  if ((!loading || typeof window === 'undefined') && products.length === 0) return null;
 
   return (
     <section className="mt-16" aria-labelledby="recommended-heading">

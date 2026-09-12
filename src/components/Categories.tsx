@@ -47,13 +47,38 @@ type Category = {
   color: string;
 };
 
-export const Categories = () => {
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [loading, setLoading] = useState(true);
+const fallbackCategories: Category[] = [
+  { id: "cat-1", name: "Tài liệu học tập", slug: "tai-lieu-hoc-tap", icon: "BookOpen", product_count: 120, color: colorMap[0]! },
+  { id: "cat-2", name: "Khóa học online", slug: "khoa-hoc-online", icon: "GraduationCap", product_count: 85, color: colorMap[1]! },
+  { id: "cat-3", name: "Ebook - Sách điện tử", slug: "ebook-sach-dien-tu", icon: "FileText", product_count: 60, color: colorMap[2]! },
+  { id: "cat-4", name: "Source Code & Lập trình", slug: "source-code-lap-trinh", icon: "Code", product_count: 45, color: colorMap[3]! },
+  { id: "cat-5", name: "Đồ họa & Thiết kế", slug: "do-hoa-thiet-ke", icon: "Palette", product_count: 50, color: colorMap[4]! },
+  { id: "cat-6", name: "Slide & Thuyết trình", slug: "slide-thuyet-trinh", icon: "Presentation", product_count: 40, color: colorMap[5]! },
+  { id: "cat-7", name: "Template & Biểu mẫu", slug: "template-bieu-mau", icon: "FileText", product_count: 35, color: colorMap[6]! },
+  { id: "cat-8", name: "Nhiếp ảnh & Video", slug: "nhiep-anh-video", icon: "Camera", product_count: 25, color: colorMap[7]! },
+];
+
+export const Categories = ({ initialCategories }: { initialCategories?: any[] }) => {
+  const [categories, setCategories] = useState<Category[]>(() => {
+    if (initialCategories && initialCategories.length > 0) {
+      return initialCategories.map((c, i) => ({
+        id: c.id,
+        name: c.name,
+        slug: c.slug,
+        icon: c.icon || "BookOpen",
+        product_count: c.product_count || 0,
+        color: colorMap[i % colorMap.length] || colorMap[0]!,
+      }));
+    }
+    return fallbackCategories;
+  });
+  const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
-    fetchCategories();
+    if (!initialCategories || initialCategories.length === 0) {
+      fetchCategories();
+    }
   }, []);
 
   const fetchCategories = async () => {

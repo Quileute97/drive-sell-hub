@@ -68,6 +68,29 @@ function isH3SwallowedErrorBody(body: string): boolean {
   }
 }
 
+function applyCacheHeaders(request: Request, res: Response): Response {
+  if (request.method !== "GET" || res.status !== 200) {
+    return res;
+  }
+
+  const url = new URL(request.url);
+  const isPrivate = /^\/(admin|seller-dashboard|seller-auth|auth|cart|withdrawal|payment)(\/|$)/.test(url.pathname);
+
+  const newHeaders = new Headers(res.headers);
+  if (isPrivate) {
+    newHeaders.set("Cache-Control", "private, no-cache, no-store, must-revalidate");
+  } else if (!newHeaders.has("Cache-Control")) {
+    // Cache public HTML for 1 hour locally, 24 hours at Cloudflare Edge CDN
+    newHeaders.set("Cache-Control", "public, max-age=3600, s-maxage=86400, stale-while-revalidate=604800");
+  }
+
+  return new Response(res.body, {
+    status: res.status,
+    statusText: res.statusText,
+    headers: newHeaders,
+  });
+}
+
 export default {
   async fetch(request: Request, env: unknown, ctx: unknown) {
     try {
@@ -97,7 +120,8 @@ export default {
       const handler = await getServerEntry();
       const response = await handler.fetch(request, env, ctx);
       const normalized = await normalizeCatastrophicSsrResponse(response);
-      return applySecurityHeaders(normalized);
+      const withCache = applyCacheHeaders(request, normalized);
+      return applySecurityHeaders(withCache);
     } catch (error) {
       console.error(error);
       return applySecurityHeaders(

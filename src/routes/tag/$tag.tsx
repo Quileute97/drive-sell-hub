@@ -8,13 +8,14 @@ import { fixVietnameseEncoding } from "@/lib/vietnameseText";
 export const Route = createFileRoute("/tag/$tag")({
   loader: async ({ params }) => {
     try {
+      const decoded = decodeURIComponent(params.tag || "");
       const { data } = await supabase
         .from("products")
-        .select("title, slug, thumbnail_url, price")
+        .select(`*, profiles!products_seller_id_fkey(full_name), categories(id, name, slug)`)
         .eq("status", "active")
-        .contains("tags", [decodeURIComponent(params.tag)])
+        .contains("tags", [decoded])
         .order("download_count", { ascending: false })
-        .limit(20);
+        .limit(24);
       return { items: data || [] };
     } catch {
       return { items: [] };
@@ -42,15 +43,33 @@ export const Route = createFileRoute("/tag/$tag")({
         name: seo.title,
         numberOfItems: items.length,
         itemListElement: items.map((p, i) => {
-          const imgUrl = p.thumbnail_url
+          const imgUrl = p.thumbnail_url && !p.thumbnail_url.includes("placeholder")
             ? (p.thumbnail_url.startsWith("http") ? p.thumbnail_url : `${SITE_URL}${p.thumbnail_url.startsWith("/") ? "" : "/"}${p.thumbnail_url}`)
             : `${SITE_URL}/og-image.png`;
           return {
             "@type": "ListItem",
             position: i + 1,
-            name: fixVietnameseEncoding(p.title),
-            url: `${SITE_URL}/san-pham/${p.slug}`,
-            image: imgUrl,
+            item: {
+              "@type": "Product",
+              name: fixVietnameseEncoding(p.title),
+              url: `${SITE_URL}/san-pham/${p.slug}`,
+              image: imgUrl,
+              offers: {
+                "@type": "Offer",
+                price: String(p.price || 0),
+                priceCurrency: "VND",
+                availability: "https://schema.org/InStock",
+              },
+              ...(p.rating_count && Number(p.rating_count) > 0
+                ? {
+                    aggregateRating: {
+                      "@type": "AggregateRating",
+                      ratingValue: Math.min(5, Math.max(1, Math.round(Number(p.rating_average || 5) * 10) / 10)),
+                      reviewCount: Number(p.rating_count),
+                    },
+                  }
+                : {}),
+            },
           };
         }),
       });
@@ -67,5 +86,10 @@ export const Route = createFileRoute("/tag/$tag")({
       structuredData,
     });
   },
-  component: TagProducts,
+  component: TagRoutePage,
 });
+
+function TagRoutePage() {
+  const loaderData = Route.useLoaderData();
+  return <TagProducts initialProducts={loaderData?.items} />;
+}

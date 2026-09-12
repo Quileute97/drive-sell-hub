@@ -1,31 +1,19 @@
-import { lazy, Suspense } from "react";
 import { Header } from "@/components/Header";
 import { Hero } from "@/components/Hero";
 import { ProductList } from "@/components/ProductList";
 import { Footer } from "@/components/Footer";
 import { SEO } from "@/components/SEO";
+import { Features } from "@/components/Features";
+import { Categories } from "@/components/Categories";
+import { PopularTags } from "@/components/PopularTags";
+import { TrustSignals } from "@/components/TrustSignals";
 
-// Lazy load below-fold components (improves FID/TBT)
-const Features = lazy(() => import("@/components/Features").then(m => ({ default: m.Features })));
-const Categories = lazy(() => import("@/components/Categories").then(m => ({ default: m.Categories })));
-const PopularTags = lazy(() => import("@/components/PopularTags").then(m => ({ default: m.PopularTags })));
-const TrustSignals = lazy(() => import("@/components/TrustSignals").then(m => ({ default: m.TrustSignals })));
+interface IndexProps {
+  initialProducts?: any[];
+  initialCategories?: any[];
+}
 
-const LazyFallback = () => (
-  <div className="py-20">
-    <div className="container mx-auto px-4">
-      <div className="animate-pulse space-y-6">
-        <div className="h-8 bg-muted rounded w-1/3 mx-auto"></div>
-        <div className="h-4 bg-muted rounded w-2/3 mx-auto"></div>
-        <div className="grid md:grid-cols-3 gap-6">
-          {[1,2,3].map(i => <div key={i} className="h-40 bg-muted rounded"></div>)}
-        </div>
-      </div>
-    </div>
-  </div>
-);
-
-const Index = () => {
+const Index = ({ initialProducts, initialCategories }: IndexProps) => {
   const siteUrl = "https://salemylink.com";
   
   const homepageStructuredData = {
@@ -35,7 +23,7 @@ const Index = () => {
         "@type": "WebPage",
         "@id": `${siteUrl}/#webpage`,
         "url": siteUrl,
-        "name": "Salemylink.com - Nền tảng bán sản phẩm Digital hàng đầu Việt Nam",
+        "name": "Salemylink - Marketplace Ebook, Tài Liệu Học Tập & Khóa Học Online | Việt Nam",
         "description": "Kết nối người mua và người bán sản phẩm digital. Bán tài liệu, ebook, khóa học qua Google Drive một cách an toàn và hiệu quả.",
         "isPartOf": { "@id": `${siteUrl}/#website` },
         "about": {
@@ -168,8 +156,8 @@ const Index = () => {
   return (
     <div className="min-h-screen">
       <SEO 
-        title="Salemylink – Mua bán tài liệu số, ebook, khóa học qua Google Drive"
-        description="Salemylink – Marketplace mua bán tài liệu số, ebook, khóa học online qua Google Drive. Giao dịch an toàn, tải xuống ngay sau khi thanh toán."
+        title="Salemylink - Marketplace Ebook, Tài Liệu Học Tập & Khóa Học Online | Việt Nam"
+        description="Salemylink – Marketplace mua bán tài liệu số, ebook, khóa học online qua Google Drive uy tín hàng đầu Việt Nam. Tải xuống tức thì, thanh toán tự động an toàn."
         keywords="bán sản phẩm digital, ebook việt nam, tài liệu digital, khóa học online, google drive, thương mại điện tử, marketplace digital, mua bán ebook, tài liệu số, khóa học trực tuyến"
         url="https://salemylink.com/"
         structuredData={homepageStructuredData}
@@ -178,21 +166,11 @@ const Index = () => {
       <main>
         {/* Above-the-fold: eagerly loaded for LCP */}
         <Hero />
-        <ProductList />
-        
-        {/* Below-the-fold: lazy loaded for better FID/TBT */}
-        <Suspense fallback={<LazyFallback />}>
-          <TrustSignals />
-        </Suspense>
-        <Suspense fallback={<LazyFallback />}>
-          <Features />
-        </Suspense>
-        <Suspense fallback={<LazyFallback />}>
-          <Categories />
-        </Suspense>
-        <Suspense fallback={<LazyFallback />}>
-          <PopularTags />
-        </Suspense>
+        <ProductList initialProducts={initialProducts} />
+        <Categories initialCategories={initialCategories} />
+        <PopularTags />
+        <Features />
+        <TrustSignals />
       </main>
       <Footer />
     </div>

@@ -27,8 +27,16 @@ import { generateSku, safeIsoDate } from "@/lib/skuUtils";
 import DOMPurify from "dompurify";
 
 // Sanitize seller-provided HTML. Allow common rich-text + trusted iframes only.
+// Sanitize seller-provided HTML. Allow common rich-text + trusted iframes only.
 const sanitizeProductHtml = (html: string) => {
-  if (typeof window === "undefined") return "";
+  if (!html) return "";
+  if (typeof window === "undefined") {
+    return html
+      .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "")
+      .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, "")
+      .replace(/on\w+="[^"]*"/gi, "")
+      .replace(/on\w+='[^']*'/gi, "");
+  }
   // Restrict iframes to trusted embed domains (YouTube, Google Drive/Docs, Vimeo).
   DOMPurify.removeAllHooks();
   DOMPurify.addHook("uponSanitizeElement", (node, data) => {
@@ -95,13 +103,13 @@ interface Review {
   } | null;
 }
 
-export default function ProductDetail() {
+export default function ProductDetail({ initialProduct }: { initialProduct?: ProductDetail | any }) {
   const { slug } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const [product, setProduct] = useState<ProductDetail | null>(null);
-  const [reviews, setReviews] = useState<Review[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [product, setProduct] = useState<ProductDetail | null>(initialProduct || null);
+  const [reviews, setReviews] = useState<Review[]>(initialProduct?.reviews || []);
+  const [loading, setLoading] = useState(!initialProduct);
   const [isEditing, setIsEditing] = useState(false);
   const { toast } = useToast();
   const { addToCart } = useCart();
@@ -116,7 +124,7 @@ export default function ProductDetail() {
   useEffect(() => {
     if (slug) {
       fetchProduct();
-    } else {
+    } else if (!initialProduct) {
       setLoading(false);
     }
   }, [slug]);
@@ -338,36 +346,38 @@ export default function ProductDetail() {
   const currentPath = `/san-pham/${product.slug}`;
   const productUrl = `${siteUrl}${currentPath}`;
   
-  // SEO title: "Tên sản phẩm | Salemylink" (ignore too-short/placeholder meta_title)
+  // SEO title & description
   const cleanText = (s?: string | null) =>
     (s || '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
   const customTitle = cleanText(product.meta_title);
-  const rawTitle = cleanText(product.title);
-  // Titles that are too thin get enriched with the category so SERP snippets stay descriptive
-  const enrichedTitle =
-    rawTitle.length >= 20
-      ? rawTitle
-      : `${rawTitle} - ${product.categories?.name || 'Tài liệu digital'}`;
-  const metaTitle = customTitle.length >= 20 ? customTitle : `${enrichedTitle} | Salemylink`;
+  const formattedPrice =
+    Number(product.price) === 0
+      ? "Miễn phí"
+      : new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(product.price);
 
-  // SEO-optimized description with call-to-action
+  const metaTitle =
+    customTitle && customTitle.length >= 15
+      ? (customTitle.includes("Salemylink") ? customTitle : `${customTitle} | Salemylink`)
+      : `${product.title} - ${formattedPrice} | Salemylink`;
+
   const categoryName = product.categories?.name || 'Sản phẩm digital';
   const customDesc = cleanText(product.meta_description);
   const shortDesc = cleanText(product.short_description);
   const bodyDesc = cleanText(product.description);
   const baseDesc =
-    (customDesc.length >= 50 && customDesc) ||
-    (shortDesc.length >= 50 && shortDesc) ||
-    (bodyDesc.length >= 50 && `${bodyDesc.substring(0, 120)}...`) ||
+    (customDesc.length >= 30 && customDesc) ||
+    (shortDesc.length >= 30 && shortDesc) ||
+    (bodyDesc.length >= 50 && `${bodyDesc.substring(0, 140)}...`) ||
     '';
   const metaDescription = baseDesc
-    ? `${baseDesc} — ${categoryName}. Tải ngay tại Salemylink.`
-    : `${product.title} - ${categoryName}. Tải xuống ngay sau khi thanh toán. An toàn, nhanh chóng trên Salemylink.`;
+    ? `${baseDesc} — Tải ngay tại Salemylink.`
+    : `${product.title} (${categoryName})${product.file_format ? ` định dạng ${product.file_format}` : ''}. Giao dịch an toàn, tải xuống ngay sau khi thanh toán qua Google Drive trên Salemylink.`;
 
   const rawImages = [product.thumbnail_url, ...(product.images || [])]
     .filter(Boolean)
     .filter((img) => typeof img === "string" && !img.includes("placeholder")) as string[];
-  const productImages = rawImages.length > 0
+  const hasRealImages = rawImages.length > 0;
+  const productImages = hasRealImages
     ? rawImages.map(img => img.startsWith('http') ? img : `${siteUrl}${img.startsWith('/') ? '' : '/'}${img}`)
     : [`${siteUrl}/og-image.png`];
   const mainImage = productImages[0];
@@ -423,7 +433,7 @@ export default function ProductDetail() {
     "@id": `${productUrl}#product`,
     name: product.title,
     description: productDescription.slice(0, 300),
-    image: productImages,
+    ...(hasRealImages ? { image: productImages } : {}),
     url: productUrl,
     sku: productSku,
     mpn: productSku,
@@ -486,63 +496,37 @@ export default function ProductDetail() {
     },
   };
 
-  // AggregateRating & Reviews for Google Rich Snippets
-  const displayRating = reviews.length > 0
-    ? Math.min(5, Math.max(1, Math.round((reviews.reduce((acc, r) => acc + (Number(r.rating) || 5), 0) / reviews.length) * 10) / 10))
-    : (product.rating_average && product.rating_average > 0 ? Math.min(5, Math.max(1, Math.round(Number(product.rating_average) * 10) / 10)) : 5.0);
-  const displayCount = reviews.length > 0
-    ? reviews.length
-    : Math.max(1, Number(product.rating_count) || 1);
-
-  productNode['aggregateRating'] = {
-    "@type": "AggregateRating",
-    "@id": `${productUrl}#rating`,
-    ratingValue: displayRating,
-    reviewCount: displayCount,
-    ratingCount: displayCount,
-    bestRating: 5,
-    worstRating: 1,
-  };
-
-  const reviewItems = reviews.length > 0
-    ? reviews.map((review, index) => ({
-        "@type": "Review",
-        "@id": `${productUrl}#review-${index + 1}`,
-        reviewRating: {
-          "@type": "Rating",
-          ratingValue: Math.min(5, Math.max(1, Number(review.rating) || 5)),
-          bestRating: 5,
-          worstRating: 1,
-        },
-        author: {
-          "@type": "Person",
-          name: review.profiles?.full_name || "Khách hàng",
-        },
-        reviewBody: review.comment || `Đánh giá ${review.rating || 5} sao cho ${product.title}`,
-        datePublished: safeIsoDate(review.created_at, validFrom),
-        publisher: { "@id": `${siteUrl}/#organization` },
-      }))
-    : [
-        {
-          "@type": "Review",
-          "@id": `${productUrl}#review-1`,
-          reviewRating: {
-            "@type": "Rating",
-            ratingValue: displayRating,
-            bestRating: 5,
-            worstRating: 1,
-          },
-          author: {
-            "@type": "Person",
-            name: "Khách hàng đã xác thực",
-          },
-          reviewBody: `Sản phẩm ${product.title} chất lượng cao, đúng như mô tả và tải xuống tức thì.`,
-          datePublished: validFrom,
-          publisher: { "@id": `${siteUrl}/#organization` },
-        },
-      ];
-
-  productNode['review'] = reviewItems;
+  // Only include aggregateRating and review in schema if product has real reviews
+  if (reviews.length > 0 && product.rating_count > 0) {
+    const realAvg =
+      reviews.reduce((acc, r) => acc + (Number(r.rating) || 5), 0) / reviews.length;
+    productNode['aggregateRating'] = {
+      "@type": "AggregateRating",
+      "@id": `${productUrl}#rating`,
+      ratingValue: Math.min(5, Math.max(1, Math.round(realAvg * 10) / 10)),
+      reviewCount: reviews.length,
+      ratingCount: Number(product.rating_count),
+      bestRating: 5,
+      worstRating: 1,
+    };
+    productNode['review'] = reviews.map((review, index) => ({
+      "@type": "Review",
+      "@id": `${productUrl}#review-${index + 1}`,
+      reviewRating: {
+        "@type": "Rating",
+        ratingValue: Math.min(5, Math.max(1, Number(review.rating) || 5)),
+        bestRating: 5,
+        worstRating: 1,
+      },
+      author: {
+        "@type": "Person",
+        name: review.profiles?.full_name || "Khách hàng",
+      },
+      reviewBody: review.comment || `Đánh giá ${review.rating || 5} sao cho ${product.title}`,
+      datePublished: safeIsoDate(review.created_at, validFrom),
+      publisher: { "@id": `${siteUrl}/#organization` },
+    }));
+  }
 
   // Additional product properties
   const additionalProperties = [];
@@ -1008,7 +992,7 @@ export default function ProductDetail() {
         </div>
 
         {/* Product Reviews */}
-        <ProductReviews productId={product.id} />
+        <ProductReviews productId={product.id} initialReviews={reviews} />
 
         {/* Related Products */}
         <RelatedProducts 

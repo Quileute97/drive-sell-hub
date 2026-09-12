@@ -75,20 +75,12 @@ const guideSlugs = [
 function generateUrlXml(routePath, priority = '0.8', changefreq = 'weekly', lastmod = '2026-09-12', image = null) {
   const cleanPath = routePath === '/' ? '' : routePath;
   const canonicalUrl = `${SITE_URL}${cleanPath || '/'}`;
-  const baseForParams = cleanPath ? `${SITE_URL}${cleanPath}` : `${SITE_URL}/`;
-  const sep = baseForParams.includes('?') ? '&' : '?';
 
   let xml = `  <url>
     <loc>${escapeXml(canonicalUrl)}</loc>
-    <xhtml:link rel="alternate" hreflang="vi" href="${escapeXml(SITE_URL + (cleanPath || '/'))}"/>
-    <xhtml:link rel="alternate" hreflang="vi-VN" href="${escapeXml(SITE_URL + (cleanPath || '/'))}"/>
-    <xhtml:link rel="alternate" hreflang="en" href="${escapeXml(baseForParams + sep + 'lang=en')}"/>
-    <xhtml:link rel="alternate" hreflang="en-US" href="${escapeXml(baseForParams + sep + 'lang=en')}"/>
-    <xhtml:link rel="alternate" hreflang="zh" href="${escapeXml(baseForParams + sep + 'lang=zh')}"/>
-    <xhtml:link rel="alternate" hreflang="zh-CN" href="${escapeXml(baseForParams + sep + 'lang=zh')}"/>
-    <xhtml:link rel="alternate" hreflang="es" href="${escapeXml(baseForParams + sep + 'lang=es')}"/>
-    <xhtml:link rel="alternate" hreflang="es-ES" href="${escapeXml(baseForParams + sep + 'lang=es')}"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="${escapeXml(SITE_URL + (cleanPath || '/'))}"/>
+    <xhtml:link rel="alternate" hreflang="vi" href="${escapeXml(canonicalUrl)}"/>
+    <xhtml:link rel="alternate" hreflang="vi-VN" href="${escapeXml(canonicalUrl)}"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="${escapeXml(canonicalUrl)}"/>
     <lastmod>${lastmod}</lastmod>
     <changefreq>${changefreq}</changefreq>
     <priority>${priority}</priority>`;
@@ -98,6 +90,7 @@ function generateUrlXml(routePath, priority = '0.8', changefreq = 'weekly', last
     <image:image>
       <image:loc>${escapeXml(image.loc)}</image:loc>
       ${image.title ? `<image:title>${escapeXml(image.title)}</image:title>` : ''}
+      ${image.caption ? `<image:caption>${escapeXml(image.caption)}</image:caption>` : (image.title ? `<image:caption>${escapeXml(image.title)}</image:caption>` : '')}
     </image:image>`;
   }
 
@@ -158,7 +151,7 @@ export async function generateFullSitemap() {
   // 1. Fetch products
   const products = await fetchAllFromSupabase(
     'products',
-    'id,slug,title,status,thumbnail_url,download_count,view_count,rating_count,is_featured,updated_at,created_at',
+    'id,slug,title,status,thumbnail_url,short_description,download_count,view_count,rating_count,is_featured,updated_at,created_at',
     'order=created_at.desc'
   );
   console.log(`Fetched ${products.length} products.`);
@@ -230,7 +223,11 @@ export async function generateFullSitemap() {
       const fullImgLoc = prod.thumbnail_url.startsWith('http')
         ? prod.thumbnail_url
         : `${SITE_URL}${prod.thumbnail_url.startsWith('/') ? '' : '/'}${prod.thumbnail_url}`;
-      img = { loc: fullImgLoc, title: prod.title };
+      img = {
+        loc: fullImgLoc,
+        title: prod.title,
+        caption: prod.short_description ? prod.short_description.slice(0, 160) : `Mua ${prod.title} trên Salemylink`,
+      };
     }
 
     urlEntries.push(generateUrlXml(`/san-pham/${prod.slug}`, priority.toFixed(2), 'weekly', lastmod, img));

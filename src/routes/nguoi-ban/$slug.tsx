@@ -90,5 +90,10 @@ export const Route = createFileRoute("/nguoi-ban/$slug")({
       structuredData,
     });
   },
-  component: SellerProfile,
+  component: SellerRoutePage,
 });
+
+function SellerRoutePage() {
+  const loaderData = Route.useLoaderData();
+  return <SellerProfile initialSeller={loaderData?.seller} initialProducts={loaderData?.products} />;
+}

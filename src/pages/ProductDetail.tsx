@@ -364,7 +364,9 @@ export default function ProductDetail() {
     ? `${baseDesc} — ${categoryName}. Tải ngay tại Salemylink.`
     : `${product.title} - ${categoryName}. Tải xuống ngay sau khi thanh toán. An toàn, nhanh chóng trên Salemylink.`;
 
-  const rawImages = [product.thumbnail_url, ...(product.images || [])].filter(Boolean) as string[];
+  const rawImages = [product.thumbnail_url, ...(product.images || [])]
+    .filter(Boolean)
+    .filter((img) => typeof img === "string" && !img.includes("placeholder")) as string[];
   const productImages = rawImages.length > 0
     ? rawImages.map(img => img.startsWith('http') ? img : `${siteUrl}${img.startsWith('/') ? '' : '/'}${img}`)
     : [`${siteUrl}/og-image.png`];

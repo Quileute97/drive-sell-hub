@@ -91,7 +91,7 @@ export const Route = createFileRoute("/san-pham/$slug")({
     const priceValidUntil = safeIsoDate(Date.now() + 365 * 24 * 60 * 60 * 1000);
 
     const rawImage = loaderData.image;
-    const finalImage = rawImage
+    const finalImage = rawImage && typeof rawImage === "string" && !rawImage.includes("placeholder")
       ? (rawImage.startsWith("http") ? rawImage : `${SITE_URL}${rawImage.startsWith("/") ? "" : "/"}${rawImage}`)
       : `${SITE_URL}/og-image.png`;
 

@@ -4,18 +4,33 @@ import { supabase } from "@/integrations/supabase/client";
 import { buildHead, SITE_URL } from "@/lib/seoHead";
 import { fixVietnameseEncoding } from "@/lib/vietnameseText";
 import { getProductReviewData } from "@/lib/reviews";
-import { generateSku } from "@/lib/skuUtils";
+import { generateSku, safeIsoDate } from "@/lib/skuUtils";
 
 export const Route = createFileRoute("/product/$slug")({
   loader: async ({ params }) => {
     try {
-      const { data } = await supabase
+      const slug = decodeURIComponent(params.slug || "").trim().replace(/\/$/, "");
+      const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(slug);
+
+      let { data } = await supabase
         .from("products")
         .select(
           "id, title, short_description, description, price, thumbnail_url, meta_title, meta_description, rating_average, rating_count, created_at, updated_at, file_format, profiles!products_seller_id_fkey(full_name), categories(name, slug)",
         )
-        .eq("slug", params.slug)
+        .eq("slug", slug)
         .maybeSingle();
+
+      if (!data && isUuid) {
+        const res = await supabase
+          .from("products")
+          .select(
+            "id, title, short_description, description, price, thumbnail_url, meta_title, meta_description, rating_average, rating_count, created_at, updated_at, file_format, profiles!products_seller_id_fkey(full_name), categories(name, slug)",
+          )
+          .eq("id", slug)
+          .maybeSingle();
+        data = res.data;
+      }
+
       if (!data) return null;
       const seller = (data as { profiles?: { full_name?: string | null } | null }).profiles;
       const category = (data as { categories?: { name?: string; slug?: string } | null }).categories;
@@ -31,6 +46,7 @@ export const Route = createFileRoute("/product/$slug")({
       return {
         id: data.id,
         createdAt: data.created_at,
+        updatedAt: data.updated_at,
         title: fixVietnameseEncoding(data.meta_title || data.title),
         description: fixVietnameseEncoding(
           data.meta_description ||
@@ -53,7 +69,8 @@ export const Route = createFileRoute("/product/$slug")({
     }
   },
   head: ({ params, loaderData }) => {
-    const path = `/product/${params.slug}`;
+    const rawSlug = decodeURIComponent(params.slug || "").trim().replace(/\/$/, "");
+    const path = `/product/${rawSlug}`;
     if (!loaderData) {
       return buildHead({
         title: "Sản phẩm digital",
@@ -69,24 +86,16 @@ export const Route = createFileRoute("/product/$slug")({
         ? rawDesc
         : `${loaderData.name} - sản phẩm digital chất lượng cao, tải xuống ngay sau khi thanh toán tại Salemylink.`;
 
-    const validFrom = loaderData.createdAt
-      ? new Date(loaderData.createdAt).toISOString().split("T")[0]
-      : new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split("T")[0];
-    const priceValidUntil = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split("T")[0];
+    const defaultValidFrom = safeIsoDate(Date.now() - 30 * 24 * 60 * 60 * 1000);
+    const validFrom = safeIsoDate(loaderData.createdAt, defaultValidFrom);
+    const priceValidUntil = safeIsoDate(Date.now() + 365 * 24 * 60 * 60 * 1000);
 
     const rawImage = loaderData.image;
     const finalImage = rawImage
       ? (rawImage.startsWith("http") ? rawImage : `${SITE_URL}${rawImage.startsWith("/") ? "" : "/"}${rawImage}`)
       : `${SITE_URL}/og-image.png`;
 
-    const productSku = generateSku(loaderData.id, params.slug);
-
-    const hasValidReviews =
-      loaderData.reviews &&
-      loaderData.reviews.length > 0 &&
-      loaderData.rating &&
-      Number(loaderData.rating) >= 1 &&
-      Number(loaderData.rating) <= 5;
+    const productSku = generateSku(loaderData.id, rawSlug);
 
     const productSchema: Record<string, unknown> = {
       "@context": "https://schema.org",
@@ -184,7 +193,7 @@ export const Route = createFileRoute("/product/$slug")({
           "@type": "Person",
           name: r.authorName || "Khách hàng",
         },
-        datePublished: r.datePublished || (r.createdAt ? new Date(r.createdAt).toISOString().split("T")[0] : validFrom),
+        datePublished: safeIsoDate(r.datePublished || r.createdAt, validFrom),
         reviewBody: r.comment || `Đánh giá ${r.rating || 5} sao cho sản phẩm.`,
       })),
     };

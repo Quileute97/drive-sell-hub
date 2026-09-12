@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { safeIsoDate } from "@/lib/skuUtils";
 
 export interface ProductReviewItem {
   id: string;
@@ -43,9 +44,7 @@ export async function getProductReviews(productId: string, limit = 5): Promise<P
       rating: Number(r.rating) || 5,
       comment: String(r.comment || "Sản phẩm chất lượng, đúng mô tả."),
       authorName: String(r.profiles?.full_name || "Người mua"),
-      datePublished: r.created_at
-        ? new Date(r.created_at).toISOString().slice(0, 10)
-        : new Date().toISOString().slice(0, 10),
+      datePublished: safeIsoDate(r.created_at),
       createdAt: r.created_at ? String(r.created_at) : undefined,
     }));
 
@@ -141,7 +140,7 @@ export async function getProductReviewData(
         rating: cleanRating,
         comment: "Sản phẩm chất lượng cao, đúng như mô tả và tải xuống tức thì.",
         authorName: "Khách hàng đã xác thực",
-        datePublished: new Date(Date.now() - 7 * 86400000).toISOString().slice(0, 10),
+        datePublished: safeIsoDate(Date.now() - 7 * 86400000),
       },
     ];
 
@@ -161,7 +160,7 @@ export async function getProductReviewData(
           rating: 5,
           comment: "Sản phẩm chất lượng cao, đúng như mô tả và tải xuống tức thì.",
           authorName: "Khách hàng đã xác thực",
-          datePublished: new Date().toISOString().slice(0, 10),
+          datePublished: safeIsoDate(),
         },
       ],
     };

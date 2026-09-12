@@ -23,7 +23,7 @@ import { FreeDownloadButton } from "@/components/FreeDownloadButton";
 
 import { TableOfContents, injectHeadingIds } from "@/components/TableOfContents";
 import { getProductDownloadUrl, isFreeProduct, getGoogleDrivePreviewUrl } from "@/lib/productAccess";
-import { generateSku } from "@/lib/skuUtils";
+import { generateSku, safeIsoDate } from "@/lib/skuUtils";
 import DOMPurify from "dompurify";
 
 // Sanitize seller-provided HTML. Allow common rich-text + trusted iframes only.
@@ -116,67 +116,104 @@ export default function ProductDetail() {
   useEffect(() => {
     if (slug) {
       fetchProduct();
+    } else {
+      setLoading(false);
     }
   }, [slug]);
 
   const fetchProduct = async () => {
+    if (!slug) {
+      setLoading(false);
+      return;
+    }
+
     try {
-      const { data, error } = await supabase
+      const cleanSlug = decodeURIComponent(slug).trim().replace(/\/$/, '');
+      const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(cleanSlug);
+
+      let query = supabase
         .from('products')
         .select(`
           *,
           profiles!products_seller_id_fkey(full_name, avatar_url),
           categories(name, slug)
-        `)
-        .eq('slug', slug!)
-        .maybeSingle();
+        `);
 
-      if (error) throw error;
+      if (isUuid) {
+        query = query.or(`id.eq.${cleanSlug},slug.eq."${cleanSlug}"`);
+      } else {
+        query = query.eq('slug', cleanSlug);
+      }
+
+      let { data, error } = await query.maybeSingle();
+
+      // If relation query returned nothing or had an error, try resilient fallback query
+      if (!data) {
+        let fallbackQuery = supabase.from('products').select('*');
+        if (isUuid) {
+          fallbackQuery = fallbackQuery.or(`id.eq.${cleanSlug},slug.eq."${cleanSlug}"`);
+        } else {
+          fallbackQuery = fallbackQuery.eq('slug', cleanSlug);
+        }
+        const fallbackRes = await fallbackQuery.maybeSingle();
+        if (fallbackRes.data) {
+          data = fallbackRes.data as any;
+          error = null;
+        }
+      }
+
+      if (error) {
+        console.error('Error fetching product from Supabase:', error);
+      }
+
       if (!data) {
         setProduct(null);
         setLoading(false);
         return;
       }
+
       setProduct({
         ...(data as any),
         title: fixVietnameseEncoding((data as any)?.title),
         short_description: fixVietnameseEncoding((data as any)?.short_description),
       } as any);
-      
+
       // Fetch reviews for structured data
       if (data?.id) {
-        const { data: reviewsData } = await supabase
-          .from('reviews')
-          .select(`
-            id,
-            rating,
-            comment,
-            created_at,
-            profiles:buyer_id(full_name)
-          `)
-          .eq('product_id', data.id)
-          .eq('is_approved', true)
-          .order('created_at', { ascending: false })
-          .limit(10);
-        
-        if (reviewsData) {
-          setReviews(reviewsData as Review[]);
+        try {
+          const { data: reviewsData } = await supabase
+            .from('reviews')
+            .select(`
+              id,
+              rating,
+              comment,
+              created_at,
+              profiles:buyer_id(full_name)
+            `)
+            .eq('product_id', data.id)
+            .eq('is_approved', true)
+            .order('created_at', { ascending: false })
+            .limit(10);
+
+          if (reviewsData) {
+            setReviews(reviewsData as Review[]);
+          }
+        } catch (revErr) {
+          console.warn('Reviews fetch skipped or failed:', revErr);
         }
-        
-        // Increment view count
-        await supabase
+
+        // Increment view count (non-blocking)
+        supabase
           .from('products')
-          .update({ view_count: (data.view_count || 0) + 1 })
-          .eq('id', data.id);
+          .update({ view_count: ((data as any).view_count || 0) + 1 })
+          .eq('id', data.id)
+          .then(() => {})
+          .catch(() => {});
       }
     } catch (error) {
       console.error('Error fetching product:', error);
-      toast({
-        title: "Lỗi",
-        description: "Không thể tải thông tin sản phẩm",
-        variant: "destructive",
-      });
-      navigate('/');
+      // Gracefully show not found UI instead of redirect loop
+      setProduct(null);
     } finally {
       setLoading(false);
     }
@@ -338,10 +375,11 @@ export default function ProductDetail() {
   const rawDesc = cleanText(product.description) || cleanText(product.short_description) || metaDescription;
   const productDescription = rawDesc.length >= 10 ? rawDesc : `${product.title} - ${categoryName}. Tải xuống ngay sau khi thanh toán tại Salemylink.`;
 
-  const validFrom = product.created_at
-    ? new Date(product.created_at).toISOString().split('T')[0]
-    : new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
-  const priceValidUntil = new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString().split('T')[0];
+  const defaultValidFrom = safeIsoDate(Date.now() - 30 * 24 * 60 * 60 * 1000);
+  const validFrom = safeIsoDate(product.created_at, defaultValidFrom);
+  const priceValidUntil = safeIsoDate(Date.now() + 365 * 24 * 60 * 60 * 1000);
+  const datePublished = safeIsoDate(product.created_at, validFrom);
+  const dateModified = safeIsoDate(product.updated_at || product.created_at, datePublished);
   const isFree = isFreeProduct(product.price);
   const freeDownloadUrl = getProductDownloadUrl(product.google_drive_link, product.download_only_link);
   const productSku = generateSku(product.id, product.slug);
@@ -480,7 +518,7 @@ export default function ProductDetail() {
           name: review.profiles?.full_name || "Khách hàng",
         },
         reviewBody: review.comment || `Đánh giá ${review.rating || 5} sao cho ${product.title}`,
-        datePublished: new Date(review.created_at).toISOString().split('T')[0],
+        datePublished: safeIsoDate(review.created_at, validFrom),
         publisher: { "@id": `${siteUrl}/#organization` },
       }))
     : [

@@ -23,3 +23,21 @@ export function generateSku(id?: string | null, slug?: string | null): string {
 
   return "SKU-ITEM";
 }
+
+/**
+ * Safely parse a date value to ISO YYYY-MM-DD string without throwing RangeError.
+ */
+export function safeIsoDate(val?: any, fallback?: string): string {
+  try {
+    if (!val) {
+      return fallback || new Date().toISOString().slice(0, 10);
+    }
+    const d = new Date(val);
+    if (isNaN(d.getTime())) {
+      return fallback || new Date().toISOString().slice(0, 10);
+    }
+    return d.toISOString().slice(0, 10);
+  } catch {
+    return fallback || new Date().toISOString().slice(0, 10);
+  }
+}

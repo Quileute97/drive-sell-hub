@@ -67,9 +67,11 @@ const structuredData = {
     },
     {
       "@type": "OnlineStore",
+      "@id": "https://salemylink.com/#store",
       name: "Salemylink.com",
       url: "https://salemylink.com",
       description: "Marketplace sản phẩm digital - Mua bán ebook, tài liệu, khóa học online",
+      parentOrganization: { "@id": "https://salemylink.com/#organization" },
       currenciesAccepted: "VND, USD",
       paymentAccepted: "Credit Card, Bank Transfer, PayOS",
       priceRange: "₫₫ / $$",

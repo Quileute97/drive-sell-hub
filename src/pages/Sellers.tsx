@@ -78,7 +78,10 @@ export default function Sellers() {
   };
 
   const siteUrl = "https://salemylink.com";
-  const pageUrl = `${siteUrl}/sellers`;
+  const currentPath = typeof window !== 'undefined' && window.location.pathname.startsWith('/sellers')
+    ? '/sellers'
+    : '/nguoi-ban';
+  const pageUrl = `${siteUrl}${currentPath}`;
 
   // Structured data for sellers page
   const sellersStructuredData = [
@@ -193,7 +196,7 @@ export default function Sellers() {
             {sellers.map((seller) => (
               <Link 
                 key={seller.user_id} 
-                to={`/seller/${seller.user_id}`}
+                to={`/nguoi-ban/${seller.user_id}`}
                 className="block"
               >
                 <Card className="h-full hover:shadow-lg transition-all duration-300 hover:-translate-y-1 cursor-pointer group">

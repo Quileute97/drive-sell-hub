@@ -170,7 +170,10 @@ export default function SellerProfile() {
   }
 
   const siteUrl = "https://salemylink.com";
-  const sellerUrl = `${siteUrl}/seller/${seller.user_id}`;
+  const currentPath = typeof window !== 'undefined' && window.location.pathname.startsWith('/seller/')
+    ? `/seller/${seller.user_id}`
+    : `/nguoi-ban/${seller.user_id}`;
+  const sellerUrl = `${siteUrl}${currentPath}`;
   
   const sellerStructuredData = [
     {
@@ -189,6 +192,7 @@ export default function SellerProfile() {
         "image": seller.avatar_url || undefined,
         "worksFor": {
           "@type": "Organization",
+          "@id": `${siteUrl}/#organization`,
           "name": "Salemylink.com"
         }
       },
@@ -210,7 +214,7 @@ export default function SellerProfile() {
           "@type": "ListItem",
           "position": 2,
           "name": "Người bán",
-          "item": `${siteUrl}/sellers`
+          "item": `${siteUrl}/nguoi-ban`
         },
         {
           "@type": "ListItem",

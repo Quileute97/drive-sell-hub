@@ -148,9 +148,6 @@ export const SEO = ({
 
     if (type === 'product' && productPrice) {
       metas.push(
-        { kind: 'meta-property', key: 'product:price:amount', content: productPrice.toString() },
-        { kind: 'meta-property', key: 'product:price:currency', content: productCurrency },
-        { kind: 'meta-property', key: 'product:availability', content: productAvailability.toLowerCase() },
         { kind: 'meta-name', key: 'twitter:label1', content: 'Giá' },
         {
           kind: 'meta-name',
@@ -158,10 +155,8 @@ export const SEO = ({
           content: `${new Intl.NumberFormat(langMeta?.locale || 'vi-VN').format(productPrice)} ${productCurrency}`,
         },
       );
-      if (productBrand) metas.push({ kind: 'meta-property', key: 'product:brand', content: productBrand });
       if (productCategory) {
         metas.push(
-          { kind: 'meta-property', key: 'product:category', content: productCategory },
           { kind: 'meta-name', key: 'twitter:label2', content: 'Danh mục' },
           { kind: 'meta-name', key: 'twitter:data2', content: productCategory },
         );

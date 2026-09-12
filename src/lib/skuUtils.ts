@@ -1,0 +1,25 @@
+/**
+ * Helper to generate a valid, standard SKU / MPN string compliant with Google Merchant Center
+ * and Schema.org recommendations (max length 50 chars, recommended alphanumeric with hyphens).
+ */
+export function generateSku(id?: string | null, slug?: string | null): string {
+  if (id && typeof id === "string") {
+    const cleanId = id.trim();
+    if (cleanId.length > 0 && cleanId.length <= 36) {
+      return cleanId;
+    }
+    if (cleanId.length > 36) {
+      return cleanId.slice(0, 36);
+    }
+  }
+
+  if (slug && typeof slug === "string") {
+    const alphanumeric = slug.replace(/[^a-zA-Z0-9]/g, "");
+    if (alphanumeric.length > 0) {
+      const suffix = alphanumeric.slice(-12).toUpperCase();
+      return `SKU-${suffix}`;
+    }
+  }
+
+  return "SKU-ITEM";
+}

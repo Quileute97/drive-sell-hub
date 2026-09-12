@@ -4,12 +4,9 @@
  */
 export function generateSku(id?: string | null, slug?: string | null): string {
   if (id && typeof id === "string") {
-    const cleanId = id.trim();
-    if (cleanId.length > 0 && cleanId.length <= 36) {
-      return cleanId;
-    }
-    if (cleanId.length > 36) {
-      return cleanId.slice(0, 36);
+    const alphanumeric = id.replace(/[^a-zA-Z0-9]/g, "");
+    if (alphanumeric.length >= 6) {
+      return `SKU-${alphanumeric.slice(0, 12).toUpperCase()}`;
     }
   }
 

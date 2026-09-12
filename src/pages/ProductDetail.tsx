@@ -497,6 +497,7 @@ export default function ProductDetail() {
     "@id": `${productUrl}#rating`,
     ratingValue: displayRating,
     reviewCount: displayCount,
+    ratingCount: displayCount,
     bestRating: 5,
     worstRating: 1,
   };

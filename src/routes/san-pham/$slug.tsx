@@ -170,6 +170,7 @@ export const Route = createFileRoute("/san-pham/$slug")({
         "@id": `${SITE_URL}${path}#rating`,
         ratingValue: Math.min(5, Math.max(1, Math.round(Number(loaderData.rating || 5) * 10) / 10)),
         reviewCount: Math.max(1, Number(loaderData.ratingCount || loaderData.reviews?.length || 1)),
+        ratingCount: Math.max(1, Number(loaderData.ratingCount || loaderData.reviews?.length || 1)),
         bestRating: 5,
         worstRating: 1,
       },
@@ -195,6 +196,11 @@ export const Route = createFileRoute("/san-pham/$slug")({
         },
         datePublished: safeIsoDate(r.datePublished || r.createdAt, validFrom),
         reviewBody: r.comment || `Đánh giá ${r.rating || 5} sao cho sản phẩm.`,
+        publisher: {
+          "@type": "Organization",
+          name: "Salemylink.com",
+          url: SITE_URL,
+        },
       })),
     };
 

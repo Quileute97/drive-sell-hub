@@ -54,15 +54,12 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     try {
       localStorage.setItem(STORAGE_KEY, newLang);
       document.documentElement.lang = newLang;
-
-      // Update URL search param if not default, or remove if default (vi)
+      // Keep URL clean without ?lang= query param to prevent duplicate indexing
       const url = new URL(window.location.href);
-      if (newLang === DEFAULT_LANGUAGE) {
+      if (url.searchParams.has('lang')) {
         url.searchParams.delete('lang');
-      } else {
-        url.searchParams.set('lang', newLang);
+        window.history.replaceState({}, '', url.toString());
       }
-      window.history.replaceState({}, '', url.toString());
     } catch {
       // Safe fallback
     }

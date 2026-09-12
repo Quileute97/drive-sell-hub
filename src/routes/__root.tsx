@@ -144,9 +144,6 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     ],
     links: [
       { rel: "stylesheet", href: appCss },
-      { rel: "alternate", hrefLang: "vi", href: "https://salemylink.com/" },
-      { rel: "alternate", hrefLang: "vi-VN", href: "https://salemylink.com/" },
-      { rel: "alternate", hrefLang: "x-default", href: "https://salemylink.com/" },
       { rel: "preconnect", href: "https://dfalphamyvdfewixrnju.supabase.co" },
       { rel: "preconnect", href: "https://drive.google.com" },
       { rel: "dns-prefetch", href: "https://drive.google.com" },

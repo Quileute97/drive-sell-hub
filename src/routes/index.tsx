@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import Index from "@/pages/Index";
 import { buildHead } from "@/lib/seoHead";
 import { supabase } from "@/integrations/supabase/client";
+import { sanitizeImageUrl, sanitizeImageArray } from "@/lib/productImages";
 
 export const Route = createFileRoute("/")({
   loader: async () => {
@@ -31,6 +32,12 @@ export const Route = createFileRoute("/")({
           .order("sort_order"),
       ]);
 
+      const cleanProducts = (productsRes.data || []).map((p: any) => ({
+        ...p,
+        thumbnail_url: sanitizeImageUrl(p.thumbnail_url),
+        images: sanitizeImageArray(p.images),
+      }));
+
       const categoriesWithCount = (categoriesRes.data || []).map((cat: any) => ({
         id: cat.id,
         name: cat.name,
@@ -40,7 +47,7 @@ export const Route = createFileRoute("/")({
       }));
 
       return {
-        products: productsRes.data || [],
+        products: cleanProducts,
         categories: categoriesWithCount,
       };
     } catch {

@@ -142,8 +142,8 @@ export const SEO = ({
       { kind: 'meta-name', key: 'twitter:creator', content: '@salemylink' },
       { kind: 'meta-name', key: 'author', content: author || 'Salemylink.com' },
       { kind: 'meta-name', key: 'publisher', content: 'Salemylink.com' },
-      { kind: 'meta-name', key: 'language', content: 'Vietnamese, English, Chinese, Spanish' },
-      { kind: 'meta-http-equiv', key: 'content-language', content: 'vi, en, zh, es' },
+      { kind: 'meta-name', key: 'language', content: 'Vietnamese' },
+      { kind: 'meta-http-equiv', key: 'content-language', content: 'vi' },
     ];
 
     if (type === 'product' && productPrice) {
@@ -173,18 +173,10 @@ export const SEO = ({
       // Canonical link
       upsertLink('canonical', canonicalUrl);
 
-      // Multilingual hreflang alternate links
+      // Canonical and x-default alternate links for Vietnamese
       const basePath = cleanPath;
-      const separator = basePath.includes('?') ? '&' : '?';
-
       upsertLink('alternate', `${SITE_URL}${basePath}`, 'vi');
       upsertLink('alternate', `${SITE_URL}${basePath}`, 'vi-VN');
-      upsertLink('alternate', `${SITE_URL}${basePath}${separator}lang=en`, 'en');
-      upsertLink('alternate', `${SITE_URL}${basePath}${separator}lang=en`, 'en-US');
-      upsertLink('alternate', `${SITE_URL}${basePath}${separator}lang=zh`, 'zh');
-      upsertLink('alternate', `${SITE_URL}${basePath}${separator}lang=zh`, 'zh-CN');
-      upsertLink('alternate', `${SITE_URL}${basePath}${separator}lang=es`, 'es');
-      upsertLink('alternate', `${SITE_URL}${basePath}${separator}lang=es`, 'es-ES');
       upsertLink('alternate', `${SITE_URL}${basePath}`, 'x-default');
     }
 

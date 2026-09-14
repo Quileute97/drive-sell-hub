@@ -38,11 +38,14 @@ async function verifySeo() {
       const serverModule = await import(pathToFileURL(serverPath).href);
       const app = serverModule.default || serverModule;
 
+      const mockEnv = { ASSETS: { fetch: async () => new Response(null, { status: 404 }) } };
+      const mockCtx = { waitUntil: () => {}, passThroughOnException: () => {} };
+
       // Test Homepage SSR
       const homeReq = new Request('https://salemylink.com/', {
         headers: { 'Accept': 'text/html', 'User-Agent': 'Googlebot/2.1' }
       });
-      const homeRes = await app.fetch(homeReq);
+      const homeRes = await app.fetch(homeReq, mockEnv, mockCtx);
       const homeHtml = await homeRes.text();
 
       console.log('   - Homepage Status:', homeRes.status === 200 ? '✅ 200 OK' : `❌ Status ${homeRes.status}`);
@@ -57,7 +60,7 @@ async function verifySeo() {
       const catReq = new Request('https://salemylink.com/danh-muc/tai-lieu-hoc-tap', {
         headers: { 'Accept': 'text/html', 'User-Agent': 'Googlebot/2.1' }
       });
-      const catRes = await app.fetch(catReq);
+      const catRes = await app.fetch(catReq, mockEnv, mockCtx);
       const catHtml = await catRes.text();
 
       console.log('\n3. Category Page SSR (/danh-muc/tai-lieu-hoc-tap):');

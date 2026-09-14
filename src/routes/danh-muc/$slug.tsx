@@ -4,6 +4,7 @@ import { getCategorySeo } from "@/data/seoOverrides";
 import { buildHead, SITE_URL } from "@/lib/seoHead";
 import { supabase } from "@/integrations/supabase/client";
 import { fixVietnameseEncoding } from "@/lib/vietnameseText";
+import { resolveProductImage } from "@/lib/productImages";
 
 export const Route = createFileRoute("/danh-muc/$slug")({
   loader: async ({ params }) => {
@@ -86,9 +87,7 @@ export const Route = createFileRoute("/danh-muc/$slug")({
         name: seo.title,
         numberOfItems: items.length,
         itemListElement: items.map((p, i) => {
-          const imgUrl = p.thumbnail_url && !p.thumbnail_url.includes("placeholder")
-            ? (p.thumbnail_url.startsWith("http") ? p.thumbnail_url : `${SITE_URL}${p.thumbnail_url.startsWith("/") ? "" : "/"}${p.thumbnail_url}`)
-            : `${SITE_URL}/og-image.png`;
+          const imgUrl = resolveProductImage(p);
           return {
             "@type": "ListItem",
             position: i + 1,

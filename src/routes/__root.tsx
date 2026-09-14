@@ -33,7 +33,7 @@ const structuredData = {
       name: "Salemylink.com",
       alternateName: ["Salemylink", "Sale My Link"],
       description: "Nền tảng bán sản phẩm digital hàng đầu Việt Nam - Digital Products Marketplace",
-      inLanguage: ["vi-VN", "en-US", "zh-CN", "es-ES"],
+      inLanguage: "vi-VN",
       potentialAction: {
         "@type": "SearchAction",
         target: {
@@ -62,7 +62,7 @@ const structuredData = {
         "@type": "ContactPoint",
         contactType: "customer service",
         email: "support@salemylink.com",
-        availableLanguage: ["Vietnamese", "English", "Chinese", "Spanish"],
+        availableLanguage: ["Vietnamese"],
       },
     },
     {

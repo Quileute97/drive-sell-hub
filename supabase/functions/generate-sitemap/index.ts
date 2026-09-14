@@ -27,15 +27,9 @@ function generateUrlXml(routePath: string, priority = '0.8', changefreq = 'weekl
 
   let xml = `  <url>
     <loc>${escapeXml(canonicalUrl)}</loc>
-    <xhtml:link rel="alternate" hreflang="vi" href="${escapeXml(SITE_URL + (cleanPath || '/'))}"/>
-    <xhtml:link rel="alternate" hreflang="vi-VN" href="${escapeXml(SITE_URL + (cleanPath || '/'))}"/>
-    <xhtml:link rel="alternate" hreflang="en" href="${escapeXml(baseForParams + sep + 'lang=en')}"/>
-    <xhtml:link rel="alternate" hreflang="en-US" href="${escapeXml(baseForParams + sep + 'lang=en')}"/>
-    <xhtml:link rel="alternate" hreflang="zh" href="${escapeXml(baseForParams + sep + 'lang=zh')}"/>
-    <xhtml:link rel="alternate" hreflang="zh-CN" href="${escapeXml(baseForParams + sep + 'lang=zh')}"/>
-    <xhtml:link rel="alternate" hreflang="es" href="${escapeXml(baseForParams + sep + 'lang=es')}"/>
-    <xhtml:link rel="alternate" hreflang="es-ES" href="${escapeXml(baseForParams + sep + 'lang=es')}"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="${escapeXml(SITE_URL + (cleanPath || '/'))}"/>
+    <xhtml:link rel="alternate" hreflang="vi" href="${escapeXml(canonicalUrl)}"/>
+    <xhtml:link rel="alternate" hreflang="vi-VN" href="${escapeXml(canonicalUrl)}"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="${escapeXml(canonicalUrl)}"/>
     <lastmod>${lastmod}</lastmod>
     <changefreq>${changefreq}</changefreq>
     <priority>${priority}</priority>`

@@ -5,6 +5,7 @@ import { buildHead, SITE_URL } from "@/lib/seoHead";
 import { fixVietnameseEncoding } from "@/lib/vietnameseText";
 import { getProductReviewData } from "@/lib/reviews";
 import { generateSku, safeIsoDate } from "@/lib/skuUtils";
+import { resolveProductImage, sanitizeImageUrl, sanitizeImageArray } from "@/lib/productImages";
 
 export const Route = createFileRoute("/san-pham/$slug")({
   loader: async ({ params }) => {
@@ -36,6 +37,8 @@ export const Route = createFileRoute("/san-pham/$slug")({
       );
 
       const plainDescription = (data.description || "").replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
+      const cleanThumbnail = sanitizeImageUrl(data.thumbnail_url);
+      const cleanImages = sanitizeImageArray(data.images);
 
       return {
         ...data,
@@ -49,8 +52,9 @@ export const Route = createFileRoute("/san-pham/$slug")({
         plainDescription,
         price: Number(data.price) || 0,
         original_price: data.original_price ? Number(data.original_price) : null,
-        thumbnail_url: data.thumbnail_url || null,
-        images: data.images || [],
+        thumbnail_url: cleanThumbnail,
+        images: cleanImages,
+        google_drive_link: data.google_drive_link || null,
         ratingAverage: Number(data.rating_average) || 0,
         ratingCount: reviewCount,
         ratingValue,
@@ -104,11 +108,12 @@ export const Route = createFileRoute("/san-pham/$slug")({
     const validFrom = safeIsoDate(loaderData.createdAt, defaultValidFrom);
     const priceValidUntil = safeIsoDate(Date.now() + 365 * 24 * 60 * 60 * 1000);
 
-    const rawImage = loaderData.thumbnail_url;
-    const hasRealImage = Boolean(rawImage && typeof rawImage === "string" && !rawImage.includes("placeholder"));
-    const finalImage = hasRealImage
-      ? (rawImage.startsWith("http") ? rawImage : `${SITE_URL}${rawImage.startsWith("/") ? "" : "/"}${rawImage}`)
-      : `${SITE_URL}/og-image.png`;
+    const finalImage = resolveProductImage({
+      thumbnail_url: loaderData.thumbnail_url,
+      images: loaderData.images,
+      google_drive_link: loaderData.google_drive_link,
+    });
+    const hasRealImage = !finalImage.endsWith("/og-image.png");
 
     const productSku = generateSku(loaderData.id, rawSlug);
 

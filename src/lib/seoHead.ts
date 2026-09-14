@@ -64,21 +64,16 @@ export function buildHead(input: HeadInput) {
     { property: "og:description", content: socialDesc },
     { property: "og:image", content: image },
     { property: "og:image:alt", content: fullTitle },
-    // OpenGraph Multilingual Locales (Primary: vi_VN, Alternates: en_US, zh_CN, es_ES)
-    { property: "og:locale", content: SUPPORTED_LANGUAGES[lang]?.ogLocale || "vi_VN" },
-    { property: "og:locale:alternate", content: "en_US" },
-    { property: "og:locale:alternate", content: "zh_CN" },
-    { property: "og:locale:alternate", content: "es_ES" },
-    { property: "og:locale:alternate", content: "vi_VN" },
+    // OpenGraph Locale (Vietnamese)
+    { property: "og:locale", content: "vi_VN" },
     { property: "og:site_name", content: "Salemylink.com" },
     { name: "twitter:card", content: "summary_large_image" },
     { name: "twitter:url", content: canonical },
     { name: "twitter:title", content: twTitle || socialTitle },
     { name: "twitter:description", content: clamp(twDescription || ogDescription || description) },
     { name: "twitter:image", content: image },
-    // Multilingual meta declarations
-    { name: "language", content: "Vietnamese, English, Chinese, Spanish" },
-    { httpEquiv: "content-language", content: "vi, en, zh, es" },
+    { name: "language", content: "Vietnamese" },
+    { httpEquiv: "content-language", content: "vi" },
     { name: "geo.region", content: "VN" },
     { name: "geo.placename", content: "Vietnam" },
   ];
@@ -98,9 +93,9 @@ export function buildHead(input: HeadInput) {
     links.push({ rel: "canonical", href: canonical });
 
     // Hreflang tags for Vietnamese (Primary / Default) and x-default fallback
-    links.push({ rel: "alternate", hrefLang: "vi", href: canonical });
-    links.push({ rel: "alternate", hrefLang: "vi-VN", href: canonical });
-    links.push({ rel: "alternate", hrefLang: "x-default", href: canonical });
+    links.push({ rel: "alternate", hreflang: "vi", href: canonical });
+    links.push({ rel: "alternate", hreflang: "vi-VN", href: canonical });
+    links.push({ rel: "alternate", hreflang: "x-default", href: canonical });
   }
 
   const head: {

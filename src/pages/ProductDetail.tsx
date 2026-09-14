@@ -24,6 +24,7 @@ import { FreeDownloadButton } from "@/components/FreeDownloadButton";
 import { TableOfContents, injectHeadingIds } from "@/components/TableOfContents";
 import { getProductDownloadUrl, isFreeProduct, getGoogleDrivePreviewUrl } from "@/lib/productAccess";
 import { generateSku, safeIsoDate } from "@/lib/skuUtils";
+import { resolveProductImage, sanitizeImageUrl, sanitizeImageArray } from "@/lib/productImages";
 import DOMPurify from "dompurify";
 
 // Sanitize seller-provided HTML. Allow common rich-text + trusted iframes only.
@@ -373,14 +374,18 @@ export default function ProductDetail({ initialProduct }: { initialProduct?: Pro
     ? `${baseDesc} — Tải ngay tại Salemylink.`
     : `${product.title} (${categoryName})${product.file_format ? ` định dạng ${product.file_format}` : ''}. Giao dịch an toàn, tải xuống ngay sau khi thanh toán qua Google Drive trên Salemylink.`;
 
-  const rawImages = [product.thumbnail_url, ...(product.images || [])]
-    .filter(Boolean)
-    .filter((img) => typeof img === "string" && !img.includes("placeholder")) as string[];
-  const hasRealImages = rawImages.length > 0;
-  const productImages = hasRealImages
+  const cleanThumb = sanitizeImageUrl(product.thumbnail_url);
+  const cleanImages = sanitizeImageArray(product.images);
+  const rawImages = [cleanThumb, ...cleanImages].filter(Boolean) as string[];
+  const mainImage = resolveProductImage({
+    thumbnail_url: cleanThumb,
+    images: cleanImages,
+    google_drive_link: product.google_drive_link,
+  });
+  const hasRealImages = !mainImage.endsWith('/og-image.png');
+  const productImages = rawImages.length > 0
     ? rawImages.map(img => img.startsWith('http') ? img : `${siteUrl}${img.startsWith('/') ? '' : '/'}${img}`)
-    : [`${siteUrl}/og-image.png`];
-  const mainImage = productImages[0];
+    : [mainImage];
 
   const rawDesc = cleanText(product.description) || cleanText(product.short_description) || metaDescription;
   const productDescription = rawDesc.length >= 10 ? rawDesc : `${product.title} - ${categoryName}. Tải xuống ngay sau khi thanh toán tại Salemylink.`;

@@ -144,6 +144,17 @@ async function fetchAllFromSupabase(table, select, filter = '') {
   return allData;
 }
 
+function extractGoogleDriveFileId(driveUrl) {
+  if (!driveUrl) return null;
+  const fileMatch = driveUrl.match(/\/file\/d\/([^\/?#]+)/);
+  if (fileMatch) return fileMatch[1];
+  const workspaceMatch = driveUrl.match(/\/(?:document|presentation|spreadsheets|forms)\/d\/([^\/?#]+)/);
+  if (workspaceMatch) return workspaceMatch[1];
+  const openMatch = driveUrl.match(/[?&]id=([^&#]+)/);
+  if (openMatch) return openMatch[1];
+  return null;
+}
+
 export async function generateFullSitemap() {
   console.log('Generating clean canonical sitemap from Supabase data...');
   const today = new Date().toISOString().split('T')[0];
@@ -151,7 +162,7 @@ export async function generateFullSitemap() {
   // 1. Fetch products
   const products = await fetchAllFromSupabase(
     'products',
-    'id,slug,title,status,thumbnail_url,short_description,download_count,view_count,rating_count,is_featured,updated_at,created_at',
+    'id,slug,title,status,thumbnail_url,google_drive_link,short_description,download_count,view_count,rating_count,is_featured,updated_at,created_at',
     'order=created_at.desc'
   );
   console.log(`Fetched ${products.length} products.`);
@@ -217,12 +228,24 @@ export async function generateFullSitemap() {
       priority = 0.80;
     }
 
-    // Clean image handling: filter out placeholders and resolve absolute URL
+    // Clean image handling: filter out placeholders and resolve absolute URL or Google Drive preview
     let img = null;
-    if (prod.thumbnail_url && !prod.thumbnail_url.includes('placeholder')) {
-      const fullImgLoc = prod.thumbnail_url.startsWith('http')
-        ? prod.thumbnail_url
-        : `${SITE_URL}${prod.thumbnail_url.startsWith('/') ? '' : '/'}${prod.thumbnail_url}`;
+    let rawThumb = prod.thumbnail_url;
+    if (rawThumb && rawThumb.includes('placeholder')) rawThumb = null;
+
+    let fullImgLoc = null;
+    if (rawThumb) {
+      fullImgLoc = rawThumb.startsWith('http')
+        ? rawThumb
+        : `${SITE_URL}${rawThumb.startsWith('/') ? '' : '/'}${rawThumb}`;
+    } else if (prod.google_drive_link) {
+      const fileId = extractGoogleDriveFileId(prod.google_drive_link);
+      if (fileId && !fileId.startsWith('sample')) {
+        fullImgLoc = `https://lh3.googleusercontent.com/d/${fileId}=w1200`;
+      }
+    }
+
+    if (fullImgLoc) {
       img = {
         loc: fullImgLoc,
         title: prod.title,

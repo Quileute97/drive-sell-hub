@@ -108,12 +108,16 @@ export function buildHead(input: HeadInput) {
   };
 
   if (structuredData) {
+    const formattedData = Array.isArray(structuredData)
+      ? { "@context": "https://schema.org", "@graph": structuredData }
+      : structuredData;
+
     head.scripts = [
       {
         type: "application/ld+json",
         id: "page-structured-data",
         "data-seo-managed": "true",
-        children: JSON.stringify(structuredData),
+        children: JSON.stringify(formattedData),
       },
     ];
   }

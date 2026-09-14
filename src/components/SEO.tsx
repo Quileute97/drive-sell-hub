@@ -181,21 +181,26 @@ export const SEO = ({
     }
 
     // Structured data (JSON-LD)
-    const existingLd = document.head.querySelector<HTMLScriptElement>(`#page-structured-data, script[type="application/ld+json"][${SEO_ATTR}]`);
-    if (structuredDataJson) {
-      const script = existingLd ?? (() => {
-        const s = document.createElement('script');
-        s.type = 'application/ld+json';
-        s.id = 'page-structured-data';
-        s.setAttribute(SEO_ATTR, 'true');
-        document.head.appendChild(s);
-        return s;
-      })();
-      if (!script.id) script.id = 'page-structured-data';
-      script.setAttribute(SEO_ATTR, 'true');
-      script.textContent = structuredDataJson;
-    } else if (existingLd) {
-      existingLd.remove();
+    if (structuredData !== undefined) {
+      const existingLd = document.head.querySelector<HTMLScriptElement>(`#page-structured-data, script[type="application/ld+json"][${SEO_ATTR}]`);
+      if (structuredData === null) {
+        if (existingLd) existingLd.remove();
+      } else {
+        const script = existingLd ?? (() => {
+          const s = document.createElement('script');
+          s.type = 'application/ld+json';
+          s.id = 'page-structured-data';
+          s.setAttribute(SEO_ATTR, 'true');
+          document.head.appendChild(s);
+          return s;
+        })();
+        if (!script.id) script.id = 'page-structured-data';
+        script.setAttribute(SEO_ATTR, 'true');
+        const formattedData = Array.isArray(structuredData)
+          ? { '@context': 'https://schema.org', '@graph': structuredData }
+          : structuredData;
+        script.textContent = JSON.stringify(formattedData);
+      }
     }
   }, [
     fullTitle,

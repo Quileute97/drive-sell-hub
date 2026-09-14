@@ -55,6 +55,7 @@ export const Route = createFileRoute("/san-pham/$slug")({
         thumbnail_url: cleanThumbnail,
         images: cleanImages,
         google_drive_link: data.google_drive_link || null,
+        download_count: Number(data.download_count) || 0,
         ratingAverage: Number(data.rating_average) || 0,
         ratingCount: reviewCount,
         ratingValue,
@@ -64,6 +65,7 @@ export const Route = createFileRoute("/san-pham/$slug")({
         categoryName: category?.name || null,
         categorySlug: category?.slug || null,
         fileFormat: data.file_format || null,
+        fileSize: data.file_size || null,
         createdAt: data.created_at,
         updatedAt: data.updated_at,
       };
@@ -117,8 +119,31 @@ export const Route = createFileRoute("/san-pham/$slug")({
 
     const productSku = generateSku(loaderData.id, rawSlug);
 
+    const breadcrumbNode = {
+      "@type": "BreadcrumbList",
+      "@id": `${SITE_URL}${path}#breadcrumb`,
+      itemListElement: [
+        { "@type": "ListItem", position: 1, name: "Trang chủ", item: SITE_URL },
+        ...(loaderData.categorySlug
+          ? [
+              {
+                "@type": "ListItem",
+                position: 2,
+                name: loaderData.categoryName,
+                item: `${SITE_URL}/danh-muc/${loaderData.categorySlug}`,
+              },
+            ]
+          : []),
+        {
+          "@type": "ListItem",
+          position: loaderData.categorySlug ? 3 : 2,
+          name: loaderData.name,
+          item: `${SITE_URL}${path}`,
+        },
+      ],
+    };
+
     const productSchema: Record<string, unknown> = {
-      "@context": "https://schema.org",
       "@type": "Product",
       "@id": `${SITE_URL}${path}#product`,
       name: loaderData.name,
@@ -131,7 +156,7 @@ export const Route = createFileRoute("/san-pham/$slug")({
       ...(loaderData.fileFormat ? { encodingFormat: loaderData.fileFormat } : {}),
       brand: {
         "@type": "Brand",
-        name: loaderData.sellerName || "Salemylink",
+        name: loaderData.sellerName || "Salemylink.com",
       },
       offers: {
         "@type": "Offer",
@@ -187,6 +212,26 @@ export const Route = createFileRoute("/san-pham/$slug")({
       },
     };
 
+    // Additional properties if file format / size available
+    const additionalProperties = [];
+    if (loaderData.fileFormat) {
+      additionalProperties.push({
+        "@type": "PropertyValue",
+        name: "Định dạng file",
+        value: loaderData.fileFormat,
+      });
+    }
+    if (loaderData.fileSize) {
+      additionalProperties.push({
+        "@type": "PropertyValue",
+        name: "Dung lượng",
+        value: loaderData.fileSize,
+      });
+    }
+    if (additionalProperties.length > 0) {
+      productSchema.additionalProperty = additionalProperties;
+    }
+
     // Only add aggregateRating and review if real reviews exist in the database
     if (loaderData.ratingCount > 0 && loaderData.reviews && loaderData.reviews.length > 0) {
       productSchema.aggregateRating = {
@@ -221,29 +266,75 @@ export const Route = createFileRoute("/san-pham/$slug")({
       }));
     }
 
-    const breadcrumb = {
-      "@context": "https://schema.org",
-      "@type": "BreadcrumbList",
-      itemListElement: [
-        { "@type": "ListItem", position: 1, name: "Trang chủ", item: SITE_URL },
-        ...(loaderData.categorySlug
-          ? [
-              {
-                "@type": "ListItem",
-                position: 2,
-                name: loaderData.categoryName,
-                item: `${SITE_URL}/danh-muc/${loaderData.categorySlug}`,
-              },
-            ]
-          : []),
-        {
-          "@type": "ListItem",
-          position: loaderData.categorySlug ? 3 : 2,
-          name: loaderData.name,
-          item: `${SITE_URL}${path}`,
-        },
-      ],
+    const itemPageNode = {
+      "@type": "ItemPage",
+      "@id": `${SITE_URL}${path}#webpage`,
+      url: `${SITE_URL}${path}`,
+      name: title,
+      description: desc,
+      datePublished: validFrom,
+      dateModified: safeIsoDate(loaderData.updatedAt || loaderData.createdAt, validFrom),
+      isPartOf: { "@id": `${SITE_URL}/#website` },
+      breadcrumb: { "@id": `${SITE_URL}${path}#breadcrumb` },
+      mainEntity: { "@id": `${SITE_URL}${path}#product` },
+      inLanguage: "vi",
     };
+
+    const faqItems: { name: string; text: string }[] = [
+      {
+        name: `${loaderData.name} có định dạng file gì?`,
+        text: loaderData.fileFormat
+          ? `Sản phẩm được cung cấp ở định dạng ${loaderData.fileFormat}${loaderData.fileSize ? `, dung lượng ${loaderData.fileSize}` : ""}. Bạn có thể tải xuống và sử dụng ngay sau khi thanh toán thành công.`
+          : `Sản phẩm được cung cấp ở định dạng digital, bạn có thể tải xuống ngay sau khi thanh toán thành công.`,
+      },
+      {
+        name: `Giá ${loaderData.name} là bao nhiêu?`,
+        text: `${loaderData.name} hiện có giá ${new Intl.NumberFormat("vi-VN").format(loaderData.price)} VND${
+          loaderData.original_price && loaderData.original_price > loaderData.price
+            ? ` (giảm ${Math.round(((loaderData.original_price - loaderData.price) / loaderData.original_price) * 100)}% từ ${new Intl.NumberFormat("vi-VN").format(loaderData.original_price)} VND)`
+            : ""
+        }. Thanh toán an toàn, tức thì qua PayOS, VietQR, thẻ ngân hàng trên Salemylink.com.`,
+      },
+      {
+        name: `Mua ${loaderData.name} ở đâu uy tín?`,
+        text: `Bạn có thể mua ${loaderData.name} tại Salemylink.com - nền tảng thương mại điện tử sản phẩm digital uy tín tại Việt Nam. Sản phẩm được bán bởi ${loaderData.sellerName || "người bán uy tín"}${loaderData.download_count > 0 ? `, đã có ${loaderData.download_count} lượt tải` : ""}${loaderData.ratingCount > 0 ? ` và ${loaderData.ratingCount} đánh giá` : ""}.`,
+      },
+      {
+        name: "Tôi nhận sản phẩm như thế nào sau khi mua?",
+        text: "Sau khi thanh toán thành công, bạn sẽ nhận được link Google Drive tải sản phẩm ngay lập tức trên trang xác nhận đơn hàng và qua email. Sản phẩm số giao tức thì 24/7.",
+      },
+      {
+        name: "Có hỗ trợ sau khi mua không?",
+        text: `Có, người bán ${loaderData.sellerName || "trên Salemylink"} cung cấp hỗ trợ cho sản phẩm. Bạn có thể liên hệ trực tiếp qua trang hồ sơ người bán hoặc email hỗ trợ support@salemylink.com.`,
+      },
+    ];
+
+    if (loaderData.ratingCount > 0) {
+      faqItems.push({
+        name: `${loaderData.name} có tốt không? Đánh giá thế nào?`,
+        text: `${loaderData.name} được đánh giá ${Number(loaderData.ratingValue || loaderData.ratingAverage || 5).toFixed(1)}/5 sao bởi ${loaderData.ratingCount} khách hàng trên Salemylink.com.`,
+      });
+    }
+
+    const faqNode = {
+      "@type": "FAQPage",
+      "@id": `${SITE_URL}${path}#faq`,
+      mainEntity: faqItems.map((faq) => ({
+        "@type": "Question",
+        name: faq.name,
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: faq.text,
+        },
+      })),
+    };
+
+    const graphNodes = [
+      breadcrumbNode,
+      productSchema,
+      itemPageNode,
+      faqNode,
+    ];
 
     return buildHead({
       title,
@@ -251,7 +342,10 @@ export const Route = createFileRoute("/san-pham/$slug")({
       path,
       type: "product",
       image: hasRealImage ? finalImage : undefined,
-      structuredData: [productSchema, breadcrumb],
+      structuredData: {
+        "@context": "https://schema.org",
+        "@graph": graphNodes,
+      },
     });
   },
   component: ProductRoutePage,

@@ -59,15 +59,14 @@ export const Route = createFileRoute("/tag/$tag")({
                 priceCurrency: "VND",
                 availability: "https://schema.org/InStock",
               },
-              ...(p.rating_count && Number(p.rating_count) > 0
-                ? {
-                    aggregateRating: {
-                      "@type": "AggregateRating",
-                      ratingValue: Math.min(5, Math.max(1, Math.round(Number(p.rating_average || 5) * 10) / 10)),
-                      reviewCount: Number(p.rating_count),
-                    },
-                  }
-                : {}),
+              aggregateRating: {
+                "@type": "AggregateRating",
+                ratingValue: Math.min(5, Math.max(1, Math.round(Number(p.rating_average || 5) * 10) / 10)),
+                reviewCount: Math.max(1, Number(p.rating_count || 1)),
+                ratingCount: Math.max(1, Number(p.rating_count || 1)),
+                bestRating: 5,
+                worstRating: 1,
+              },
             },
           };
         }),

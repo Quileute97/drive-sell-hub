@@ -1,10 +1,13 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Facebook, Twitter, Instagram, Youtube, Mail, Phone, MapPin } from "lucide-react";
+import { Facebook, Twitter, Instagram, Youtube, Mail, Phone, MapPin, ExternalLink } from "lucide-react";
+import { TelegramIcon } from "@/components/icons/TelegramIcon";
 import { supabase } from "@/integrations/supabase/client";
 import { Link } from "@/lib/router-compat";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+
+export const TELEGRAM_COMMUNITY_URL = "https://t.me/+2ZkLgrmVJgBkMGM1";
 
 export const Footer = () => {
   const [categories, setCategories] = useState<{id: string, name: string, slug: string}[]>([]);
@@ -50,7 +53,17 @@ export const Footer = () => {
             <p className="text-muted-foreground text-sm">
               {t("footer.companyDesc")}
             </p>
-            <nav className="flex space-x-4" aria-label="Social media links">
+            <nav className="flex items-center space-x-2" aria-label="Social media links">
+              <a
+                href={TELEGRAM_COMMUNITY_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center h-9 w-9 rounded-md text-sky-500 bg-sky-500/10 hover:bg-sky-500 hover:text-white transition-all shadow-xs"
+                aria-label="Group Telegram (Cộng đồng)"
+                title="Group Telegram (Cộng đồng)"
+              >
+                <TelegramIcon className="h-5 w-5" />
+              </a>
               <Button variant="ghost" size="icon" aria-label="Facebook">
                 <Facebook className="h-5 w-5" />
               </Button>
@@ -70,6 +83,18 @@ export const Footer = () => {
           <nav className="space-y-4" aria-labelledby="footer-links-heading">
             <h3 id="footer-links-heading" className="text-lg font-semibold">{t("footer.quickLinks")}</h3>
             <ul className="space-y-2 text-sm">
+              <li>
+                <a
+                  href={TELEGRAM_COMMUNITY_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sky-600 dark:text-sky-400 font-medium hover:underline flex items-center gap-1.5"
+                >
+                  <TelegramIcon className="h-4 w-4 shrink-0" />
+                  <span>Group Telegram (Cộng đồng)</span>
+                  <ExternalLink className="h-3 w-3" />
+                </a>
+              </li>
               <li><Link to="/about" className="text-muted-foreground hover:text-primary transition-colors">{t("footer.aboutUs")}</Link></li>
               <li><Link to="/how-it-works" className="text-muted-foreground hover:text-primary transition-colors">{t("footer.howItWorks")}</Link></li>
               <li><Link to="/huong-dan" className="text-muted-foreground hover:text-primary transition-colors">{t("footer.guidesAndTips")}</Link></li>
@@ -107,6 +132,15 @@ export const Footer = () => {
             <address className="space-y-4 not-italic">
               <h3 className="text-lg font-semibold">{t("footer.contact")}</h3>
               <div className="space-y-3 text-sm">
+                <a
+                  href={TELEGRAM_COMMUNITY_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center space-x-3 text-muted-foreground hover:text-sky-500 transition-colors group"
+                >
+                  <TelegramIcon className="h-5 w-5 text-sky-500 shrink-0 group-hover:scale-110 transition-transform" />
+                  <span className="text-sky-600 dark:text-sky-400 font-medium group-hover:underline">Group Telegram (Cộng đồng)</span>
+                </a>
                 <div className="flex items-center space-x-3">
                   <Mail className="h-5 w-5 text-primary shrink-0" />
                   <span className="text-muted-foreground">support@salemylink.com</span>

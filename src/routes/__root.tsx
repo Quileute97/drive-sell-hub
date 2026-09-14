@@ -18,6 +18,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { AffiliateTracker } from "@/components/AffiliateTracker";
+import { TelegramCommunityWidget } from "@/components/TelegramCommunityWidget";
 import { reportLovableError } from "@/lib/lovable-error-reporting";
 import NotFound from "@/pages/NotFound";
 import appCss from "../styles.css?url";
@@ -64,6 +65,7 @@ const structuredData = {
         email: "support@salemylink.com",
         availableLanguage: ["Vietnamese"],
       },
+      sameAs: ["https://t.me/+2ZkLgrmVJgBkMGM1"],
     },
     {
       "@type": "OnlineStore",
@@ -207,6 +209,7 @@ function RootComponent() {
             <Toaster />
             <Sonner />
             <AffiliateTracker />
+            <TelegramCommunityWidget />
             <Outlet />
           </TooltipProvider>
         </AuthProvider>

@@ -12,6 +12,7 @@ import {
   Lightbulb,
   AlertCircle
 } from "lucide-react";
+import { TelegramIcon } from "@/components/icons/TelegramIcon";
 import { SEO } from "@/components/SEO";
 
 export default function SellerGuide() {
@@ -216,6 +217,32 @@ export default function SellerGuide() {
                   </ul>
                 </div>
               </div>
+            </CardContent>
+          </Card>
+        </section>
+
+        {/* Telegram Community for Sellers */}
+        <section className="mb-12">
+          <Card className="border-sky-500/30 bg-gradient-to-br from-sky-500/10 via-primary/5 to-accent/10 shadow-sm">
+            <CardContent className="p-8 flex flex-col sm:flex-row items-center justify-between gap-6">
+              <div className="space-y-2 text-center sm:text-left">
+                <h3 className="text-xl font-bold flex items-center justify-center sm:justify-start gap-2 text-foreground">
+                  <TelegramIcon className="h-5 w-5 text-sky-500" />
+                  <span>Group Telegram Hỗ Trợ & Cộng Đồng Seller</span>
+                </h3>
+                <p className="text-muted-foreground text-sm max-w-xl">
+                  Tham gia nhóm cộng đồng để được hướng dẫn trực tiếp, giải đáp thắc mắc về tải file, cấu hình thanh toán và nhận các mẹo tối ưu doanh thu.
+                </p>
+              </div>
+              <Button
+                className="bg-[#229ED9] hover:bg-[#1b85b8] text-white shrink-0 shadow-md hover:scale-105 transition-all"
+                asChild
+              >
+                <a href="https://t.me/+2ZkLgrmVJgBkMGM1" target="_blank" rel="noopener noreferrer">
+                  <TelegramIcon className="h-4 w-4 mr-2" />
+                  Tham gia Group Telegram
+                </a>
+              </Button>
             </CardContent>
           </Card>
         </section>

@@ -9,6 +9,7 @@ import { useWishlist } from '@/hooks/useWishlist';
 import { useUserRole } from '@/hooks/useUserRole';
 import { NotificationBell } from '@/components/NotificationBell';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
+import { TelegramIcon } from '@/components/icons/TelegramIcon';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -69,6 +70,18 @@ export const Header = () => {
 
           {/* Right Navigation */}
           <div className="flex items-center space-x-2 sm:space-x-3">
+            {/* Telegram Community Link */}
+            <a
+              href="https://t.me/+2ZkLgrmVJgBkMGM1"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hidden lg:inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-full bg-sky-500/10 text-sky-600 dark:text-sky-400 hover:bg-sky-500/20 hover:scale-105 transition-all"
+              title="Tham gia Group Telegram cộng đồng"
+            >
+              <TelegramIcon className="h-4 w-4" />
+              <span>Group Tele</span>
+            </a>
+
             {/* Language Switcher */}
             <LanguageSwitcher variant="header" />
 

@@ -1,7 +1,9 @@
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { Card, CardContent } from "@/components/ui/card";
-import { Users, Target, Heart, TrendingUp } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Users, Target, Heart, TrendingUp, ArrowRight } from "lucide-react";
+import { TelegramIcon } from "@/components/icons/TelegramIcon";
 import { SEO } from "@/components/SEO";
 
 export default function About() {
@@ -47,7 +49,7 @@ export default function About() {
             "logo": "https://salemylink.com/logo.png",
             "description": "Nền tảng thương mại điện tử hàng đầu cho sản phẩm digital tại Việt Nam",
             "foundingDate": "2024",
-            "sameAs": [],
+            "sameAs": ["https://t.me/+2ZkLgrmVJgBkMGM1"],
             "contactPoint": {
               "@type": "ContactPoint",
               "contactType": "customer service",
@@ -149,6 +151,37 @@ export default function About() {
               </CardContent>
             </Card>
           </div>
+        </section>
+
+        {/* Community Telegram CTA */}
+        <section className="mb-16">
+          <Card className="border-sky-500/30 bg-gradient-to-br from-sky-500/10 via-primary/5 to-accent/10 shadow-lg">
+            <CardContent className="p-8 sm:p-10 flex flex-col md:flex-row items-center justify-between gap-6">
+              <div className="space-y-3 text-center md:text-left">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-sky-500/20 text-sky-600 dark:text-sky-400 text-xs font-semibold">
+                  <TelegramIcon className="w-3.5 h-3.5" />
+                  <span>Cộng đồng chính thức</span>
+                </div>
+                <h2 className="text-2xl sm:text-3xl font-bold text-foreground">
+                  Gia nhập Group Telegram Salemylink
+                </h2>
+                <p className="text-muted-foreground max-w-xl text-sm sm:text-base">
+                  Giao lưu cùng hàng ngàn tác giả, người bán và độc giả. Nhận tài liệu chọn lọc miễn phí, thông báo khuyến mãi và hỗ trợ trực tiếp 24/7.
+                </p>
+              </div>
+              <Button
+                size="lg"
+                className="bg-[#229ED9] hover:bg-[#1b85b8] text-white shadow-md hover:shadow-lg hover:scale-105 transition-all shrink-0"
+                asChild
+              >
+                <a href="https://t.me/+2ZkLgrmVJgBkMGM1" target="_blank" rel="noopener noreferrer">
+                  <TelegramIcon className="w-5 h-5 mr-2 fill-white" />
+                  Tham gia Group ngay
+                  <ArrowRight className="w-4 h-4 ml-2" />
+                </a>
+              </Button>
+            </CardContent>
+          </Card>
         </section>
 
         {/* Story */}

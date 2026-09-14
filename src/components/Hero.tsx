@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Play, Download, Users, Share2 } from "lucide-react";
+import { TelegramIcon } from "@/components/icons/TelegramIcon";
 import { supabase } from "@/integrations/supabase/client";
 import { Link } from "@/lib/router-compat";
 import heroImage from "@/assets/hero-digital-marketplace.jpg";
@@ -57,6 +58,18 @@ export const Hero = () => {
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           {/* Left Content */}
           <div className="text-center lg:text-left animate-fade-in-up">
+            {/* Telegram Community Pill */}
+            <a
+              href="https://t.me/+2ZkLgrmVJgBkMGM1"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 px-3.5 py-1.5 mb-6 text-xs sm:text-sm font-semibold rounded-full bg-sky-500/10 text-sky-600 dark:text-sky-400 border border-sky-500/20 hover:bg-sky-500/20 hover:scale-105 transition-all shadow-xs"
+            >
+              <TelegramIcon className="h-4 w-4 shrink-0" />
+              <span>Tham gia Group Telegram Cộng đồng</span>
+              <ArrowRight className="h-3.5 w-3.5" />
+            </a>
+
             <h1 className="text-4xl lg:text-6xl font-bold mb-6 leading-tight">
               Mua bán tài liệu số, ebook,
               <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
@@ -70,7 +83,7 @@ export const Hero = () => {
               ebook và nhiều sản phẩm digital khác một cách dễ dàng qua Google Drive.
             </p>
 
-            <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start mb-12">
+            <div className="flex flex-wrap gap-4 justify-center lg:justify-start mb-12">
               <Button variant="hero" size="lg" className="group" asChild>
                 <Link to="/seller-signup">
                   Đăng kí bán ngay
@@ -94,6 +107,18 @@ export const Hero = () => {
                   <Share2 className="mr-2 h-5 w-5 transition-transform group-hover:rotate-12" />
                   Affiliate 5%
                 </Link>
+              </Button>
+
+              <Button
+                variant="outline"
+                size="lg"
+                className="group border-sky-500/40 text-sky-600 dark:text-sky-400 hover:bg-sky-500/10 hover:border-sky-500 transition-smooth"
+                asChild
+              >
+                <a href="https://t.me/+2ZkLgrmVJgBkMGM1" target="_blank" rel="noopener noreferrer">
+                  <TelegramIcon className="mr-2 h-5 w-5" />
+                  Group Tele (Cộng đồng)
+                </a>
               </Button>
             </div>
 

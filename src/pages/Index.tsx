@@ -81,6 +81,7 @@ const Index = ({ initialProducts, initialCategories }: IndexProps) => {
           }
         ],
         "sameAs": [
+          "https://t.me/+2ZkLgrmVJgBkMGM1",
           "https://facebook.com/salemylink",
           "https://twitter.com/salemylink"
         ]

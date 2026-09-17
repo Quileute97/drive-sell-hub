@@ -170,7 +170,6 @@ export const Route = createFileRoute("/san-pham/$slug")({
         url: `${SITE_URL}${path}`,
         seller: {
           "@type": "Organization",
-          "@id": `${SITE_URL}/#organization`,
           name: loaderData.sellerName || "Salemylink.com",
           url: SITE_URL,
         },

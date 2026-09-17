@@ -14,7 +14,6 @@ import { RecommendedProducts } from "@/components/RecommendedProducts";
 import { ProductReviews } from "@/components/ProductReviews";
 import EditProductForm from "@/components/EditProductForm";
 import { useCart } from "@/hooks/useCart";
-import { SEO } from "@/components/SEO";
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { fixVietnameseEncoding } from "@/lib/vietnameseText";
 import { ProductFAQ } from "@/components/ProductFAQ";
@@ -411,27 +410,6 @@ export default function ProductDetail({ initialProduct }: { initialProduct?: Pro
 
   return (
     <div className="min-h-screen">
-      <SEO 
-        title={metaTitle}
-        description={metaDescription}
-        keywords={seoKeywords}
-        image={mainImage}
-        url={productUrl}
-        type="product"
-        ogTitle={`${product.title} - ${categoryName} | Salemylink`}
-        ogDescription={metaDescription}
-        twTitle={`${product.title} | Salemylink`}
-        twDescription={metaDescription}
-        publishedTime={datePublished}
-        modifiedTime={dateModified}
-        author={product.profiles?.full_name}
-        productPrice={product.price}
-        productCurrency="VND"
-        productAvailability="InStock"
-        productCategory={product.categories?.name}
-        productRating={product.rating_count > 0 ? product.rating_average : undefined}
-        productReviewCount={product.rating_count > 0 ? product.rating_count : undefined}
-      />
       <Header />
       
       <main className="container mx-auto px-4 py-8">

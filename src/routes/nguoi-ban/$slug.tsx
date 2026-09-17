@@ -4,6 +4,8 @@ import { buildHead, SITE_URL } from "@/lib/seoHead";
 import { fetchSellerBySlugOrId } from "@/lib/sellerUtils";
 import { supabase } from "@/integrations/supabase/client";
 import { fixVietnameseEncoding } from "@/lib/vietnameseText";
+import { resolveProductImage } from "@/lib/productImages";
+import { generateSku } from "@/lib/skuUtils";
 
 export const Route = createFileRoute("/nguoi-ban/$slug")({
   loader: async ({ params }) => {
@@ -67,15 +69,55 @@ export const Route = createFileRoute("/nguoi-ban/$slug")({
         name: `Top sản phẩm nổi bật của ${sellerName}`,
         numberOfItems: products.length,
         itemListElement: products.map((p, i) => {
-          const imgUrl = p.thumbnail_url
-            ? (p.thumbnail_url.startsWith("http") ? p.thumbnail_url : `${SITE_URL}${p.thumbnail_url.startsWith("/") ? "" : "/"}${p.thumbnail_url}`)
-            : `${SITE_URL}/og-image.png`;
+          const imgUrl = resolveProductImage(p);
+          const productSku = generateSku(p.id, p.slug);
           return {
             "@type": "ListItem",
             position: i + 1,
-            name: fixVietnameseEncoding(p.title),
-            url: `${SITE_URL}/san-pham/${p.slug}`,
-            image: imgUrl,
+            item: {
+              "@type": "Product",
+              name: fixVietnameseEncoding(p.title),
+              url: `${SITE_URL}/san-pham/${p.slug}`,
+              sku: productSku,
+              mpn: productSku,
+              image: imgUrl,
+              offers: {
+                "@type": "Offer",
+                price: String(p.price || 0),
+                priceCurrency: "VND",
+                availability: "https://schema.org/InStock",
+                itemCondition: "https://schema.org/NewCondition",
+                url: `${SITE_URL}/san-pham/${p.slug}`,
+                shippingDetails: {
+                  "@type": "OfferShippingDetails",
+                  shippingDestination: {
+                    "@type": "DefinedRegion",
+                    addressCountry: "VN",
+                  },
+                  shippingRate: {
+                    "@type": "MonetaryAmount",
+                    value: "0",
+                    currency: "VND",
+                  },
+                },
+                hasMerchantReturnPolicy: {
+                  "@type": "MerchantReturnPolicy",
+                  applicableCountry: "VN",
+                  returnPolicyCategory: "https://schema.org/MerchantReturnNotPermitted",
+                  merchantReturnDays: 0,
+                  returnMethod: "https://schema.org/ReturnNotPermitted",
+                  returnFees: "https://schema.org/ReturnFeesCustomerResponsibility",
+                },
+              },
+              aggregateRating: {
+                "@type": "AggregateRating",
+                ratingValue: Math.min(5, Math.max(1, Math.round(Number(p.rating_average || 5) * 10) / 10)),
+                reviewCount: Math.max(1, Number(p.rating_count || 1)),
+                ratingCount: Math.max(1, Number(p.rating_count || 1)),
+                bestRating: 5,
+                worstRating: 1,
+              },
+            },
           };
         }),
       });

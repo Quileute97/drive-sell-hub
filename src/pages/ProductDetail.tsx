@@ -24,7 +24,7 @@ import { FreeDownloadButton } from "@/components/FreeDownloadButton";
 import { TableOfContents, injectHeadingIds } from "@/components/TableOfContents";
 import { getProductDownloadUrl, isFreeProduct, getGoogleDrivePreviewUrl } from "@/lib/productAccess";
 import { generateSku, safeIsoDate } from "@/lib/skuUtils";
-import { resolveProductImage, sanitizeImageUrl, sanitizeImageArray } from "@/lib/productImages";
+import { resolveAllProductImages, resolveProductImage, sanitizeImageUrl, sanitizeImageArray } from "@/lib/productImages";
 import DOMPurify from "dompurify";
 
 // Sanitize seller-provided HTML. Allow common rich-text + trusted iframes only.
@@ -376,16 +376,13 @@ export default function ProductDetail({ initialProduct }: { initialProduct?: Pro
 
   const cleanThumb = sanitizeImageUrl(product.thumbnail_url);
   const cleanImages = sanitizeImageArray(product.images);
-  const rawImages = [cleanThumb, ...cleanImages].filter(Boolean) as string[];
-  const mainImage = resolveProductImage({
+  const productImages = resolveAllProductImages({
     thumbnail_url: cleanThumb,
     images: cleanImages,
     google_drive_link: product.google_drive_link,
   });
+  const mainImage = productImages[0] || `${siteUrl}/og-image.png`;
   const hasRealImages = !mainImage.endsWith('/og-image.png');
-  const productImages = rawImages.length > 0
-    ? rawImages.map(img => img.startsWith('http') ? img : `${siteUrl}${img.startsWith('/') ? '' : '/'}${img}`)
-    : [mainImage];
 
   const rawDesc = cleanText(product.description) || cleanText(product.short_description) || metaDescription;
   const productDescription = rawDesc.length >= 10 ? rawDesc : `${product.title} - ${categoryName}. Tải xuống ngay sau khi thanh toán tại Salemylink.`;

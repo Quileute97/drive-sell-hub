@@ -5,6 +5,7 @@ import { buildHead, SITE_URL } from "@/lib/seoHead";
 import { supabase } from "@/integrations/supabase/client";
 import { fixVietnameseEncoding } from "@/lib/vietnameseText";
 import { resolveProductImage } from "@/lib/productImages";
+import { generateSku } from "@/lib/skuUtils";
 
 export const Route = createFileRoute("/danh-muc/$slug")({
   loader: async ({ params }) => {
@@ -88,6 +89,7 @@ export const Route = createFileRoute("/danh-muc/$slug")({
         numberOfItems: items.length,
         itemListElement: items.map((p, i) => {
           const imgUrl = resolveProductImage(p);
+          const productSku = generateSku(p.id, p.slug);
           return {
             "@type": "ListItem",
             position: i + 1,
@@ -95,12 +97,36 @@ export const Route = createFileRoute("/danh-muc/$slug")({
               "@type": "Product",
               name: fixVietnameseEncoding(p.title),
               url: `${SITE_URL}/san-pham/${p.slug}`,
+              sku: productSku,
+              mpn: productSku,
               image: imgUrl,
               offers: {
                 "@type": "Offer",
                 price: String(p.price || 0),
                 priceCurrency: "VND",
                 availability: "https://schema.org/InStock",
+                itemCondition: "https://schema.org/NewCondition",
+                url: `${SITE_URL}/san-pham/${p.slug}`,
+                shippingDetails: {
+                  "@type": "OfferShippingDetails",
+                  shippingDestination: {
+                    "@type": "DefinedRegion",
+                    addressCountry: "VN",
+                  },
+                  shippingRate: {
+                    "@type": "MonetaryAmount",
+                    value: "0",
+                    currency: "VND",
+                  },
+                },
+                hasMerchantReturnPolicy: {
+                  "@type": "MerchantReturnPolicy",
+                  applicableCountry: "VN",
+                  returnPolicyCategory: "https://schema.org/MerchantReturnNotPermitted",
+                  merchantReturnDays: 0,
+                  returnMethod: "https://schema.org/ReturnNotPermitted",
+                  returnFees: "https://schema.org/ReturnFeesCustomerResponsibility",
+                },
               },
               aggregateRating: {
                 "@type": "AggregateRating",

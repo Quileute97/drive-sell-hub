@@ -238,6 +238,11 @@ export async function generateFullSitemap() {
       fullImgLoc = rawThumb.startsWith('http')
         ? rawThumb
         : `${SITE_URL}${rawThumb.startsWith('/') ? '' : '/'}${rawThumb}`;
+    } else if (Array.isArray(prod.images) && prod.images.length > 0 && prod.images[0] && !prod.images[0].includes('placeholder')) {
+      const firstImg = prod.images[0];
+      fullImgLoc = firstImg.startsWith('http')
+        ? firstImg
+        : `${SITE_URL}${firstImg.startsWith('/') ? '' : '/'}${firstImg}`;
     } else if (prod.google_drive_link) {
       const fileId = extractGoogleDriveFileId(prod.google_drive_link);
       if (fileId && !fileId.startsWith('sample')) {

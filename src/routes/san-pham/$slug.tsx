@@ -5,7 +5,7 @@ import { buildHead, SITE_URL } from "@/lib/seoHead";
 import { fixVietnameseEncoding } from "@/lib/vietnameseText";
 import { getProductReviewData } from "@/lib/reviews";
 import { generateSku, safeIsoDate } from "@/lib/skuUtils";
-import { resolveProductImage, sanitizeImageUrl, sanitizeImageArray } from "@/lib/productImages";
+import { resolveAllProductImages, resolveProductImage, sanitizeImageUrl, sanitizeImageArray } from "@/lib/productImages";
 
 export const Route = createFileRoute("/san-pham/$slug")({
   loader: async ({ params }) => {
@@ -110,12 +110,12 @@ export const Route = createFileRoute("/san-pham/$slug")({
     const validFrom = safeIsoDate(loaderData.createdAt, defaultValidFrom);
     const priceValidUntil = safeIsoDate(Date.now() + 365 * 24 * 60 * 60 * 1000);
 
-    const finalImage = resolveProductImage({
+    const productImages = resolveAllProductImages({
       thumbnail_url: loaderData.thumbnail_url,
       images: loaderData.images,
       google_drive_link: loaderData.google_drive_link,
     });
-    const hasRealImage = !finalImage.endsWith("/og-image.png");
+    const finalImage = productImages[0] || `${SITE_URL}/og-image.png`;
 
     const productSku = generateSku(loaderData.id, rawSlug);
 
@@ -151,7 +151,7 @@ export const Route = createFileRoute("/san-pham/$slug")({
       url: `${SITE_URL}${path}`,
       sku: productSku,
       mpn: productSku,
-      ...(hasRealImage ? { image: [finalImage] } : {}),
+      image: productImages,
       ...(loaderData.categoryName ? { category: loaderData.categoryName } : {}),
       ...(loaderData.fileFormat ? { encodingFormat: loaderData.fileFormat } : {}),
       brand: {
@@ -378,7 +378,7 @@ export const Route = createFileRoute("/san-pham/$slug")({
       description: desc,
       path,
       type: "product",
-      image: hasRealImage ? finalImage : undefined,
+      image: finalImage,
       structuredData: {
         "@context": "https://schema.org",
         "@graph": graphNodes,

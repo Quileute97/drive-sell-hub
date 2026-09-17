@@ -125,6 +125,7 @@ function buildProductSchema(loaderData, slug) {
     url: `${SITE_URL}${path}`,
     sku: productSku,
     mpn: productSku,
+    image: [loaderData.image || `${SITE_URL}/og-image.png`],
     brand: {
       "@type": "Brand",
       name: loaderData.sellerName || "Salemylink",
@@ -225,10 +226,9 @@ async function runTests() {
     reviews: reviewData0.reviews,
   }, prod0.slug);
 
-  console.log('Schema 0 has aggregateRating?', 'aggregateRating' in schema0);
-  console.log('Schema 0 has review?', 'review' in schema0);
-  if (schema0.aggregateRating && schema0.aggregateRating.ratingValue >= 1 && schema0.review?.length >= 1) {
-    console.log('✅ TEST 1 PASSED: Baseline aggregateRating & review provided to satisfy Google Rich Snippets');
+  console.log('Schema 0 has image?', Boolean(schema0.image && schema0.image.length > 0));
+  if (schema0.aggregateRating && schema0.aggregateRating.ratingValue >= 1 && schema0.review?.length >= 1 && schema0.image?.length >= 1) {
+    console.log('✅ TEST 1 PASSED: Baseline aggregateRating, review & image provided to satisfy Google Rich Snippets');
   } else {
     console.error('❌ TEST 1 FAILED');
   }

@@ -62,6 +62,44 @@ export const Route = createFileRoute("/")({
       path: "/",
       keywords:
         "bán sản phẩm digital, ebook việt nam, tài liệu digital, khóa học online, google drive, marketplace digital, mua bán ebook, tài liệu học tập, khóa học trực tuyến",
+      structuredData: {
+        "@type": "FAQPage",
+        "@id": "https://salemylink.com/#faq",
+        mainEntity: [
+          {
+            "@type": "Question",
+            name: "Salemylink.com là gì?",
+            acceptedAnswer: {
+              "@type": "Answer",
+              text: "Salemylink.com là nền tảng mua bán sản phẩm digital hàng đầu Việt Nam, kết nối người mua và người bán ebook, tài liệu, khóa học online thông qua Google Drive một cách an toàn và hiệu quả.",
+            },
+          },
+          {
+            "@type": "Question",
+            name: "Làm thế nào để bán sản phẩm trên Salemylink?",
+            acceptedAnswer: {
+              "@type": "Answer",
+              text: "Bạn chỉ cần đăng ký tài khoản người bán, upload sản phẩm lên Google Drive, đặt giá và mô tả. Salemylink sẽ xử lý thanh toán và giao hàng tự động cho bạn.",
+            },
+          },
+          {
+            "@type": "Question",
+            name: "Hoa hồng của Salemylink là bao nhiêu?",
+            acceptedAnswer: {
+              "@type": "Answer",
+              text: "Salemylink chỉ thu hoa hồng từ 5% trên mỗi giao dịch thành công - một trong những mức thấp nhất trên thị trường.",
+            },
+          },
+          {
+            "@type": "Question",
+            name: "Thanh toán trên Salemylink có an toàn không?",
+            acceptedAnswer: {
+              "@type": "Answer",
+              text: "Có, Salemylink sử dụng cổng thanh toán PayOS uy tín, hỗ trợ nhiều phương thức thanh toán như thẻ ngân hàng, chuyển khoản, ví điện tử. Mọi giao dịch đều được mã hóa và bảo mật.",
+            },
+          },
+        ],
+      },
     }),
   component: IndexRoutePage,
 });

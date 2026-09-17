@@ -118,63 +118,6 @@ export default function TagProducts({ initialProducts }: { initialProducts?: Pro
     : tagSeo.description;
   const metaKeywords = [...(tagSeo.keywords || []), decodedTag, "sản phẩm digital", "salemylink"].join(", ");
 
-  const structuredData = {
-    "@context": "https://schema.org",
-    "@graph": [
-      {
-        "@type": "Organization",
-        "@id": `${siteUrl}/#organization`,
-        name: "Salemylink.com",
-        url: siteUrl,
-        logo: { "@type": "ImageObject", url: `${siteUrl}/logo.png` },
-      },
-      {
-        "@type": "WebSite",
-        "@id": `${siteUrl}/#website`,
-        url: siteUrl,
-        name: "Salemylink.com",
-        publisher: { "@id": `${siteUrl}/#organization` },
-      },
-      {
-        "@type": "CollectionPage",
-        "@id": `${canonicalUrl}#webpage`,
-        name: metaTitle,
-        url: canonicalUrl,
-        description: metaDescription,
-        isPartOf: { "@id": `${siteUrl}/#website` },
-        breadcrumb: { "@id": `${canonicalUrl}#breadcrumb` },
-        inLanguage: "vi",
-      },
-      {
-        "@type": "BreadcrumbList",
-        "@id": `${canonicalUrl}#breadcrumb`,
-        itemListElement: [
-          { "@type": "ListItem", position: 1, name: "Trang chủ", item: siteUrl },
-          { "@type": "ListItem", position: 2, name: `Tag: ${decodedTag}`, item: canonicalUrl },
-        ],
-      },
-      ...(products.length > 0
-        ? [{
-            "@type": "ItemList",
-            "@id": `${canonicalUrl}#itemlist`,
-            numberOfItems: products.length,
-            itemListElement: products.slice(0, 20).map((p, i) => {
-              const imgUrl = p.thumbnail_url
-                ? (p.thumbnail_url.startsWith("http") ? p.thumbnail_url : `${siteUrl}${p.thumbnail_url.startsWith("/") ? "" : "/"}${p.thumbnail_url}`)
-                : `${siteUrl}/og-image.png`;
-              return {
-                "@type": "ListItem",
-                position: i + 1,
-                name: p.title,
-                url: `${siteUrl}/san-pham/${p.slug}`,
-                image: imgUrl,
-              };
-            }),
-          }]
-        : []),
-    ],
-  };
-
   const breadcrumbItems = [
     { label: "Trang chủ", href: "/" },
     { label: `Tag: ${decodedTag}` },
@@ -192,7 +135,6 @@ export default function TagProducts({ initialProducts }: { initialProducts?: Pro
         ogDescription={`${tagSeo.ogDescription}${products.length > 0 ? ` Hiện có ${products.length} sản phẩm.` : ''}`}
         twTitle={tagSeo.twTitle}
         twDescription={tagSeo.twDescription}
-        structuredData={structuredData}
       />
 
       <Header />

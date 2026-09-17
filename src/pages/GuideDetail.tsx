@@ -71,43 +71,6 @@ export default function GuideDetail() {
         type="article"
         publishedTime={`${guide.updatedAt}T00:00:00+07:00`}
         modifiedTime={`${guide.updatedAt}T00:00:00+07:00`}
-        structuredData={[
-          {
-            "@context": "https://schema.org",
-            "@type": "Article",
-            headline: guide.title,
-            description: guide.description,
-            datePublished: `${guide.updatedAt}T00:00:00+07:00`,
-            dateModified: `${guide.updatedAt}T00:00:00+07:00`,
-            mainEntityOfPage: { "@type": "WebPage", "@id": url },
-            author: { "@type": "Organization", name: "Salemylink.com", url: BASE },
-            publisher: {
-              "@type": "Organization",
-              name: "Salemylink.com",
-              logo: { "@type": "ImageObject", url: `${BASE}/logo.png` },
-            },
-            articleSection: guide.category,
-            keywords: guide.keywords,
-          },
-          {
-            "@context": "https://schema.org",
-            "@type": "BreadcrumbList",
-            itemListElement: [
-              { "@type": "ListItem", position: 1, name: "Trang chủ", item: BASE },
-              { "@type": "ListItem", position: 2, name: "Cẩm nang", item: `${BASE}/huong-dan` },
-              { "@type": "ListItem", position: 3, name: guide.category, item: url },
-            ],
-          },
-          {
-            "@context": "https://schema.org",
-            "@type": "FAQPage",
-            mainEntity: guide.faq.map((f) => ({
-              "@type": "Question",
-              name: f.q,
-              acceptedAnswer: { "@type": "Answer", text: f.a },
-            })),
-          },
-        ]}
       />
       <Header />
 

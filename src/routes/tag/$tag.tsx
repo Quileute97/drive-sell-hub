@@ -57,6 +57,10 @@ export const Route = createFileRoute("/tag/$tag")({
               sku: productSku,
               mpn: productSku,
               image: imgUrl,
+              brand: {
+                "@type": "Brand",
+                name: (p as any).profiles?.full_name || "Salemylink.com",
+              },
               offers: {
                 "@type": "Offer",
                 price: String(p.price || 0),

@@ -258,7 +258,6 @@ export default function SellerProfile({
         keywords={`${seller.full_name}, cửa hàng, người bán, sản phẩm digital, Salemylink, ebook, tài liệu`}
         url={sellerUrl}
         image={seller.avatar_url || undefined}
-        structuredData={sellerStructuredData}
       />
       <Header />
 

@@ -20,30 +20,6 @@ export default function Guides() {
         description="Tổng hợp hướng dẫn học Y khoa, luyện thi IELTS, viết luận văn tốt nghiệp… kèm tài liệu và ví dụ sản phẩm thực tế trên Salemylink."
         keywords="cẩm nang học tập, hướng dẫn học y khoa, luyện thi ielts, viết luận văn, tài liệu học tập"
         url={url}
-        structuredData={[
-          {
-            "@context": "https://schema.org",
-            "@type": "CollectionPage",
-            name: "Cẩm nang học tập & luyện thi | Salemylink",
-            url,
-            description:
-              "Tổng hợp hướng dẫn học tập, luyện thi và viết luận văn kèm ví dụ sản phẩm trên Salemylink.",
-            hasPart: GUIDES.map((g) => ({
-              "@type": "Article",
-              headline: g.title,
-              url: `${BASE}/huong-dan/${g.slug}`,
-              description: g.description,
-            })),
-          },
-          {
-            "@context": "https://schema.org",
-            "@type": "BreadcrumbList",
-            itemListElement: [
-              { "@type": "ListItem", position: 1, name: "Trang chủ", item: BASE },
-              { "@type": "ListItem", position: 2, name: "Cẩm nang", item: url },
-            ],
-          },
-        ]}
       />
       <Header />
 

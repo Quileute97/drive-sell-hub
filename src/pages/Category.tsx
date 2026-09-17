@@ -305,7 +305,6 @@ export default function Category({
         ogDescription={`${seoOverride.ogDescription}${countSuffix}`}
         twTitle={seoOverride.twTitle}
         twDescription={seoOverride.twDescription}
-        structuredData={combinedStructuredData}
         modifiedTime={new Date(latestUpdate).toISOString()}
       />
 

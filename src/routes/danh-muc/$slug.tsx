@@ -100,6 +100,10 @@ export const Route = createFileRoute("/danh-muc/$slug")({
               sku: productSku,
               mpn: productSku,
               image: imgUrl,
+              brand: {
+                "@type": "Brand",
+                name: "Salemylink.com",
+              },
               offers: {
                 "@type": "Offer",
                 price: String(p.price || 0),

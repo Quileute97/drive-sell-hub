@@ -221,84 +221,6 @@ export default function SearchProducts() {
     'mua bán online', 'salemylink', 'tải ebook', 'digital marketplace việt nam'
   ].filter(Boolean).join(', ');
 
-  // Consolidated @graph structured data
-  const structuredData = {
-    "@context": "https://schema.org",
-    "@graph": [
-      {
-        "@type": "SearchResultsPage",
-        "@id": canonicalUrl,
-        "name": metaTitle,
-        "url": canonicalUrl,
-        "description": metaDescription,
-        "isPartOf": { "@id": `${siteUrl}/#website` },
-        "about": {
-          "@type": "Thing",
-          "name": currentQuery || "Sản phẩm Digital"
-        },
-        "breadcrumb": { "@id": `${canonicalUrl}#breadcrumb` }
-      },
-      {
-        "@type": "BreadcrumbList",
-        "@id": `${canonicalUrl}#breadcrumb`,
-        "itemListElement": [
-          {
-            "@type": "ListItem",
-            "position": 1,
-            "name": "Trang chủ",
-            "item": siteUrl
-          },
-          ...(categoryName && selectedCategory !== 'all' ? [{
-            "@type": "ListItem",
-            "position": 2,
-            "name": categoryName,
-            "item": `${siteUrl}/danh-muc/${currentCategorySlug}`
-          }] : []),
-          {
-            "@type": "ListItem",
-            "position": categoryName && selectedCategory !== 'all' ? 3 : 2,
-            "name": currentQuery ? `Tìm kiếm: ${currentQuery}` : "Tìm kiếm",
-            "item": canonicalUrl
-          }
-        ]
-      },
-      ...(products.length > 0 ? [{
-        "@type": "ItemList",
-        "@id": `${canonicalUrl}#results`,
-        "name": currentQuery ? `Kết quả tìm kiếm: ${currentQuery}` : "Sản phẩm Digital",
-        "description": `${products.length} sản phẩm digital phù hợp`,
-        "numberOfItems": products.length,
-        "itemListOrder": "https://schema.org/ItemListOrderDescending",
-        "itemListElement": products.slice(0, 20).map((product, index) => {
-          const imgUrl = product.thumbnail_url
-            ? (product.thumbnail_url.startsWith("http") ? product.thumbnail_url : `${siteUrl}${product.thumbnail_url.startsWith("/") ? "" : "/"}${product.thumbnail_url}`)
-            : (getGoogleDriveThumbnail(product.google_drive_link, 600) || `${siteUrl}/og-image.png`);
-          return {
-            "@type": "ListItem",
-            "position": index + 1,
-            "name": product.title,
-            "url": `${siteUrl}/san-pham/${product.slug}`,
-            "image": imgUrl,
-          };
-        })
-      }] : []),
-      {
-        "@type": "WebSite",
-        "@id": `${siteUrl}/#website`,
-        "url": siteUrl,
-        "name": "Salemylink.com",
-        "potentialAction": {
-          "@type": "SearchAction",
-          "target": {
-            "@type": "EntryPoint",
-            "urlTemplate": `${siteUrl}/search?q={search_term_string}`
-          },
-          "query-input": "required name=search_term_string"
-        }
-      }
-    ]
-  };
-
   // noindex search pages with query params to avoid thin/duplicate content
   const shouldNoindex = !!currentQuery;
 
@@ -309,7 +231,6 @@ export default function SearchProducts() {
         description={metaDescription}
         keywords={metaKeywords}
         url={canonicalUrl}
-        structuredData={structuredData}
         noindex={shouldNoindex}
       />
       <Header />

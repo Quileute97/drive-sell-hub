@@ -146,7 +146,6 @@ export default function Sellers() {
         description={`Khám phá ${sellers.length}+ người bán uy tín trên Salemylink.com. Mua ebook, tài liệu, khóa học online từ các seller được xác minh với đánh giá cao.`}
         keywords="người bán digital, seller uy tín, bán ebook, bán tài liệu, bán khóa học, salemylink sellers, người bán sản phẩm số"
         url={pageUrl}
-        structuredData={sellersStructuredData}
       />
       <Header />
       

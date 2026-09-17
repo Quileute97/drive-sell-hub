@@ -81,6 +81,10 @@ export const Route = createFileRoute("/nguoi-ban/$slug")({
               sku: productSku,
               mpn: productSku,
               image: imgUrl,
+              brand: {
+                "@type": "Brand",
+                name: sellerName || "Salemylink.com",
+              },
               offers: {
                 "@type": "Offer",
                 price: String(p.price || 0),

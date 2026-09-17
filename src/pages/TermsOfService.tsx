@@ -4,48 +4,6 @@ import { Card, CardContent } from "@/components/ui/card";
 import { SEO } from "@/components/SEO";
 
 export default function TermsOfService() {
-  const lastUpdated = "2025-01-15";
-  
-  const structuredData = [
-    {
-      "@context": "https://schema.org",
-      "@type": "WebPage",
-      "@id": "https://salemylink.com/terms-of-service",
-      "name": "Điều khoản sử dụng - Salemylink.com",
-      "description": "Điều khoản sử dụng của Salemylink.com. Các quy định về việc sử dụng nền tảng mua bán sản phẩm digital.",
-      "url": "https://salemylink.com/terms-of-service",
-      "datePublished": "2024-01-01T00:00:00+07:00",
-      "dateModified": `${lastUpdated}T00:00:00+07:00`,
-      "inLanguage": "vi-VN",
-      "isPartOf": {
-        "@id": "https://salemylink.com/#website"
-      },
-      "publisher": {
-        "@type": "Organization",
-        "name": "Salemylink.com",
-        "url": "https://salemylink.com"
-      }
-    },
-    {
-      "@context": "https://schema.org",
-      "@type": "BreadcrumbList",
-      "itemListElement": [
-        {
-          "@type": "ListItem",
-          "position": 1,
-          "name": "Trang chủ",
-          "item": "https://salemylink.com"
-        },
-        {
-          "@type": "ListItem",
-          "position": 2,
-          "name": "Điều khoản sử dụng",
-          "item": "https://salemylink.com/terms-of-service"
-        }
-      ]
-    }
-  ];
-
   return (
     <div className="min-h-screen">
       <SEO 
@@ -53,7 +11,6 @@ export default function TermsOfService() {
         description="Điều khoản sử dụng của Salemylink.com. Quy định về đăng ký tài khoản, mua bán sản phẩm digital, thanh toán và trách nhiệm của người dùng."
         keywords="điều khoản sử dụng, terms of service, quy định, salemylink, chính sách, người bán, người mua"
         url="https://salemylink.com/terms-of-service"
-        structuredData={structuredData}
       />
       <Header />
       

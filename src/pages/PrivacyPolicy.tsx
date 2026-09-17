@@ -4,48 +4,6 @@ import { Card, CardContent } from "@/components/ui/card";
 import { SEO } from "@/components/SEO";
 
 export default function PrivacyPolicy() {
-  const lastUpdated = "2025-01-15";
-  
-  const structuredData = [
-    {
-      "@context": "https://schema.org",
-      "@type": "WebPage",
-      "@id": "https://salemylink.com/privacy-policy",
-      "name": "Chính sách bảo mật - Salemylink",
-      "description": "Chính sách bảo mật của Salemylink. Tìm hiểu cách chúng tôi bảo vệ thông tin cá nhân của bạn.",
-      "url": "https://salemylink.com/privacy-policy",
-      "datePublished": "2024-01-01T00:00:00+07:00",
-      "dateModified": `${lastUpdated}T00:00:00+07:00`,
-      "inLanguage": "vi-VN",
-      "isPartOf": {
-        "@id": "https://salemylink.com/#website"
-      },
-      "publisher": {
-        "@type": "Organization",
-        "name": "Salemylink",
-        "url": "https://salemylink.com"
-      }
-    },
-    {
-      "@context": "https://schema.org",
-      "@type": "BreadcrumbList",
-      "itemListElement": [
-        {
-          "@type": "ListItem",
-          "position": 1,
-          "name": "Trang chủ",
-          "item": "https://salemylink.com"
-        },
-        {
-          "@type": "ListItem",
-          "position": 2,
-          "name": "Chính sách bảo mật",
-          "item": "https://salemylink.com/privacy-policy"
-        }
-      ]
-    }
-  ];
-
   return (
     <div className="min-h-screen">
       <SEO 
@@ -53,7 +11,6 @@ export default function PrivacyPolicy() {
         description="Chính sách bảo mật Salemylink. Tìm hiểu cách chúng tôi bảo vệ thông tin cá nhân của bạn."
         keywords="chính sách bảo mật, privacy policy, bảo mật thông tin, salemylink, quyền riêng tư, dữ liệu cá nhân"
         url="https://salemylink.com/privacy-policy"
-        structuredData={structuredData}
       />
       <Header />
       

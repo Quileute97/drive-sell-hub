@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { buildHead, SITE_URL } from "@/lib/seoHead";
 import { fixVietnameseEncoding } from "@/lib/vietnameseText";
 import { getProductReviewData } from "@/lib/reviews";
-import { generateSku, safeIsoDate } from "@/lib/skuUtils";
+import { buildProductSchema, cleanSchemaName } from "@/lib/productSchemaBuilder";
 import { resolveAllProductImages, resolveProductImage, sanitizeImageUrl, sanitizeImageArray } from "@/lib/productImages";
 
 export const Route = createFileRoute("/san-pham/$slug")({
@@ -137,170 +137,33 @@ export const Route = createFileRoute("/san-pham/$slug")({
         {
           "@type": "ListItem",
           position: loaderData.categorySlug ? 3 : 2,
-          name: loaderData.name,
+          name: cleanSchemaName(loaderData.name),
           item: `${SITE_URL}${path}`,
         },
       ],
     };
 
-    const productSchema: Record<string, unknown> = {
-      "@type": "Product",
-      "@id": `${SITE_URL}${path}#product`,
+    const productSchema = buildProductSchema({
+      id: loaderData.id,
+      slug: rawSlug,
       name: loaderData.name,
-      description: desc.slice(0, 300),
-      url: `${SITE_URL}${path}`,
-      sku: productSku,
-      mpn: productSku,
-      image: productImages,
-      ...(loaderData.categoryName ? { category: loaderData.categoryName } : {}),
-      ...(loaderData.fileFormat ? { encodingFormat: loaderData.fileFormat } : {}),
-      brand: {
-        "@type": "Brand",
-        name: loaderData.sellerName || "Salemylink.com",
-      },
-      offers: {
-        "@type": "Offer",
-        "@id": `${SITE_URL}${path}#offer`,
-        price: String(loaderData.price || 0),
-        priceCurrency: "VND",
-        validFrom,
-        priceValidUntil,
-        availability: "https://schema.org/InStock",
-        itemCondition: "https://schema.org/NewCondition",
-        url: `${SITE_URL}${path}`,
-        seller: {
-          "@type": "Organization",
-          name: loaderData.sellerName || "Salemylink.com",
-          url: SITE_URL,
-        },
-        shippingDetails: {
-          "@type": "OfferShippingDetails",
-          shippingDestination: {
-            "@type": "DefinedRegion",
-            addressCountry: "VN",
-          },
-          shippingRate: {
-            "@type": "MonetaryAmount",
-            value: "0",
-            currency: "VND",
-          },
-          deliveryTime: {
-            "@type": "ShippingDeliveryTime",
-            handlingTime: {
-              "@type": "QuantitativeValue",
-              minValue: 0,
-              maxValue: 0,
-              unitCode: "DAY",
-            },
-            transitTime: {
-              "@type": "QuantitativeValue",
-              minValue: 0,
-              maxValue: 0,
-              unitCode: "DAY",
-            },
-          },
-        },
-        hasMerchantReturnPolicy: {
-          "@type": "MerchantReturnPolicy",
-          applicableCountry: "VN",
-          returnPolicyCategory: "https://schema.org/MerchantReturnNotPermitted",
-          merchantReturnDays: 0,
-          returnMethod: "https://schema.org/ReturnNotPermitted",
-          returnFees: "https://schema.org/ReturnFeesCustomerResponsibility",
-        },
-      },
-    };
-
-    // Additional properties if file format / size available
-    const additionalProperties = [];
-    if (loaderData.fileFormat) {
-      additionalProperties.push({
-        "@type": "PropertyValue",
-        name: "Định dạng file",
-        value: loaderData.fileFormat,
-      });
-    }
-    if (loaderData.fileSize) {
-      additionalProperties.push({
-        "@type": "PropertyValue",
-        name: "Dung lượng",
-        value: loaderData.fileSize,
-      });
-    }
-    if (additionalProperties.length > 0) {
-      productSchema.additionalProperty = additionalProperties;
-    }
-
-    // Always include aggregateRating and review to satisfy Google Rich Snippet (Product snippet) requirements
-    const validRatingValue =
-      loaderData.ratingValue && loaderData.ratingValue > 0
-        ? Math.min(5, Math.max(1, Math.round(Number(loaderData.ratingValue) * 10) / 10))
-        : loaderData.ratingAverage && loaderData.ratingAverage > 0
-        ? Math.min(5, Math.max(1, Math.round(Number(loaderData.ratingAverage) * 10) / 10))
-        : 5;
-
-    const validReviewCount =
-      loaderData.ratingCount && loaderData.ratingCount > 0
-        ? Math.max(1, Number(loaderData.ratingCount))
-        : 1;
-
-    productSchema.aggregateRating = {
-      "@type": "AggregateRating",
-      "@id": `${SITE_URL}${path}#rating`,
-      ratingValue: validRatingValue,
-      reviewCount: validReviewCount,
-      ratingCount: validReviewCount,
-      bestRating: 5,
-      worstRating: 1,
-    };
-
-    if (loaderData.reviews && loaderData.reviews.length > 0) {
-      productSchema.review = loaderData.reviews.map((r: any, idx: number) => ({
-        "@type": "Review",
-        "@id": `${SITE_URL}${path}#review-${idx + 1}`,
-        reviewRating: {
-          "@type": "Rating",
-          ratingValue: Math.min(5, Math.max(1, Number(r.rating) || 5)),
-          bestRating: 5,
-          worstRating: 1,
-        },
-        author: {
-          "@type": "Person",
-          name: r.authorName || "Khách hàng",
-        },
-        datePublished: safeIsoDate(r.datePublished || r.createdAt, validFrom),
-        reviewBody: r.comment || `Đánh giá ${r.rating || 5} sao cho sản phẩm.`,
-        publisher: {
-          "@type": "Organization",
-          name: "Salemylink.com",
-          url: SITE_URL,
-        },
-      }));
-    } else {
-      productSchema.review = [
-        {
-          "@type": "Review",
-          "@id": `${SITE_URL}${path}#review-1`,
-          reviewRating: {
-            "@type": "Rating",
-            ratingValue: validRatingValue,
-            bestRating: 5,
-            worstRating: 1,
-          },
-          author: {
-            "@type": "Person",
-            name: "Khách hàng đã xác thực",
-          },
-          datePublished: validFrom,
-          reviewBody: `Sản phẩm ${loaderData.name} chất lượng tốt, tài liệu đúng như mô tả, nhận file qua Google Drive nhanh chóng.`,
-          publisher: {
-            "@type": "Organization",
-            name: "Salemylink.com",
-            url: SITE_URL,
-          },
-        },
-      ];
-    }
+      description: desc,
+      price: loaderData.price,
+      categoryName: loaderData.categoryName,
+      categorySlug: loaderData.categorySlug,
+      sellerName: loaderData.sellerName,
+      thumbnail_url: loaderData.thumbnail_url,
+      images: loaderData.images,
+      google_drive_link: loaderData.google_drive_link,
+      ratingValue: loaderData.ratingValue,
+      ratingAverage: loaderData.ratingAverage,
+      ratingCount: loaderData.ratingCount,
+      reviews: loaderData.reviews,
+      fileFormat: loaderData.fileFormat,
+      fileSize: loaderData.fileSize,
+      createdAt: loaderData.createdAt,
+      updatedAt: loaderData.updatedAt,
+    });
 
     const itemPageNode = {
       "@type": "ItemPage",

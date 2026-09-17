@@ -4,8 +4,7 @@ import { buildHead, SITE_URL } from "@/lib/seoHead";
 import { fetchSellerBySlugOrId } from "@/lib/sellerUtils";
 import { supabase } from "@/integrations/supabase/client";
 import { fixVietnameseEncoding } from "@/lib/vietnameseText";
-import { resolveProductImage } from "@/lib/productImages";
-import { generateSku } from "@/lib/skuUtils";
+import { buildProductSchema } from "@/lib/productSchemaBuilder";
 
 export const Route = createFileRoute("/nguoi-ban/$slug")({
   loader: async ({ params }) => {
@@ -15,7 +14,7 @@ export const Route = createFileRoute("/nguoi-ban/$slug")({
 
       const { data: products } = await supabase
         .from("products")
-        .select("id, title, slug, thumbnail_url, price, original_price, rating_average, rating_count, download_count")
+        .select("id, title, slug, description, short_description, thumbnail_url, images, google_drive_link, price, original_price, rating_average, rating_count, download_count, created_at, updated_at")
         .eq("seller_id", seller.user_id)
         .eq("status", "active")
         .order("download_count", { ascending: false })
@@ -68,62 +67,24 @@ export const Route = createFileRoute("/nguoi-ban/$slug")({
         "@type": "ItemList",
         name: `Top sản phẩm nổi bật của ${sellerName}`,
         numberOfItems: products.length,
-        itemListElement: products.map((p, i) => {
-          const imgUrl = resolveProductImage(p);
-          const productSku = generateSku(p.id, p.slug);
-          return {
-            "@type": "ListItem",
-            position: i + 1,
-            item: {
-              "@type": "Product",
-              name: fixVietnameseEncoding(p.title),
-              url: `${SITE_URL}/san-pham/${p.slug}`,
-              sku: productSku,
-              mpn: productSku,
-              image: imgUrl,
-              brand: {
-                "@type": "Brand",
-                name: sellerName || "Salemylink.com",
-              },
-              offers: {
-                "@type": "Offer",
-                price: String(p.price || 0),
-                priceCurrency: "VND",
-                availability: "https://schema.org/InStock",
-                itemCondition: "https://schema.org/NewCondition",
-                url: `${SITE_URL}/san-pham/${p.slug}`,
-                shippingDetails: {
-                  "@type": "OfferShippingDetails",
-                  shippingDestination: {
-                    "@type": "DefinedRegion",
-                    addressCountry: "VN",
-                  },
-                  shippingRate: {
-                    "@type": "MonetaryAmount",
-                    value: "0",
-                    currency: "VND",
-                  },
-                },
-                hasMerchantReturnPolicy: {
-                  "@type": "MerchantReturnPolicy",
-                  applicableCountry: "VN",
-                  returnPolicyCategory: "https://schema.org/MerchantReturnNotPermitted",
-                  merchantReturnDays: 0,
-                  returnMethod: "https://schema.org/ReturnNotPermitted",
-                  returnFees: "https://schema.org/ReturnFeesCustomerResponsibility",
-                },
-              },
-              aggregateRating: {
-                "@type": "AggregateRating",
-                ratingValue: Math.min(5, Math.max(1, Math.round(Number(p.rating_average || 5) * 10) / 10)),
-                reviewCount: Math.max(1, Number(p.rating_count || 1)),
-                ratingCount: Math.max(1, Number(p.rating_count || 1)),
-                bestRating: 5,
-                worstRating: 1,
-              },
-            },
-          };
-        }),
+        itemListElement: products.map((p, i) => ({
+          "@type": "ListItem",
+          position: i + 1,
+          item: buildProductSchema({
+            id: p.id,
+            slug: p.slug,
+            name: p.title,
+            description: (p as any).description || (p as any).short_description,
+            price: p.price,
+            sellerName,
+            thumbnail_url: p.thumbnail_url,
+            images: (p as any).images,
+            google_drive_link: (p as any).google_drive_link,
+            ratingValue: p.rating_average,
+            ratingCount: p.rating_count,
+            createdAt: (p as any).created_at,
+          }),
+        })),
       });
     }
 

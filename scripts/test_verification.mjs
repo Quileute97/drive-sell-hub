@@ -156,6 +156,21 @@ function buildProductSchema(loaderData, slug) {
           value: "0",
           currency: "VND",
         },
+        deliveryTime: {
+          "@type": "ShippingDeliveryTime",
+          handlingTime: {
+            "@type": "QuantitativeValue",
+            minValue: 0,
+            maxValue: 0,
+            unitCode: "DAY",
+          },
+          transitTime: {
+            "@type": "QuantitativeValue",
+            minValue: 0,
+            maxValue: 0,
+            unitCode: "DAY",
+          },
+        },
       },
       hasMerchantReturnPolicy: {
         "@type": "MerchantReturnPolicy",
@@ -198,6 +213,7 @@ function buildProductSchema(loaderData, slug) {
       reviewBody: r.comment || `Đánh giá ${r.rating || 5} sao cho sản phẩm.`,
     })),
   };
+
   return productSchema;
 }
 
@@ -352,8 +368,52 @@ async function runTests() {
   console.log(`Single Brand node: ${hasSingleBrand ? '✅ PASS' : '❌ FAIL'}`);
   console.log(`Complete Offer (with validFrom, priceValidUntil, seller): ${hasValidOffer ? '✅ PASS' : '❌ FAIL'}`);
 
-  if (isSkuValid && hasSingleBrand && hasValidOffer && hasValidIndex && !hasDuplicates && hasCsp) {
-    console.log('\n🎉 ALL 5 TEST SUITES PASSED PERFECTLY!');
+  console.log('\n=== TEST 6: GOOGLE SEARCH CONSOLE 10 SPECIFIC CHECKS ===');
+  // 1. hasMerchantReturnPolicy
+  const check1 = !!(testSchema.offers && testSchema.offers.hasMerchantReturnPolicy && testSchema.offers.hasMerchantReturnPolicy['@type'] === 'MerchantReturnPolicy');
+  console.log(`1. hasMerchantReturnPolicy in offers: ${check1 ? '✅ PASS' : '❌ FAIL'}`);
+
+  // 2. shippingDetails
+  const check2 = !!(testSchema.offers && testSchema.offers.shippingDetails && testSchema.offers.shippingDetails['@type'] === 'OfferShippingDetails');
+  console.log(`2. shippingDetails in offers: ${check2 ? '✅ PASS' : '❌ FAIL'}`);
+
+  // 3. Brand / identifier
+  const check3 = !!(testSchema.brand && testSchema.brand['@type'] === 'Brand' && testSchema.brand.name);
+  console.log(`3. Brand identifier present without conflict: ${check3 ? '✅ PASS' : '❌ FAIL'}`);
+
+  // 4. Description non-empty
+  const check4 = typeof testSchema.description === 'string' && testSchema.description.trim().length >= 20;
+  console.log(`4. Description non-empty (>= 20 chars): ${check4 ? '✅ PASS' : '❌ FAIL'}`);
+
+  // 5. reviewCount positive
+  const check5 = Number.isInteger(testSchema.aggregateRating?.reviewCount) && testSchema.aggregateRating.reviewCount > 0;
+  console.log(`5. reviewCount is positive integer: ${check5 ? '✅ PASS' : '❌ FAIL'}`);
+
+  // 6. ratingValue in range [1, 5]
+  const check6 = testSchema.aggregateRating?.ratingValue >= 1 && testSchema.aggregateRating?.ratingValue <= 5;
+  console.log(`6. ratingValue in range [1, 5]: ${check6 ? '✅ PASS' : '❌ FAIL'}`);
+
+  // 7. SKU length valid
+  const check7 = typeof testSchema.sku === 'string' && testSchema.sku.length > 0 && testSchema.sku.length <= 50;
+  console.log(`7. SKU length valid (1..50 chars): ${check7 ? '✅ PASS' : '❌ FAIL'}`);
+
+  // 8. Name length valid
+  const check8 = typeof testSchema.name === 'string' && testSchema.name.length > 0 && testSchema.name.length <= 140;
+  console.log(`8. Name length valid (1..140 chars): ${check8 ? '✅ PASS' : '❌ FAIL'}`);
+
+  // 9. validFrom present in offers
+  const check9 = /^\d{4}-\d{2}-\d{2}$/.test(testSchema.offers?.validFrom);
+  console.log(`9. validFrom present with ISO format: ${check9 ? '✅ PASS' : '❌ FAIL'}`);
+
+  // 10. unitCode in handlingTime and transitTime is strictly "DAY"
+  const check10 = testSchema.offers?.shippingDetails?.deliveryTime?.handlingTime?.unitCode === 'DAY' &&
+    testSchema.offers?.shippingDetails?.deliveryTime?.transitTime?.unitCode === 'DAY';
+  console.log(`10. unitCode in shipping handling/transit time is 'DAY': ${check10 ? '✅ PASS' : '❌ FAIL'}`);
+
+  const allGscPassed = check1 && check2 && check3 && check4 && check5 && check6 && check7 && check8 && check9 && check10;
+
+  if (isSkuValid && hasSingleBrand && hasValidOffer && hasValidIndex && !hasDuplicates && hasCsp && allGscPassed) {
+    console.log('\n🎉 ALL 6 TEST SUITES & ALL 10 GSC CHECKS PASSED PERFECTLY!');
   } else {
     console.error('\n❌ SOME TESTS FAILED');
   }

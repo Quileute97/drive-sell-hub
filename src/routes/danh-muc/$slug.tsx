@@ -4,8 +4,7 @@ import { getCategorySeo } from "@/data/seoOverrides";
 import { buildHead, SITE_URL } from "@/lib/seoHead";
 import { supabase } from "@/integrations/supabase/client";
 import { fixVietnameseEncoding } from "@/lib/vietnameseText";
-import { resolveProductImage } from "@/lib/productImages";
-import { generateSku } from "@/lib/skuUtils";
+import { buildProductSchema } from "@/lib/productSchemaBuilder";
 
 export const Route = createFileRoute("/danh-muc/$slug")({
   loader: async ({ params }) => {
@@ -28,7 +27,7 @@ export const Route = createFileRoute("/danh-muc/$slug")({
 
       const { data: products } = await supabase
         .from("products")
-        .select("id, slug, title, short_description, price, original_price, rating_average, rating_count, download_count, view_count, google_drive_link, thumbnail_url, created_at, updated_at, file_format")
+        .select("id, slug, title, short_description, description, price, original_price, rating_average, rating_count, download_count, view_count, google_drive_link, thumbnail_url, images, created_at, updated_at, file_format, profiles!products_seller_id_fkey(full_name)")
         .eq("status", "active")
         .eq("category_id", category.id)
         .order("created_at", { ascending: false })
@@ -51,32 +50,29 @@ export const Route = createFileRoute("/danh-muc/$slug")({
       };
     }
   },
-  head: ({ params, loaderData }) => {
-    const fallbackName = decodeURIComponent(params.slug)
-      .split("-")
-      .join(" ")
-      .replace(/\b\w/g, (c) => c.toUpperCase());
-    const name = loaderData?.name || fallbackName;
-    const seo = getCategorySeo(params.slug, name);
+  head: ({ loaderData, params }) => {
+    const catName = loaderData?.name || params.slug;
+    const catDesc = loaderData?.description || "";
+    const items = loaderData?.items || [];
+    const seo = getCategorySeo(params.slug, catName, catDesc);
     const path = `/danh-muc/${params.slug}`;
-    const items = loaderData?.items ?? [];
 
     const breadcrumb = {
       "@context": "https://schema.org",
       "@type": "BreadcrumbList",
       itemListElement: [
         { "@type": "ListItem", position: 1, name: "Trang chủ", item: SITE_URL },
-        { "@type": "ListItem", position: 2, name, item: `${SITE_URL}${path}` },
+        { "@type": "ListItem", position: 2, name: catName, item: `${SITE_URL}${path}` },
       ],
     };
 
     const collectionPage = {
       "@context": "https://schema.org",
       "@type": "CollectionPage",
-      "@id": `${SITE_URL}${path}`,
-      url: `${SITE_URL}${path}`,
+      "@id": `${SITE_URL}${path}#collection`,
       name: seo.title,
       description: seo.description,
+      url: `${SITE_URL}${path}`,
       inLanguage: "vi-VN",
       isPartOf: {
         "@type": "WebSite",
@@ -87,62 +83,26 @@ export const Route = createFileRoute("/danh-muc/$slug")({
         "@type": "ItemList",
         name: seo.title,
         numberOfItems: items.length,
-        itemListElement: items.map((p, i) => {
-          const imgUrl = resolveProductImage(p);
-          const productSku = generateSku(p.id, p.slug);
-          return {
-            "@type": "ListItem",
-            position: i + 1,
-            item: {
-              "@type": "Product",
-              name: fixVietnameseEncoding(p.title),
-              url: `${SITE_URL}/san-pham/${p.slug}`,
-              sku: productSku,
-              mpn: productSku,
-              image: imgUrl,
-              brand: {
-                "@type": "Brand",
-                name: "Salemylink.com",
-              },
-              offers: {
-                "@type": "Offer",
-                price: String(p.price || 0),
-                priceCurrency: "VND",
-                availability: "https://schema.org/InStock",
-                itemCondition: "https://schema.org/NewCondition",
-                url: `${SITE_URL}/san-pham/${p.slug}`,
-                shippingDetails: {
-                  "@type": "OfferShippingDetails",
-                  shippingDestination: {
-                    "@type": "DefinedRegion",
-                    addressCountry: "VN",
-                  },
-                  shippingRate: {
-                    "@type": "MonetaryAmount",
-                    value: "0",
-                    currency: "VND",
-                  },
-                },
-                hasMerchantReturnPolicy: {
-                  "@type": "MerchantReturnPolicy",
-                  applicableCountry: "VN",
-                  returnPolicyCategory: "https://schema.org/MerchantReturnNotPermitted",
-                  merchantReturnDays: 0,
-                  returnMethod: "https://schema.org/ReturnNotPermitted",
-                  returnFees: "https://schema.org/ReturnFeesCustomerResponsibility",
-                },
-              },
-              aggregateRating: {
-                "@type": "AggregateRating",
-                ratingValue: Math.min(5, Math.max(1, Math.round(Number(p.rating_average || 5) * 10) / 10)),
-                reviewCount: Math.max(1, Number(p.rating_count || 1)),
-                ratingCount: Math.max(1, Number(p.rating_count || 1)),
-                bestRating: 5,
-                worstRating: 1,
-              },
-            },
-          };
-        }),
+        itemListElement: items.map((p, i) => ({
+          "@type": "ListItem",
+          position: i + 1,
+          item: buildProductSchema({
+            id: p.id,
+            slug: p.slug,
+            name: p.title,
+            description: (p as any).description || (p as any).short_description,
+            price: p.price,
+            categoryName: catName,
+            categorySlug: params.slug,
+            sellerName: (p as any).profiles?.full_name || "Salemylink.com",
+            thumbnail_url: p.thumbnail_url,
+            images: (p as any).images,
+            google_drive_link: p.google_drive_link,
+            ratingValue: p.rating_average,
+            ratingCount: p.rating_count,
+            createdAt: p.created_at,
+          }),
+        })),
       },
     };
 

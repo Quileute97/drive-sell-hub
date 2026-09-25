@@ -4,12 +4,29 @@ import { generateSku, safeIsoDate } from "./skuUtils";
 import { SITE_URL } from "./seoHead";
 
 /**
+ * Helper to decode HTML entities before generating schema text.
+ */
+function decodeHtmlEntities(str: string): string {
+  return str
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&apos;/g, "'")
+    .replace(/&nbsp;/g, " ")
+    .replace(/&#(\d+);/g, (_, dec) => String.fromCharCode(dec))
+    .replace(/&#x([0-9a-fA-F]+);/g, (_, hex) => String.fromCharCode(parseInt(hex, 16)));
+}
+
+/**
  * Clean and truncate product title to be strictly <= 140 chars
  * to comply with Google Merchant & Rich Results character limit (max 150).
  */
 export function cleanSchemaName(name?: string | null, fallback = "Sản phẩm Digital"): string {
   if (!name || typeof name !== "string") return fallback;
-  const clean = fixVietnameseEncoding(name).trim().replace(/[\r\n\t]+/g, " ");
+  const decoded = decodeHtmlEntities(name);
+  const clean = fixVietnameseEncoding(decoded).trim().replace(/[\r\n\t\s]+/g, " ");
   if (clean.length === 0) return fallback;
   if (clean.length > 140) {
     const truncated = clean.slice(0, 137);
@@ -31,14 +48,15 @@ export function cleanSchemaDescription(
   title?: string | null,
   categoryName?: string | null
 ): string {
-  const fallback = `${cleanSchemaName(title)}${categoryName ? ` (${categoryName})` : ""}. Mua tài liệu số, ebook, khóa học chất lượng cao tải ngay qua Google Drive tại Salemylink.com.`;
+  const cleanTitle = cleanSchemaName(title);
+  const fallback = `${cleanTitle}${categoryName ? ` (${categoryName})` : ""}. Mua tài liệu số, ebook, khóa học chất lượng cao tải ngay qua Google Drive tại Salemylink.com.`;
   if (!desc || typeof desc !== "string") return fallback;
 
-  // Strip HTML tags and markdown
-  const stripped = desc
+  // Strip HTML tags and markdown, decode entities
+  const stripped = decodeHtmlEntities(desc)
     .replace(/<[^>]+>/g, " ")
     .replace(/[*_#`~[\]]/g, " ")
-    .replace(/[\r\n\t]+/g, " ")
+    .replace(/[\r\n\t\s]+/g, " ")
     .trim();
 
   const clean = fixVietnameseEncoding(stripped);
@@ -125,7 +143,6 @@ export function buildProductSchema(options: BuildProductSchemaOptions) {
     description: cleanDesc,
     url: `${SITE_URL}${path}`,
     sku: productSku,
-    mpn: productSku,
     image: productImages,
     ...(options.categoryName ? { category: options.categoryName } : {}),
     ...(options.fileFormat ? { encodingFormat: options.fileFormat } : {}),

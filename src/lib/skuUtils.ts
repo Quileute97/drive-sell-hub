@@ -1,35 +1,37 @@
 /**
- * Helper to generate a valid, standard SKU / MPN string compliant with Google Merchant Center
- * and Schema.org recommendations (max length 50 chars, recommended alphanumeric with hyphens).
+ * Helper to generate a valid, standard SKU string compliant with Google Merchant Center
+ * and Schema.org recommendations (strictly <= 50 chars, no whitespace).
+ * Derived genuine unique identifier from product ID or slug.
  */
 export function generateSku(id?: string | null, slug?: string | null): string {
   if (id && typeof id === "string") {
-    const alphanumeric = id.replace(/[^a-zA-Z0-9]/g, "");
-    if (alphanumeric.length >= 6) {
-      return `SKU-${alphanumeric.slice(0, 12).toUpperCase()}`;
+    const cleanId = id.trim().replace(/\s+/g, "");
+    if (cleanId.length >= 6) {
+      const formatted = cleanId.startsWith("SKU-") ? cleanId : `SKU-${cleanId}`;
+      return formatted.length <= 50 ? formatted : formatted.slice(0, 50);
     }
   }
 
   if (slug && typeof slug === "string") {
-    const alphanumeric = slug.replace(/[^a-zA-Z0-9]/g, "");
-    if (alphanumeric.length > 0) {
-      const suffix = alphanumeric.slice(-12).toUpperCase();
-      return `SKU-${suffix}`;
+    const cleanSlug = slug.trim().replace(/\s+/g, "");
+    if (cleanSlug.length > 0) {
+      const formatted = cleanSlug.startsWith("SKU-") ? cleanSlug : `SKU-${cleanSlug}`;
+      return formatted.length <= 50 ? formatted : formatted.slice(0, 50);
     }
   }
 
-  return "SKU-ITEM";
+  return "SKU-DIGITAL";
 }
 
 /**
  * Safely parse a date value to ISO YYYY-MM-DD string without throwing RangeError.
  */
-export function safeIsoDate(val?: any, fallback?: string): string {
+export function safeIsoDate(val?: unknown, fallback?: string): string {
   try {
     if (!val) {
       return fallback || new Date().toISOString().slice(0, 10);
     }
-    const d = new Date(val);
+    const d = new Date(val as string | number | Date);
     if (isNaN(d.getTime())) {
       return fallback || new Date().toISOString().slice(0, 10);
     }
@@ -38,3 +40,4 @@ export function safeIsoDate(val?: any, fallback?: string): string {
     return fallback || new Date().toISOString().slice(0, 10);
   }
 }
+

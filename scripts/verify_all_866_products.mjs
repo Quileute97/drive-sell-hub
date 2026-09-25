@@ -6,9 +6,23 @@ const SITE_URL = "https://salemylink.com";
 
 const supabase = createClient(supabaseUrl, supabaseKey);
 
+function decodeHtmlEntities(str) {
+  return str
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&apos;/g, "'")
+    .replace(/&nbsp;/g, " ")
+    .replace(/&#(\d+);/g, (_, dec) => String.fromCharCode(dec))
+    .replace(/&#x([0-9a-fA-F]+);/g, (_, hex) => String.fromCharCode(parseInt(hex, 16)));
+}
+
 function cleanSchemaName(name, fallback = "Sản phẩm Digital") {
   if (!name || typeof name !== "string") return fallback;
-  const clean = name.trim().replace(/[\r\n\t]+/g, " ");
+  const decoded = decodeHtmlEntities(name);
+  const clean = decoded.trim().replace(/[\r\n\t\s]+/g, " ");
   if (clean.length === 0) return fallback;
   if (clean.length > 140) {
     const truncated = clean.slice(0, 137);
@@ -22,13 +36,14 @@ function cleanSchemaName(name, fallback = "Sản phẩm Digital") {
 }
 
 function cleanSchemaDescription(desc, title, categoryName) {
-  const fallback = `${cleanSchemaName(title)}${categoryName ? ` (${categoryName})` : ""}. Mua tài liệu số, ebook, khóa học chất lượng cao tải ngay qua Google Drive tại Salemylink.com.`;
+  const cleanTitle = cleanSchemaName(title);
+  const fallback = `${cleanTitle}${categoryName ? ` (${categoryName})` : ""}. Mua tài liệu số, ebook, khóa học chất lượng cao tải ngay qua Google Drive tại Salemylink.com.`;
   if (!desc || typeof desc !== "string") return fallback;
 
-  const stripped = desc
+  const stripped = decodeHtmlEntities(desc)
     .replace(/<[^>]+>/g, " ")
     .replace(/[*_#`~[\]]/g, " ")
-    .replace(/[\r\n\t]+/g, " ")
+    .replace(/[\r\n\t\s]+/g, " ")
     .trim();
 
   if (stripped.length < 20) {
@@ -47,19 +62,22 @@ function cleanSchemaDescription(desc, title, categoryName) {
 
 function generateSku(id, slug) {
   if (id && typeof id === "string") {
-    const alphanumeric = id.replace(/[^a-zA-Z0-9]/g, "");
-    if (alphanumeric.length >= 6) {
-      return `SKU-${alphanumeric.slice(0, 12).toUpperCase()}`;
+    const cleanId = id.trim().replace(/\s+/g, "");
+    if (cleanId.length >= 6) {
+      const formatted = cleanId.startsWith("SKU-") ? cleanId : `SKU-${cleanId}`;
+      return formatted.length <= 50 ? formatted : formatted.slice(0, 50);
     }
   }
+
   if (slug && typeof slug === "string") {
-    const alphanumeric = slug.replace(/[^a-zA-Z0-9]/g, "");
-    if (alphanumeric.length > 0) {
-      const suffix = alphanumeric.slice(-12).toUpperCase();
-      return `SKU-${suffix}`;
+    const cleanSlug = slug.trim().replace(/\s+/g, "");
+    if (cleanSlug.length > 0) {
+      const formatted = cleanSlug.startsWith("SKU-") ? cleanSlug : `SKU-${cleanSlug}`;
+      return formatted.length <= 50 ? formatted : formatted.slice(0, 50);
     }
   }
-  return "SKU-ITEM";
+
+  return "SKU-DIGITAL";
 }
 
 function safeIsoDate(val, fallback) {
@@ -104,7 +122,6 @@ function buildProductSchema(options) {
     description: cleanDesc,
     url: `${SITE_URL}${path}`,
     sku: productSku,
-    mpn: productSku,
     image: [`${SITE_URL}/og-image.png`],
     brand: {
       "@type": "Brand",

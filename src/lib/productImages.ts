@@ -8,18 +8,57 @@ import { SITE_URL } from "./seoHead";
 export function sanitizeImageUrl(url: string | null | undefined): string | null {
   if (!url || typeof url !== "string") return null;
   const trimmed = url.trim();
-  if (!trimmed || trimmed.includes("placeholder")) return null;
+  if (
+    !trimmed ||
+    trimmed === "null" ||
+    trimmed === "undefined" ||
+    trimmed.includes("placeholder")
+  ) {
+    return null;
+  }
+  if (trimmed.startsWith("//")) {
+    return `https:${trimmed}`;
+  }
   return trimmed;
 }
 
 /**
- * Sanitizes an array of image URLs, removing nulls and placeholders.
+ * Sanitizes an array or string representation of image URLs, removing nulls and placeholders.
  */
 export function sanitizeImageArray(images: unknown): string[] {
-  if (!Array.isArray(images)) return [];
-  return images
+  if (!images) return [];
+  let arr: unknown[] = [];
+  if (Array.isArray(images)) {
+    arr = images;
+  } else if (typeof images === "string") {
+    const trimmed = images.trim();
+    if (trimmed.startsWith("[") && trimmed.endsWith("]")) {
+      try {
+        const parsed = JSON.parse(trimmed);
+        if (Array.isArray(parsed)) {
+          arr = parsed;
+        }
+      } catch {
+        arr = [trimmed];
+      }
+    } else if (trimmed.includes(",")) {
+      arr = trimmed.split(",").map((s) => s.trim());
+    } else if (trimmed.length > 0) {
+      arr = [trimmed];
+    }
+  }
+  return arr
     .map((img) => (typeof img === "string" ? sanitizeImageUrl(img) : null))
     .filter((img): img is string => Boolean(img));
+}
+
+/**
+ * Normalizes a URL to a complete, absolute canonical URL.
+ */
+function toAbsoluteImageUrl(url: string): string {
+  if (url.startsWith("http://") || url.startsWith("https://")) return url;
+  if (url.startsWith("//")) return `https:${url}`;
+  return `${SITE_URL}${url.startsWith("/") ? "" : "/"}${url}`;
 }
 
 /**
@@ -33,18 +72,18 @@ export function sanitizeImageArray(images: unknown): string[] {
  */
 export function resolveAllProductImages(product: {
   thumbnail_url?: string | null | undefined;
-  images?: string[] | null | undefined;
+  images?: unknown;
   google_drive_link?: string | null | undefined;
 }): string[] {
   const list: string[] = [];
   const thumb = sanitizeImageUrl(product.thumbnail_url);
   if (thumb) {
-    list.push(thumb.startsWith("http") ? thumb : `${SITE_URL}${thumb.startsWith("/") ? "" : "/"}${thumb}`);
+    list.push(toAbsoluteImageUrl(thumb));
   }
 
   const cleanImages = sanitizeImageArray(product.images);
   for (const img of cleanImages) {
-    const fullImg = img.startsWith("http") ? img : `${SITE_URL}${img.startsWith("/") ? "" : "/"}${img}`;
+    const fullImg = toAbsoluteImageUrl(img);
     if (!list.includes(fullImg)) {
       list.push(fullImg);
     }
@@ -73,10 +112,11 @@ export function resolveAllProductImages(product: {
  */
 export function resolveProductImage(product: {
   thumbnail_url?: string | null | undefined;
-  images?: string[] | null | undefined;
+  images?: unknown;
   google_drive_link?: string | null | undefined;
 }): string {
   const all = resolveAllProductImages(product);
   return all[0] || `${SITE_URL}/og-image.png`;
 }
+
 

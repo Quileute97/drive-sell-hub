@@ -6,6 +6,7 @@ import { fixVietnameseEncoding } from "@/lib/vietnameseText";
 import { getProductReviewData } from "@/lib/reviews";
 import { buildProductSchema, cleanSchemaName } from "@/lib/productSchemaBuilder";
 import { resolveAllProductImages, resolveProductImage, sanitizeImageUrl, sanitizeImageArray } from "@/lib/productImages";
+import { generateSku, safeIsoDate } from "@/lib/skuUtils";
 
 export const Route = createFileRoute("/san-pham/$slug")({
   loader: async ({ params }) => {

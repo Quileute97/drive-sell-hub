@@ -27,19 +27,27 @@ export const Route = createFileRoute("/tag/$tag")({
     const seo = getTagSeo(tag);
     const path = `/tag/${params.tag}`;
     const items = loaderData?.items ?? [];
-    const structuredData: object[] = [
-      {
-        "@context": "https://schema.org",
-        "@type": "BreadcrumbList",
-        itemListElement: [
-          { "@type": "ListItem", position: 1, name: "Trang chủ", item: SITE_URL },
-          { "@type": "ListItem", position: 2, name: `Tag: ${tag}`, item: `${SITE_URL}${path}` },
-        ],
+    const breadcrumb = {
+      "@type": "BreadcrumbList",
+      "@id": `${SITE_URL}${path}#breadcrumb`,
+      itemListElement: [
+        { "@type": "ListItem", position: 1, name: "Trang chủ", item: SITE_URL },
+        { "@type": "ListItem", position: 2, name: `Tag: ${tag}`, item: `${SITE_URL}${path}` },
+      ],
+    };
+
+    const collectionPage = {
+      "@type": "CollectionPage",
+      "@id": `${SITE_URL}${path}#collection`,
+      name: seo.title,
+      description: seo.description,
+      url: `${SITE_URL}${path}`,
+      inLanguage: "vi-VN",
+      isPartOf: {
+        "@type": "WebSite",
+        "@id": `${SITE_URL}/#website`,
       },
-    ];
-    if (items.length > 0) {
-      structuredData.push({
-        "@context": "https://schema.org",
+      mainEntity: {
         "@type": "ItemList",
         name: seo.title,
         numberOfItems: items.length,
@@ -63,8 +71,10 @@ export const Route = createFileRoute("/tag/$tag")({
             createdAt: p.created_at,
           }),
         })),
-      });
-    }
+      },
+    };
+
+    const structuredData: object[] = [breadcrumb, collectionPage];
     return buildHead({
       title: seo.title,
       description: seo.description,

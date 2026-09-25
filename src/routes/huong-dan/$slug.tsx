@@ -36,17 +36,23 @@ export const Route = createFileRoute("/huong-dan/$slug")({
       dateModified: `${guide.updatedAt}T00:00:00+07:00`,
       url: `${SITE_URL}${path}`,
       inLanguage: "vi-VN",
+      isPartOf: {
+        "@type": "WebSite",
+        "@id": `${SITE_URL}/#website`,
+      },
       mainEntityOfPage: {
         "@type": "WebPage",
         "@id": `${SITE_URL}${path}`,
       },
       author: {
         "@type": "Organization",
+        "@id": `${SITE_URL}/#organization`,
         name: "Salemylink.com",
         url: SITE_URL,
       },
       publisher: {
         "@type": "Organization",
+        "@id": `${SITE_URL}/#organization`,
         name: "Salemylink.com",
         url: SITE_URL,
         logo: {

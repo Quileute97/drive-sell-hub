@@ -58,8 +58,8 @@ export const Route = createFileRoute("/danh-muc/$slug")({
     const path = `/danh-muc/${params.slug}`;
 
     const breadcrumb = {
-      "@context": "https://schema.org",
       "@type": "BreadcrumbList",
+      "@id": `${SITE_URL}${path}#breadcrumb`,
       itemListElement: [
         { "@type": "ListItem", position: 1, name: "Trang chủ", item: SITE_URL },
         { "@type": "ListItem", position: 2, name: catName, item: `${SITE_URL}${path}` },
@@ -67,7 +67,6 @@ export const Route = createFileRoute("/danh-muc/$slug")({
     };
 
     const collectionPage = {
-      "@context": "https://schema.org",
       "@type": "CollectionPage",
       "@id": `${SITE_URL}${path}#collection`,
       name: seo.title,
@@ -76,8 +75,7 @@ export const Route = createFileRoute("/danh-muc/$slug")({
       inLanguage: "vi-VN",
       isPartOf: {
         "@type": "WebSite",
-        name: "Salemylink.com",
-        url: SITE_URL,
+        "@id": `${SITE_URL}/#website`,
       },
       mainEntity: {
         "@type": "ItemList",

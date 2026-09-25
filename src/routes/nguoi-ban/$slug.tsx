@@ -47,15 +47,27 @@ export const Route = createFileRoute("/nguoi-ban/$slug")({
     const profilePage = {
       "@context": "https://schema.org",
       "@type": "ProfilePage",
-      "@id": `${SITE_URL}${path}`,
-      name: `${sellerName} – Gian hàng sản phẩm digital trên Salemylink`,
+      "@id": `${SITE_URL}${path}#profile`,
+      name: `${sellerName} – Gian hàng người bán trên Salemylink`,
       description: `Khám phá các sản phẩm digital chất lượng cao từ ${sellerName}. Mua tài liệu, ebook, khóa học uy tín giao nhanh qua Google Drive.`,
       url: `${SITE_URL}${path}`,
+      inLanguage: "vi-VN",
+      isPartOf: {
+        "@type": "WebSite",
+        "@id": `${SITE_URL}/#website`,
+      },
       mainEntity: {
         "@type": "Person",
+        "@id": `${SITE_URL}${path}#seller`,
         name: sellerName,
         url: `${SITE_URL}${path}`,
         ...(seller?.avatar_url ? { image: seller.avatar_url } : {}),
+        worksFor: {
+          "@type": "Organization",
+          "@id": `${SITE_URL}/#organization`,
+          name: "Salemylink.com",
+          url: SITE_URL,
+        },
       },
     };
 

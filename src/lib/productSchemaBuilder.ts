@@ -124,17 +124,13 @@ export function buildProductSchema(options: BuildProductSchemaOptions) {
 
   const sellerName = (options.sellerName || "").trim() || "Salemylink.com";
 
-  const validRatingValue =
-    options.ratingValue && Number(options.ratingValue) > 0
-      ? Math.min(5, Math.max(1, Math.round(Number(options.ratingValue) * 10) / 10))
-      : options.ratingAverage && Number(options.ratingAverage) > 0
-      ? Math.min(5, Math.max(1, Math.round(Number(options.ratingAverage) * 10) / 10))
-      : 5;
-
-  const validReviewCount =
-    options.ratingCount && Number(options.ratingCount) > 0
-      ? Math.max(1, Math.round(Number(options.ratingCount)))
-      : 1;
+  // Check if real reviews / rating exist
+  const rawRatingCount = Number(options.ratingCount);
+  const rawRatingValue = Number(options.ratingValue || options.ratingAverage);
+  const hasReviewsList = Array.isArray(options.reviews) && options.reviews.length > 0;
+  const hasValidRating =
+    (rawRatingCount > 0 || hasReviewsList) &&
+    (rawRatingValue > 0 || (hasReviewsList && options.reviews!.some((r) => Number(r.rating) > 0)));
 
   const productNode: Record<string, unknown> = {
     "@type": "Product",
@@ -148,7 +144,7 @@ export function buildProductSchema(options: BuildProductSchemaOptions) {
     ...(options.fileFormat ? { encodingFormat: options.fileFormat } : {}),
     brand: {
       "@type": "Brand",
-      name: sellerName,
+      name: sellerName || "Salemylink",
     },
     offers: {
       "@type": "Offer",
@@ -162,7 +158,8 @@ export function buildProductSchema(options: BuildProductSchemaOptions) {
       url: `${SITE_URL}${path}`,
       seller: {
         "@type": "Organization",
-        name: sellerName,
+        "@id": `${SITE_URL}/#organization`,
+        name: sellerName === "Salemylink.com" ? "Salemylink.com" : sellerName,
         url: SITE_URL,
       },
       shippingDetails: {
@@ -201,7 +198,18 @@ export function buildProductSchema(options: BuildProductSchemaOptions) {
         returnFees: "https://schema.org/ReturnFeesCustomerResponsibility",
       },
     },
-    aggregateRating: {
+  };
+
+  // Only attach aggregateRating if the product actually has positive rating & review count >= 1
+  if (hasValidRating) {
+    const validRatingValue = rawRatingValue > 0
+      ? Math.min(5, Math.max(1, Math.round(rawRatingValue * 10) / 10))
+      : 5;
+    const validReviewCount = rawRatingCount > 0
+      ? Math.max(1, Math.round(rawRatingCount))
+      : (options.reviews?.length || 1);
+
+    productNode.aggregateRating = {
       "@type": "AggregateRating",
       "@id": `${SITE_URL}${path}#rating`,
       ratingValue: validRatingValue,
@@ -209,12 +217,12 @@ export function buildProductSchema(options: BuildProductSchemaOptions) {
       ratingCount: validReviewCount,
       bestRating: 5,
       worstRating: 1,
-    },
-  };
+    };
+  }
 
-  // Review array (must have >= 1 item)
-  if (options.reviews && options.reviews.length > 0) {
-    productNode.review = options.reviews.map((r, idx) => ({
+  // Only attach review array if real reviews exist (never insert fake placeholder reviews)
+  if (hasReviewsList) {
+    productNode.review = options.reviews!.map((r, idx) => ({
       "@type": "Review",
       "@id": `${SITE_URL}${path}#review-${idx + 1}`,
       reviewRating: {
@@ -231,34 +239,11 @@ export function buildProductSchema(options: BuildProductSchemaOptions) {
       reviewBody: r.comment || `Đánh giá ${r.rating || 5} sao cho sản phẩm.`,
       publisher: {
         "@type": "Organization",
+        "@id": `${SITE_URL}/#organization`,
         name: "Salemylink.com",
         url: SITE_URL,
       },
     }));
-  } else {
-    productNode.review = [
-      {
-        "@type": "Review",
-        "@id": `${SITE_URL}${path}#review-1`,
-        reviewRating: {
-          "@type": "Rating",
-          ratingValue: validRatingValue,
-          bestRating: 5,
-          worstRating: 1,
-        },
-        author: {
-          "@type": "Person",
-          name: "Khách hàng đã xác thực",
-        },
-        datePublished: validFrom,
-        reviewBody: `Sản phẩm ${cleanName} chất lượng tốt, tài liệu đúng như mô tả, nhận file qua Google Drive nhanh chóng.`,
-        publisher: {
-          "@type": "Organization",
-          name: "Salemylink.com",
-          url: SITE_URL,
-        },
-      },
-    ];
   }
 
   return productNode;

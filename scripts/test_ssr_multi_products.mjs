@@ -10,6 +10,7 @@ async function testProducts() {
   const app = serverModule.default || serverModule;
 
   const testSlugs = [
+    'tai-lieu-on-thi-tuyen-sinh-vao-lop-10-mon-tieng-anhpdf', // Has review in DB
     'tu-vung-chat-va-y-tuong-hay-theo-chu-de-cho-b-ai-thi-ielts',
     'thao-luan-van-ban-phap-quy-2495',
     'autoclip-mmyycxgr', // No thumb/images/driveFileId

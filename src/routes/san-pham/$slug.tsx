@@ -78,12 +78,31 @@ export const Route = createFileRoute("/san-pham/$slug")({
     const rawSlug = decodeURIComponent(params.slug || "").trim().replace(/\/$/, "");
     const path = `/san-pham/${rawSlug}`;
     if (!loaderData) {
+      const fallbackTitle = rawSlug
+        .replace(/-/g, " ")
+        .replace(/\b\w/g, (c) => c.toUpperCase());
+      const cleanTitle = cleanSchemaName(fallbackTitle, "Sản phẩm số");
+      const fallbackDesc = `${cleanTitle}. Mua tài liệu số, ebook, khóa học chất lượng cao tải ngay qua Google Drive tại Salemylink.com.`;
+
+      const fallbackProductSchema = buildProductSchema({
+        id: null,
+        slug: rawSlug,
+        name: cleanTitle,
+        description: fallbackDesc,
+        price: 0,
+        sellerName: "Salemylink",
+        categoryName: "Sản phẩm số",
+      });
+
       return buildHead({
-        title: "Sản phẩm digital | Salemylink",
-        description:
-          "Chi tiết sản phẩm digital trên Salemylink: ebook, tài liệu, khóa học, source code. Tải ngay sau khi thanh toán.",
+        title: `${cleanTitle} | Salemylink`,
+        description: fallbackDesc,
         path,
         type: "product",
+        structuredData: {
+          "@context": "https://schema.org",
+          "@graph": [fallbackProductSchema],
+        },
       });
     }
 

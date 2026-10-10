@@ -119,10 +119,11 @@ Deno.serve(async (req) => {
       .eq('is_active', true)
       .order('sort_order', { ascending: true })
 
-    // Fetch products
+    // Fetch products (active only)
     const { data: products } = await supabase
       .from('products')
       .select('slug, title, updated_at, created_at, thumbnail_url, view_count, download_count, is_featured')
+      .eq('status', 'active')
       .order('created_at', { ascending: false })
 
     // Fetch seller profiles
@@ -143,7 +144,6 @@ Deno.serve(async (req) => {
       for (const cat of categories) {
         const lastmod = cat.updated_at ? new Date(cat.updated_at).toISOString().split('T')[0] : today
         urlEntries.push(generateUrlXml(`/danh-muc/${cat.slug}`, '0.85', 'weekly', lastmod))
-        urlEntries.push(generateUrlXml(`/category/${cat.slug}`, '0.80', 'weekly', lastmod))
       }
     }
 
@@ -155,7 +155,6 @@ Deno.serve(async (req) => {
     // 4. Guides
     for (const gSlug of guideSlugs) {
       urlEntries.push(generateUrlXml(`/huong-dan/${gSlug}`, '0.85', 'weekly', today))
-      urlEntries.push(generateUrlXml(`/guides/${gSlug}`, '0.80', 'weekly', today))
     }
 
     // 5. Sellers
@@ -164,7 +163,6 @@ Deno.serve(async (req) => {
         const sellerId = seller.user_id
         const lastmod = seller.updated_at ? new Date(seller.updated_at).toISOString().split('T')[0] : today
         urlEntries.push(generateUrlXml(`/nguoi-ban/${sellerId}`, '0.70', 'weekly', lastmod))
-        urlEntries.push(generateUrlXml(`/seller/${sellerId}`, '0.65', 'weekly', lastmod))
       }
     }
 
@@ -189,7 +187,6 @@ Deno.serve(async (req) => {
           : null
 
         urlEntries.push(generateUrlXml(`/san-pham/${prod.slug}`, priority.toFixed(2), 'weekly', lastmod, img))
-        urlEntries.push(generateUrlXml(`/product/${prod.slug}`, (Math.max(priority - 0.05, 0.5)).toFixed(2), 'weekly', lastmod, img))
       }
     }
 

@@ -159,11 +159,11 @@ export async function generateFullSitemap() {
   console.log('Generating clean canonical sitemap from Supabase data...');
   const today = new Date().toISOString().split('T')[0];
 
-  // 1. Fetch products
+  // 1. Fetch active products
   const products = await fetchAllFromSupabase(
     'products',
     'id,slug,title,status,thumbnail_url,google_drive_link,short_description,download_count,view_count,rating_count,is_featured,updated_at,created_at',
-    'order=created_at.desc'
+    'status=eq.active&order=created_at.desc'
   );
   console.log(`Fetched ${products.length} products.`);
 

@@ -181,6 +181,10 @@ function RootShell({ children }: { children: React.ReactNode }) {
   return (
     <html lang="vi" suppressHydrationWarning>
       <head>
+        <meta
+          name="impact-site-verification"
+          {...({ value: "177219d4-61ba-4428-baa0-ec5b39e6fa62" } as Record<string, string>)}
+        />
         <HeadContent />
       </head>
       <body>

@@ -4,7 +4,7 @@ import { getCategorySeo } from "@/data/seoOverrides";
 import { buildHead, SITE_URL } from "@/lib/seoHead";
 import { supabase } from "@/integrations/supabase/client";
 import { fixVietnameseEncoding } from "@/lib/vietnameseText";
-import { buildProductSchema } from "@/lib/productSchemaBuilder";
+import { buildProductListItem } from "@/lib/productSchemaBuilder";
 
 export const Route = createFileRoute("/danh-muc/$slug")({
   loader: async ({ params }) => {
@@ -81,26 +81,19 @@ export const Route = createFileRoute("/danh-muc/$slug")({
         "@type": "ItemList",
         name: seo.title,
         numberOfItems: items.length,
-        itemListElement: items.map((p, i) => ({
-          "@type": "ListItem",
-          position: i + 1,
-          item: buildProductSchema({
-            id: p.id,
-            slug: p.slug,
+        itemListElement: items.map((p, i) =>
+          buildProductListItem({
+            position: i + 1,
             name: p.title,
+            slug: p.slug,
             description: (p as any).description || (p as any).short_description,
-            price: p.price,
-            categoryName: catName,
-            categorySlug: params.slug,
-            sellerName: (p as any).profiles?.full_name || "Salemylink.com",
             thumbnail_url: p.thumbnail_url,
             images: (p as any).images,
             google_drive_link: p.google_drive_link,
-            ratingValue: p.rating_average,
-            ratingCount: p.rating_count,
-            createdAt: p.created_at,
-          }),
-        })),
+            price: p.price,
+            categoryName: catName,
+          })
+        ),
       },
     };
 

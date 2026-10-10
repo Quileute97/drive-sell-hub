@@ -20,24 +20,52 @@ function decodeHtmlEntities(str: string): string {
 }
 
 /**
- * Clean and truncate product title to be strictly <= 140 chars
- * to comply with Google Merchant & Rich Results character limit (max 150).
+ * Chuẩn hóa tên sản phẩm cho JSON-LD Product.name
+ * - Loại bỏ prefix format như [PDF], (PDF), [EBOOK], v.v.
+ * - Giới hạn max 90 chars (Google hiển thị ~60 chars)
+ * - Đảm bảo min ~10 chars (thêm context nếu quá ngắn)
  */
-export function cleanSchemaName(name?: string | null, fallback = "Sản phẩm Digital"): string {
-  if (!name || typeof name !== "string") return fallback;
-  const decoded = decodeHtmlEntities(name);
-  const clean = fixVietnameseEncoding(decoded).trim().replace(/[\r\n\t\s]+/g, " ");
-  if (clean.length === 0) return fallback;
-  if (clean.length > 140) {
-    const truncated = clean.slice(0, 137);
-    const lastSpace = truncated.lastIndexOf(" ");
-    if (lastSpace > 80) {
-      return truncated.slice(0, lastSpace) + "...";
-    }
-    return truncated + "...";
+export function normalizeProductName(
+  rawName?: string | null,
+  categoryName?: string | null,
+  fallback = "Sản phẩm Digital — Tải ngay tại Salemylink"
+): string {
+  if (!rawName || typeof rawName !== "string" || rawName.trim().length === 0) {
+    return fallback;
   }
-  return clean;
+
+  const decoded = decodeHtmlEntities(rawName);
+  let name = fixVietnameseEncoding(decoded).trim().replace(/[\r\n\t\s]+/g, " ");
+
+  // Loại bỏ prefix format phổ biến trong product name
+  name = name.replace(/^\[(PDF|EBOOK|PDF Ebook|Khóa học|Ebook|Course|Course Materials|Document|Tài liệu|Source Code|Template)\]\s*/i, "");
+  name = name.replace(/^\((PDF|EBOOK|PDF Ebook|Khóa học|Ebook|Course|Course Materials|Document|Tài liệu|Source Code|Template)\)\s*/i, "");
+
+  // Nếu name quá ngắn (dưới 10 chars) và có category, thêm context
+  if (name.length < 10 && categoryName) {
+    name = `${name} — ${categoryName}`;
+  }
+
+  // Final fallback nếu vẫn quá ngắn (< 10 chars)
+  if (name.length < 10) {
+    name = `${name} — Tải ngay`;
+  }
+
+  // Nếu name quá dài, cắt ngắn tại ranh giới từ <= 87 chars + '...'
+  if (name.length > 90) {
+    const truncated = name.slice(0, 87);
+    const lastSpace = truncated.lastIndexOf(" ");
+    if (lastSpace > 50) {
+      name = truncated.slice(0, lastSpace) + "...";
+    } else {
+      name = truncated + "...";
+    }
+  }
+
+  return name;
 }
+
+export const cleanSchemaName = normalizeProductName;
 
 /**
  * Clean or generate a compliant description for Schema.org (20 to 300 chars).
@@ -48,7 +76,7 @@ export function cleanSchemaDescription(
   title?: string | null,
   categoryName?: string | null
 ): string {
-  const cleanTitle = cleanSchemaName(title);
+  const cleanTitle = normalizeProductName(title, categoryName);
   const fallback = `${cleanTitle}${categoryName ? ` (${categoryName})` : ""}. Mua tài liệu số, ebook, khóa học chất lượng cao tải ngay qua Google Drive tại Salemylink.com.`;
   if (!desc || typeof desc !== "string") return fallback;
 
@@ -72,6 +100,52 @@ export function cleanSchemaDescription(
     return truncated + "...";
   }
   return clean;
+}
+
+export interface BuildProductListItemOptions {
+  position: number;
+  name: string;
+  slug: string;
+  description?: string | null;
+  thumbnail_url?: string | null;
+  images?: any;
+  google_drive_link?: string | null;
+  price?: number | string | null;
+  categoryName?: string | null;
+}
+
+/**
+ * Lightweight ItemList element for CollectionPage, ProfilePage, Tag pages (Option B).
+ * Contains minimal Product schema without duplicate brand, shippingDetails, or returnPolicy.
+ */
+export function buildProductListItem(options: BuildProductListItemOptions) {
+  const path = `/san-pham/${options.slug}`;
+  const images = resolveAllProductImages({
+    thumbnail_url: options.thumbnail_url,
+    images: options.images,
+    google_drive_link: options.google_drive_link,
+  });
+
+  const normName = normalizeProductName(options.name, options.categoryName);
+  const normDesc = cleanSchemaDescription(options.description, options.name, options.categoryName);
+
+  return {
+    "@type": "ListItem",
+    position: options.position,
+    item: {
+      "@type": "Product",
+      "@id": `${SITE_URL}${path}#product`,
+      name: normName,
+      description: normDesc,
+      url: `${SITE_URL}${path}`,
+      image: images,
+      offers: {
+        "@type": "Offer",
+        price: String(Number(options.price) || 0),
+        priceCurrency: "VND",
+      },
+    },
+  };
 }
 
 export interface BuildProductSchemaOptions {
@@ -109,7 +183,7 @@ export interface BuildProductSchemaOptions {
 export function buildProductSchema(options: BuildProductSchemaOptions) {
   const path = `/san-pham/${options.slug}`;
   const productSku = generateSku(options.id, options.slug);
-  const cleanName = cleanSchemaName(options.name);
+  const cleanName = normalizeProductName(options.name, options.categoryName);
   const cleanDesc = cleanSchemaDescription(options.description, options.name, options.categoryName);
 
   const defaultValidFrom = safeIsoDate(Date.now() - 30 * 24 * 60 * 60 * 1000);
@@ -139,6 +213,7 @@ export function buildProductSchema(options: BuildProductSchemaOptions) {
     description: cleanDesc,
     url: `${SITE_URL}${path}`,
     sku: productSku,
+    mpn: productSku,
     image: productImages,
     ...(options.categoryName ? { category: options.categoryName } : {}),
     ...(options.fileFormat ? { encodingFormat: options.fileFormat } : {}),

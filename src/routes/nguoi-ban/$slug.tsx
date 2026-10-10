@@ -4,7 +4,7 @@ import { buildHead, SITE_URL } from "@/lib/seoHead";
 import { fetchSellerBySlugOrId } from "@/lib/sellerUtils";
 import { supabase } from "@/integrations/supabase/client";
 import { fixVietnameseEncoding } from "@/lib/vietnameseText";
-import { buildProductSchema } from "@/lib/productSchemaBuilder";
+import { buildProductListItem } from "@/lib/productSchemaBuilder";
 
 export const Route = createFileRoute("/nguoi-ban/$slug")({
   loader: async ({ params }) => {
@@ -79,24 +79,18 @@ export const Route = createFileRoute("/nguoi-ban/$slug")({
         "@type": "ItemList",
         name: `Top sản phẩm nổi bật của ${sellerName}`,
         numberOfItems: products.length,
-        itemListElement: products.map((p, i) => ({
-          "@type": "ListItem",
-          position: i + 1,
-          item: buildProductSchema({
-            id: p.id,
-            slug: p.slug,
+        itemListElement: products.map((p, i) =>
+          buildProductListItem({
+            position: i + 1,
             name: p.title,
+            slug: p.slug,
             description: (p as any).description || (p as any).short_description,
-            price: p.price,
-            sellerName,
             thumbnail_url: p.thumbnail_url,
             images: (p as any).images,
             google_drive_link: (p as any).google_drive_link,
-            ratingValue: p.rating_average,
-            ratingCount: p.rating_count,
-            createdAt: (p as any).created_at,
-          }),
-        })),
+            price: p.price,
+          })
+        ),
       });
     }
 

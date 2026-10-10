@@ -24,10 +24,10 @@ function cleanSchemaName(name, fallback = "Sản phẩm Digital") {
   const decoded = decodeHtmlEntities(name);
   const clean = decoded.trim().replace(/[\r\n\t\s]+/g, " ");
   if (clean.length === 0) return fallback;
-  if (clean.length > 140) {
-    const truncated = clean.slice(0, 137);
+  if (clean.length > 90) {
+    const truncated = clean.slice(0, 87);
     const lastSpace = truncated.lastIndexOf(" ");
-    if (lastSpace > 80) {
+    if (lastSpace > 50) {
       return truncated.slice(0, lastSpace) + "...";
     }
     return truncated + "...";
@@ -117,6 +117,7 @@ function buildProductSchema(options) {
     description: cleanDesc,
     url: `${SITE_URL}${path}`,
     sku: productSku,
+    mpn: productSku,
     image: [`${SITE_URL}/og-image.png`],
     brand: {
       "@type": "Brand",
@@ -294,10 +295,11 @@ async function verifyAllProducts() {
       if (!Number.isInteger(schema.aggregateRating.reviewCount) || schema.aggregateRating.reviewCount <= 0) issues.push("invalid reviewCount");
       if (schema.aggregateRating.ratingValue < 1 || schema.aggregateRating.ratingValue > 5) issues.push("invalid ratingValue");
     }
-    // 7. sku length
+    // 7. sku & mpn length
     if (!schema.sku || schema.sku.length > 50) issues.push("invalid sku");
+    if (!schema.mpn || schema.mpn.length > 50) issues.push("invalid mpn");
     // 8. name length
-    if (!schema.name || schema.name.length > 140) issues.push("name too long (>140)");
+    if (!schema.name || schema.name.length > 90) issues.push("name too long (>90)");
     // 9. validFrom
     if (!schema.offers?.validFrom || !/^\d{4}-\d{2}-\d{2}$/.test(schema.offers.validFrom)) issues.push("invalid validFrom");
     // 10. unitCode

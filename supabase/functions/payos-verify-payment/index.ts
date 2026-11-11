@@ -15,17 +15,122 @@ const PAYOS_CHECKSUM_KEY = Deno.env.get("PAYOS_CHECKSUM_KEY");
 const PAYOS_BASE_URL = "https://api-merchant.payos.vn";
 
 // Verify PayOS webhook signature
-function verifyPayOSSignature(data: any, signature: string): boolean {
-  const sortedKeys = Object.keys(data).sort();
+function verifyPayOSSignature(data: unknown, signature: string | null | undefined): boolean {
+  if (!PAYOS_CHECKSUM_KEY || !signature || !data || typeof data !== "object") {
+    return false;
+  }
+
+  const record = data as Record<string, unknown>;
+  const sortedKeys = Object.keys(record).sort();
   const signatureString = sortedKeys
-    .map(key => `${key}=${data[key]}`)
-    .join('&');
-    
-  const expectedSignature = createHmac('sha256', PAYOS_CHECKSUM_KEY!)
+    .map((key) => {
+      const val = record[key];
+      if (val === null || val === undefined) return `${key}=`;
+      if (typeof val === "object") return `${key}=${JSON.stringify(val)}`;
+      return `${key}=${String(val)}`;
+    })
+    .join("&");
+
+  const expectedSignature = createHmac("sha256", PAYOS_CHECKSUM_KEY)
     .update(signatureString)
-    .digest('hex');
-    
-  return expectedSignature === signature;
+    .digest("hex")
+    .toLowerCase();
+  const received = signature.trim().toLowerCase();
+
+  if (expectedSignature.length !== received.length) {
+    return false;
+  }
+
+  let mismatch = 0;
+  for (let i = 0; i < expectedSignature.length; i++) {
+    mismatch |= expectedSignature.charCodeAt(i) ^ received.charCodeAt(i);
+  }
+  return mismatch === 0;
+}
+
+async function finalizePaidOrder(
+  supabaseClient: ReturnType<typeof createClient>,
+  orderId: string,
+  orderCodeStr: string,
+  gatewayPayload: unknown,
+) {
+  const { data: existingPayment } = await supabaseClient
+    .from("payments")
+    .select("id, status, processed_at")
+    .eq("payment_id", orderCodeStr)
+    .maybeSingle();
+
+  const nowIso = new Date().toISOString();
+
+  await supabaseClient
+    .from("payments")
+    .update({
+      status: "completed",
+      gateway_response: gatewayPayload,
+      processed_at: existingPayment?.processed_at || nowIso,
+    })
+    .eq("payment_id", orderCodeStr);
+
+  const { data: currentOrder } = await supabaseClient
+    .from("orders")
+    .select(`
+      id, status, product_id, seller_id, seller_amount, download_link, download_expires_at,
+      products(id, google_drive_link, download_only_link, download_count)
+    `)
+    .eq("id", orderId)
+    .maybeSingle();
+
+  if (!currentOrder) {
+    return;
+  }
+
+  const product = currentOrder.products;
+  const resolvedDownloadLink =
+    currentOrder.download_link ||
+    product?.google_drive_link ||
+    product?.download_only_link ||
+    null;
+  const resolvedExpiresAt =
+    currentOrder.download_expires_at ||
+    new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
+
+  // Atomically transition from non-delivered -> delivered so stats increment only once
+  const { data: transitionedRows } = await supabaseClient
+    .from("orders")
+    .update({
+      status: "delivered",
+      download_expires_at: resolvedExpiresAt,
+      ...(resolvedDownloadLink ? { download_link: resolvedDownloadLink } : {}),
+    })
+    .eq("id", orderId)
+    .neq("status", "delivered")
+    .select("id");
+
+  if (transitionedRows && transitionedRows.length > 0) {
+    if (product) {
+      await supabaseClient
+        .from("products")
+        .update({
+          download_count: (product.download_count || 0) + 1,
+        })
+        .eq("id", currentOrder.product_id);
+    }
+
+    const { data: seller } = await supabaseClient
+      .from("profiles")
+      .select("total_sales")
+      .eq("user_id", currentOrder.seller_id)
+      .maybeSingle();
+
+    if (seller) {
+      await supabaseClient
+        .from("profiles")
+        .update({
+          total_sales: Number(seller.total_sales || 0) + Number(currentOrder.seller_amount || 0),
+        })
+        .eq("user_id", currentOrder.seller_id);
+    }
+  }
 }
 
 serve(async (req) => {
@@ -45,9 +150,9 @@ serve(async (req) => {
       const webhookData = await req.json();
       console.log("PayOS Webhook received:", webhookData);
 
-      // Verify signature — REQUIRED. Reject if missing or invalid.
-      const signature = req.headers.get('x-payos-signature');
-      if (!signature || !verifyPayOSSignature(webhookData.data, signature)) {
+      // Verify signature — REQUIRED. Accept either header or PayOS v2 body signature field.
+      const signature = req.headers.get("x-payos-signature") || webhookData?.signature;
+      if (!signature || !verifyPayOSSignature(webhookData?.data, signature)) {
         console.warn("Rejected PayOS webhook: missing/invalid signature");
         return new Response(JSON.stringify({ error: "Unauthorized" }), {
           status: 401,
@@ -55,44 +160,43 @@ serve(async (req) => {
         });
       }
 
-      const { orderCode, code, desc, success } = webhookData.data || webhookData;
-      
-      if (success) {
-        // Payment successful - update order status to delivered immediately for digital products
+      const payloadData = webhookData?.data || webhookData || {};
+      const orderCode = payloadData.orderCode ?? webhookData?.orderCode;
+      const dataCode = payloadData.code;
+      const isSuccess =
+        webhookData?.success === true ||
+        payloadData?.success === true ||
+        (webhookData?.code === "00" && dataCode === "00");
+
+      if (orderCode !== undefined && orderCode !== null) {
+        const orderCodeStr = orderCode.toString();
         const { data: payment } = await supabaseClient
           .from("payments")
-          .select("order_id")
-          .eq("payment_id", orderCode.toString())
-          .single();
+          .select("id, order_id, status")
+          .eq("payment_id", orderCodeStr)
+          .maybeSingle();
 
         if (payment) {
-          // Update payment status
-          await supabaseClient
-            .from("payments")
-            .update({
-              status: 'completed',
-              processed_at: new Date().toISOString(),
-              gateway_response: webhookData
-            })
-            .eq("payment_id", orderCode.toString());
+          if (isSuccess) {
+            await finalizePaidOrder(supabaseClient, payment.order_id, orderCodeStr, webhookData);
+          } else if (payment.status !== "completed") {
+            await supabaseClient
+              .from("payments")
+              .update({
+                status: "failed",
+                gateway_response: webhookData,
+              })
+              .eq("id", payment.id);
 
-          // Update order status to 'delivered' for instant seller withdrawal
-          await supabaseClient
-            .from("orders")
-            .update({
-              status: 'delivered'
-            })
-            .eq("id", payment.order_id);
+            await supabaseClient
+              .from("orders")
+              .update({
+                status: "cancelled",
+              })
+              .eq("id", payment.order_id)
+              .eq("status", "pending");
+          }
         }
-      } else {
-        // Payment failed - update status
-        await supabaseClient
-          .from("payments")
-          .update({
-            status: 'failed',
-            gateway_response: webhookData
-          })
-          .eq("payment_id", orderCode.toString());
       }
 
       return new Response(JSON.stringify({ received: true }), {
@@ -100,48 +204,72 @@ serve(async (req) => {
       });
     }
 
-    // Handle GET request to check payment status — require authenticated buyer who owns the order
-    const authHeader = req.headers.get('Authorization');
+    // Handle GET request to check payment status — require authenticated buyer or admin
+    const authHeader = req.headers.get("Authorization");
     if (!authHeader) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
-    const token = authHeader.replace('Bearer ', '');
+    const token = authHeader.replace("Bearer ", "");
     const { data: userData } = await supabaseClient.auth.getUser(token);
     const user = userData.user;
     if (!user) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
     const url = new URL(req.url);
-    const orderCode = url.searchParams.get('orderCode');
+    const orderCode = url.searchParams.get("orderCode");
 
     if (!orderCode) {
       throw new Error("Order code is required");
     }
 
-    // Verify the order code maps to a payment whose order belongs to this user
+    // Verify order ownership (buyer who owns the order or platform admin)
     const { data: ownership } = await supabaseClient
       .from("payments")
-      .select("order_id, orders!inner(buyer_id)")
+      .select("id, status, order_id, orders!inner(buyer_id, status)")
       .eq("payment_id", orderCode)
-      .single();
-    if (!ownership || (ownership as any).orders?.buyer_id !== user.id) {
+      .maybeSingle();
+
+    interface OwnershipRecord {
+      id: string;
+      status: string | null;
+      order_id: string;
+      orders?: { buyer_id?: string | null; status?: string | null } | null;
+    }
+
+    const typedOwnership = ownership as OwnershipRecord | null;
+    const isBuyer = typedOwnership?.orders?.buyer_id === user.id;
+    let isAdmin = false;
+    if (!isBuyer) {
+      const { data: adminRole } = await supabaseClient
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", user.id)
+        .eq("role", "admin")
+        .maybeSingle();
+      isAdmin = Boolean(adminRole);
+    }
+
+    if (!typedOwnership || (!isBuyer && !isAdmin)) {
       return new Response(JSON.stringify({ error: "Forbidden" }), {
-        status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 403,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    // Get payment status from PayOS
+    // Get authoritative payment status from PayOS
     const payosResponse = await fetch(`${PAYOS_BASE_URL}/v2/payment-requests/${orderCode}`, {
       method: "GET",
       headers: {
         "x-client-id": PAYOS_CLIENT_ID!,
         "x-api-key": PAYOS_API_KEY!,
-      }
+      },
     });
 
     if (!payosResponse.ok) {
@@ -151,105 +279,56 @@ serve(async (req) => {
     const payosResult = await payosResponse.json();
     console.log("PayOS Status Check:", payosResult);
 
-    // Update local database based on PayOS status
-    const paymentStatus = payosResult.data.status;
-    let dbStatus = 'pending';
-    let orderStatus = 'pending';
-    
-    if (paymentStatus === 'PAID') {
-      dbStatus = 'completed';
-      orderStatus = 'delivered'; // Auto-delivered for digital products
-    } else if (paymentStatus === 'CANCELLED' || paymentStatus === 'EXPIRED') {
-      dbStatus = 'failed';
-      orderStatus = 'cancelled';
-    }
+    const paymentStatus = payosResult?.data?.status;
+    const existingOrderStatus = typedOwnership.orders?.status;
 
-    // Update payment record
-    const { data: payment } = await supabaseClient
-      .from("payments")
-      .select("order_id")
-      .eq("payment_id", orderCode)
-      .single();
-
-    if (payment) {
-      await supabaseClient
-        .from("payments")
-        .update({
-          status: dbStatus,
-          gateway_response: payosResult,
-          ...(dbStatus === 'completed' && { processed_at: new Date().toISOString() })
-        })
-        .eq("payment_id", orderCode);
-
-      // Update order status
-      const { data: order } = await supabaseClient
-        .from("orders")
-        .update({
-          status: orderStatus,
-          ...(orderStatus === 'delivered' && {
-            download_expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString() // 7 days
+    if (paymentStatus === "PAID") {
+      await finalizePaidOrder(supabaseClient, typedOwnership.order_id, orderCode, payosResult);
+    } else if (paymentStatus === "CANCELLED" || paymentStatus === "EXPIRED" || paymentStatus === "FAILED") {
+      if (typedOwnership.status !== "completed" && existingOrderStatus !== "delivered") {
+        await supabaseClient
+          .from("payments")
+          .update({
+            status: "failed",
+            gateway_response: payosResult,
           })
-        })
-        .eq("id", payment.order_id)
-        .select(`
-          *,
-          products(*)
-        `)
-        .single();
+          .eq("id", typedOwnership.id);
 
-      // If payment succeeded, provide download link and update stats
-      if (orderStatus === 'delivered' && order?.products) {
-        // Update order with download link
         await supabaseClient
           .from("orders")
           .update({
-            download_link: order.products.google_drive_link || order.products.download_only_link
+            status: "cancelled",
           })
-          .eq("id", payment.order_id);
-
-        // Increment product download count
-        await supabaseClient
-          .from("products")
-          .update({
-            download_count: (order.products.download_count || 0) + 1
-          })
-          .eq("id", order.product_id);
-
-        // Update seller total sales
-        const { data: seller } = await supabaseClient
-          .from("profiles")
-          .select("total_sales")
-          .eq("user_id", order.seller_id)
-          .single();
-
-        if (seller) {
-          await supabaseClient
-            .from("profiles")
-            .update({
-              total_sales: (seller.total_sales || 0) + order.seller_amount
-            })
-            .eq("user_id", order.seller_id);
-        }
+          .eq("id", typedOwnership.order_id)
+          .neq("status", "delivered");
       }
+    } else if (typedOwnership.status !== "completed") {
+      // PENDING / UNDERPAID / PROCESSING: never mark completed or delivered until PAID
+      await supabaseClient
+        .from("payments")
+        .update({
+          status: "pending",
+          gateway_response: payosResult,
+        })
+        .eq("id", typedOwnership.id);
     }
 
     return new Response(
       JSON.stringify({
         success: true,
         status: paymentStatus,
-        data: payosResult.data
+        data: payosResult.data,
       }),
       {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 200,
       }
     );
-
   } catch (error) {
     console.error("Error verifying PayOS payment:", error);
     return new Response(
-      JSON.stringify({ 
-        error: error instanceof Error ? error.message : "Unknown error" 
+      JSON.stringify({
+        error: error instanceof Error ? error.message : "Unknown error",
       }),
       {
         headers: { ...corsHeaders, "Content-Type": "application/json" },

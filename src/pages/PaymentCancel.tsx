@@ -1,12 +1,49 @@
-import { Link } from '@/lib/router-compat';
+import { useEffect } from 'react';
+import { Link, useSearchParams } from '@/lib/router-compat';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, ShoppingCart, Home, Search, HelpCircle } from 'lucide-react';
+import { ShoppingCart, Home, Search, HelpCircle } from 'lucide-react';
 import { SEO } from '@/components/SEO';
+import { supabase } from '@/integrations/supabase/client';
 
 export const PaymentCancel = () => {
+  const [searchParams] = useSearchParams();
+  const orderCode = searchParams.get('orderCode');
+
+  useEffect(() => {
+    if (!orderCode) return;
+
+    let cancelled = false;
+    const syncCancelledPayment = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session?.access_token || cancelled) return;
+
+        const supabaseUrl =
+          import.meta.env['VITE_SUPABASE_URL'] || 'https://dfalphamyvdfewixrnju.supabase.co';
+        await fetch(
+          `${supabaseUrl}/functions/v1/payos-verify-payment?orderCode=${encodeURIComponent(orderCode)}`,
+          {
+            method: 'GET',
+            headers: {
+              Authorization: `Bearer ${session.access_token}`,
+              'Content-Type': 'application/json',
+            },
+          },
+        );
+      } catch (error) {
+        console.error('Error syncing cancelled PayOS payment:', error);
+      }
+    };
+
+    syncCancelledPayment();
+    return () => {
+      cancelled = true;
+    };
+  }, [orderCode]);
+
   return (
     <div className="min-h-screen bg-background">
       <SEO 

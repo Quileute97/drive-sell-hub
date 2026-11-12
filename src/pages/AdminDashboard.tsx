@@ -6,6 +6,7 @@ import { useUserRole } from "@/hooks/useUserRole";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { SellerDashboardPanel } from "@/components/SellerDashboardPanel";
+import { AdminTagManager } from "@/components/AdminTagManager";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -360,6 +361,17 @@ export default function AdminDashboard() {
     () => withdrawals.filter((w) => w.status === "pending").length,
     [withdrawals],
   );
+
+  const uniqueTagCount = useMemo(() => {
+    const tagSet = new Set<string>();
+    for (const p of products) {
+      for (const raw of p.tags || []) {
+        const clean = (raw || "").trim();
+        if (clean) tagSet.add(clean);
+      }
+    }
+    return tagSet.size;
+  }, [products]);
 
   const pendingPayosOrders = useMemo(
     () =>
@@ -956,6 +968,9 @@ export default function AdminDashboard() {
               </Badge>
             )}
           </TabsTrigger>
+          <TabsTrigger value="tags" className="shrink-0">
+            Quản Lý Tag ({uniqueTagCount})
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="sellers">
@@ -1493,6 +1508,13 @@ export default function AdminDashboard() {
               </div>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="tags">
+          <AdminTagManager
+            products={products}
+            onTagsUpdated={() => fetchDashboardData(true)}
+          />
         </TabsContent>
       </Tabs>
 

@@ -8,6 +8,7 @@ export const Route = createFileRoute("/seller-auth")({
       title: "Đăng ký bán hàng trên Salemylink",
       description: "Mở gian hàng số miễn phí trên Salemylink, bán ebook, tài liệu, khóa học qua Google Drive.",
       path: "/seller-auth",
+      noindex: true,
     }),
   component: SellerAuth,
 });

@@ -21,15 +21,13 @@ function escapeXml(str) {
 
 const coreStaticRoutes = [
   { path: '/', priority: '1.0', changefreq: 'daily' },
-  { path: '/about', priority: '0.8', changefreq: 'monthly' },
-  { path: '/how-it-works', priority: '0.8', changefreq: 'monthly' },
-  { path: '/seller-guide', priority: '0.8', changefreq: 'monthly' },
-  { path: '/search', priority: '0.8', changefreq: 'daily' },
-  { path: '/nguoi-ban', priority: '0.8', changefreq: 'weekly' },
-  { path: '/affiliate', priority: '0.8', changefreq: 'monthly' },
-  { path: '/huong-dan', priority: '0.8', changefreq: 'weekly' },
-  { path: '/privacy-policy', priority: '0.4', changefreq: 'yearly' },
-  { path: '/terms-of-service', priority: '0.4', changefreq: 'yearly' },
+  { path: '/nguoi-ban', priority: '0.85', changefreq: 'weekly' },
+  { path: '/huong-dan', priority: '0.85', changefreq: 'weekly' },
+  { path: '/about', priority: '0.75', changefreq: 'monthly' },
+  { path: '/how-it-works', priority: '0.75', changefreq: 'monthly' },
+  { path: '/seller-guide', priority: '0.75', changefreq: 'monthly' },
+  { path: '/privacy-policy', priority: '0.40', changefreq: 'yearly' },
+  { path: '/terms-of-service', priority: '0.40', changefreq: 'yearly' },
 ];
 
 const popularTags = [
@@ -65,12 +63,24 @@ const guideSlugs = [
   'hoc-y-khoa-tu-zero',
   'viet-luan-van-tieng-anh-band-7',
   'de-thi-vao-10-cac-tinh-2026',
-  'hoc-y-khoa',
-  'luyen-thi-ielts',
-  'viet-luan-van',
-  'kinh-nghiem-mua-tai-lieu-online',
-  'tai-lieu-on-thi-vao-10',
 ];
+
+function normalizeSellerSlug(fullName, userId) {
+  if (fullName && fullName.trim()) {
+    const slug = fullName
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/đ/g, 'd')
+      .replace(/Đ/g, 'd')
+      .replace(/[^a-z0-9\s-]/g, '')
+      .replace(/\s+/g, '-')
+      .replace(/-+/g, '-')
+      .replace(/^-+|-+$/g, '');
+    if (slug) return slug;
+  }
+  return userId || '';
+}
 
 function generateUrlXml(routePath, priority = '0.8', changefreq = 'weekly', lastmod = '2026-09-12', image = null) {
   const cleanPath = routePath === '/' ? '' : routePath;
@@ -162,7 +172,7 @@ export async function generateFullSitemap() {
   // 1. Fetch active products
   const products = await fetchAllFromSupabase(
     'products',
-    'id,slug,title,status,thumbnail_url,google_drive_link,short_description,download_count,view_count,rating_count,is_featured,updated_at,created_at',
+    'id,slug,title,status,thumbnail_url,images,google_drive_link,short_description,download_count,view_count,rating_count,is_featured,tags,seller_id,updated_at,created_at',
     'status=eq.active&order=created_at.desc'
   );
   console.log(`Fetched ${products.length} products.`);
@@ -184,33 +194,53 @@ export async function generateFullSitemap() {
   console.log(`Fetched ${sellers.length} active sellers.`);
 
   const urlEntries = [];
+  const seenPaths = new Set();
+  const pushUrl = (routePath, priority, changefreq, lastmod, image = null) => {
+    const clean = routePath === '/' ? '/' : `/${routePath.replace(/^\/+|\/+$/g, '')}`;
+    if (seenPaths.has(clean)) return;
+    seenPaths.add(clean);
+    urlEntries.push(generateUrlXml(clean, priority, changefreq, lastmod, image));
+  };
 
   // Add Core Static Routes (Canonical only)
   for (const r of coreStaticRoutes) {
-    urlEntries.push(generateUrlXml(r.path, r.priority, r.changefreq, today));
+    pushUrl(r.path, r.priority, r.changefreq, today);
   }
 
   // Add Category Routes (/danh-muc/ only)
   for (const cat of categories) {
     const lastmod = cat.updated_at ? new Date(cat.updated_at).toISOString().split('T')[0] : today;
-    urlEntries.push(generateUrlXml(`/danh-muc/${cat.slug}`, '0.85', 'weekly', lastmod));
+    pushUrl(`/danh-muc/${encodeURIComponent(cat.slug)}`, '0.85', 'weekly', lastmod);
   }
 
-  // Add Tag Routes (/tag/)
-  for (const tag of popularTags) {
-    urlEntries.push(generateUrlXml(`/tag/${encodeURIComponent(tag)}`, '0.70', 'weekly', today));
+  // Add Tag Routes (/tag/ from curated + active product tags)
+  const tagCounts = new Map();
+  for (const tag of popularTags) tagCounts.set(tag, 100);
+  for (const prod of products) {
+    if (!Array.isArray(prod.tags)) continue;
+    for (const raw of prod.tags) {
+      const normalized = typeof raw === 'string' ? raw.trim().toLowerCase() : '';
+      if (normalized.length >= 2) tagCounts.set(normalized, (tagCounts.get(normalized) || 0) + 1);
+    }
+  }
+  for (const [tag] of Array.from(tagCounts.entries()).sort((a, b) => b[1] - a[1]).slice(0, 60)) {
+    pushUrl(`/tag/${encodeURIComponent(tag)}`, '0.70', 'weekly', today);
   }
 
-  // Add Guide Routes (/huong-dan/ only)
+  // Add Canonical Guide Routes (/huong-dan/ only)
   for (const gSlug of guideSlugs) {
-    urlEntries.push(generateUrlXml(`/huong-dan/${gSlug}`, '0.85', 'weekly', today));
+    pushUrl(`/huong-dan/${gSlug}`, '0.85', 'weekly', today);
   }
 
-  // Add Seller Routes (/nguoi-ban/ only)
+  // Add Canonical Seller Routes (/nguoi-ban/ using canonical slug, matching ProductCard & /nguoi-ban)
+  const activeSellerIds = new Set(products.map((p) => p.seller_id).filter(Boolean));
   for (const seller of sellers) {
     const sellerId = seller.user_id || seller.id;
+    if (!sellerId) continue;
+    if (activeSellerIds.size > 0 && !activeSellerIds.has(sellerId)) continue;
+    const sellerSlug = normalizeSellerSlug(seller.full_name, sellerId);
     const lastmod = seller.updated_at ? new Date(seller.updated_at).toISOString().split('T')[0] : today;
-    urlEntries.push(generateUrlXml(`/nguoi-ban/${sellerId}`, '0.70', 'weekly', lastmod));
+    pushUrl(`/nguoi-ban/${encodeURIComponent(sellerSlug)}`, '0.70', 'weekly', lastmod);
   }
 
   // Add Product Routes (/san-pham/ only)
@@ -258,7 +288,7 @@ export async function generateFullSitemap() {
       };
     }
 
-    urlEntries.push(generateUrlXml(`/san-pham/${prod.slug}`, priority.toFixed(2), 'weekly', lastmod, img));
+    pushUrl(`/san-pham/${prod.slug}`, priority.toFixed(2), 'weekly', lastmod, img);
   }
 
   const xmlContent = `<?xml version="1.0" encoding="UTF-8"?>

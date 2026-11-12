@@ -232,9 +232,9 @@ export const Route = createFileRoute("/")({
   },
   head: () =>
     buildHead({
-      title: "Salemylink - Marketplace Ebook, Tài Liệu Học Tập & Khóa Học Online | Việt Nam",
+      title: "Salemylink - Mua Bán Tài Liệu Số, Ebook & Khóa Học",
       description:
-        "Marketplace mua bán tài liệu số, ebook, khóa học online qua Google Drive uy tín hàng đầu Việt Nam. Tải xuống tức thì, thanh toán tự động an toàn.",
+        "Marketplace mua bán tài liệu số, ebook, khóa học online qua Google Drive uy tín tại Việt Nam. Tải xuống tức thì, thanh toán PayOS an toàn.",
       path: "/",
       keywords:
         "bán sản phẩm digital, ebook việt nam, tài liệu digital, khóa học online, google drive, marketplace digital, mua bán ebook, tài liệu học tập, khóa học trực tuyến",

@@ -13,6 +13,7 @@ export const Route = createFileRoute("/danh-muc/$slug")({
         .from("categories")
         .select("*")
         .eq("slug", params.slug)
+        .eq("is_active", true)
         .maybeSingle();
 
       if (!category) {
@@ -55,11 +56,20 @@ export const Route = createFileRoute("/danh-muc/$slug")({
     }
   },
   head: ({ loaderData, params }) => {
-    const catName = loaderData?.name || params.slug;
-    const catDesc = loaderData?.description || "";
-    const items = loaderData?.items || [];
-    const seo = getCategorySeo(params.slug, catName, catDesc);
     const path = `/danh-muc/${params.slug}`;
+    if (!loaderData?.category) {
+      return buildHead({
+        title: "Không tìm thấy danh mục",
+        description: "Danh mục này hiện không tồn tại hoặc đã bị ẩn khỏi hệ thống Salemylink.",
+        path,
+        noindex: true,
+      });
+    }
+
+    const catName = loaderData.name || params.slug;
+    const catDesc = loaderData.description || "";
+    const items = loaderData.items || [];
+    const seo = getCategorySeo(params.slug, catName, catDesc);
 
     const breadcrumb = {
       "@type": "BreadcrumbList",

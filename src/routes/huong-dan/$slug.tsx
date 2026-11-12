@@ -1,24 +1,36 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 import GuideDetail from "@/pages/GuideDetail";
 import { getGuideBySlug } from "@/data/guides";
 import { buildHead, SITE_URL } from "@/lib/seoHead";
 
 export const Route = createFileRoute("/huong-dan/$slug")({
+  beforeLoad: ({ params }) => {
+    const guide = getGuideBySlug(params.slug);
+    if (guide && guide.slug !== params.slug) {
+      throw redirect({
+        to: "/huong-dan/$slug",
+        params: { slug: guide.slug },
+        statusCode: 301,
+      });
+    }
+  },
   head: ({ params }) => {
     const guide = getGuideBySlug(params.slug);
-    const path = `/huong-dan/${params.slug}`;
     if (!guide) {
       return buildHead({
         title: "Cẩm nang học tập",
         description: "Hướng dẫn học tập, luyện thi và tài liệu chọn lọc trên Salemylink.",
-        path,
+        path: `/huong-dan/${params.slug}`,
         type: "article",
+        noindex: true,
       });
     }
 
+    const path = `/huong-dan/${guide.slug}`;
+
     const breadcrumb = {
-      "@context": "https://schema.org",
       "@type": "BreadcrumbList",
+      "@id": `${SITE_URL}${path}#breadcrumb`,
       itemListElement: [
         { "@type": "ListItem", position: 1, name: "Trang chủ", item: SITE_URL },
         { "@type": "ListItem", position: 2, name: "Hướng dẫn", item: `${SITE_URL}/huong-dan` },
@@ -26,14 +38,16 @@ export const Route = createFileRoute("/huong-dan/$slug")({
       ],
     };
 
+    const publishedTime = `${guide.createdAt || guide.updatedAt}T00:00:00+07:00`;
+    const modifiedTime = `${guide.updatedAt}T00:00:00+07:00`;
+
     const articleSchema = {
-      "@context": "https://schema.org",
       "@type": "Article",
       "@id": `${SITE_URL}${path}#article`,
       headline: guide.title,
       description: guide.description,
-      datePublished: `${guide.createdAt || guide.updatedAt}T00:00:00+07:00`,
-      dateModified: `${guide.updatedAt}T00:00:00+07:00`,
+      datePublished: publishedTime,
+      dateModified: modifiedTime,
       url: `${SITE_URL}${path}`,
       inLanguage: "vi-VN",
       isPartOf: {
@@ -69,8 +83,8 @@ export const Route = createFileRoute("/huong-dan/$slug")({
 
     if (guide.faq && guide.faq.length > 0) {
       structuredData.push({
-        "@context": "https://schema.org",
         "@type": "FAQPage",
+        "@id": `${SITE_URL}${path}#faq`,
         mainEntity: guide.faq.map((f) => ({
           "@type": "Question",
           name: f.q,
@@ -83,11 +97,13 @@ export const Route = createFileRoute("/huong-dan/$slug")({
     }
 
     return buildHead({
-      title: guide.title,
+      title: guide.metaTitle || guide.title,
       description: guide.description,
       path,
       type: "article",
       keywords: guide.keywords,
+      publishedTime,
+      modifiedTime,
       structuredData,
     });
   },

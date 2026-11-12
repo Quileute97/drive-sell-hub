@@ -270,7 +270,10 @@ export const TrustSignals = ({
                 <div className="flex min-w-0 items-center gap-2.5 border-t border-border pt-3">
                   <Avatar className="h-8 w-8 shrink-0">
                     {item.buyer?.avatar_url && (
-                      <AvatarImage src={item.buyer.avatar_url} alt="" />
+                      <AvatarImage
+                        src={item.buyer.avatar_url}
+                        alt={item.buyer?.full_name || "Khách hàng Salemylink"}
+                      />
                     )}
                     <AvatarFallback className="text-xs">
                       {(item.buyer?.full_name || "K").charAt(0).toUpperCase()}

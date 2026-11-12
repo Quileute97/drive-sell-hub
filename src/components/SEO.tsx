@@ -96,8 +96,14 @@ export const SEO = ({
 
   const fullTitle = title.includes('Salemylink') ? title : `${title} | Salemylink`;
 
-  // Ensure description is within optimal length (150-160 chars)
-  const clamp = (s: string) => (s.length > 160 ? s.substring(0, 157) + '...' : s);
+  // Ensure description is within optimal length (<= 160 chars) on word boundary
+  const clamp = (raw: string, maxLen = 160) => {
+    const normalized = (raw || '').replace(/\s+/g, ' ').trim();
+    if (normalized.length <= maxLen) return normalized;
+    const sliced = normalized.slice(0, maxLen - 3);
+    const lastSpace = sliced.lastIndexOf(' ');
+    return lastSpace > Math.floor(maxLen * 0.6) ? `${sliced.slice(0, lastSpace)}...` : `${sliced}...`;
+  };
   const optimizedDescription = clamp(description);
   const socialTitle = ogTitle || fullTitle;
   const socialDescription = clamp(ogDescription || description);
@@ -170,14 +176,10 @@ export const SEO = ({
     metas.forEach(upsertMeta);
 
     if (!noindex) {
-      // Canonical link
       upsertLink('canonical', canonicalUrl);
-
-      // Canonical and x-default alternate links for Vietnamese
-      const basePath = cleanPath;
-      upsertLink('alternate', `${SITE_URL}${basePath}`, 'vi');
-      upsertLink('alternate', `${SITE_URL}${basePath}`, 'vi-VN');
-      upsertLink('alternate', `${SITE_URL}${basePath}`, 'x-default');
+      upsertLink('alternate', canonicalUrl, 'vi');
+      upsertLink('alternate', canonicalUrl, 'vi-VN');
+      upsertLink('alternate', canonicalUrl, 'x-default');
     }
 
     // Structured data (JSON-LD)

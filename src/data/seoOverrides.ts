@@ -229,6 +229,14 @@ export function getCategorySeo(
   }, name);
 }
 
+export function hasTagOverride(tag: string): boolean {
+  return Boolean(TAG_OVERRIDES[normalize(tag)]);
+}
+
+export function getPopularTagSlugs(): string[] {
+  return Object.keys(TAG_OVERRIDES);
+}
+
 export function getTagSeo(tag: string): SeoOverride {
   const key = normalize(tag);
   if (TAG_OVERRIDES[key]) return withSocial(TAG_OVERRIDES[key], tag);

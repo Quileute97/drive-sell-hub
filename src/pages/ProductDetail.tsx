@@ -19,6 +19,7 @@ import {
 import DOMPurify from "dompurify";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
+import { SEO } from "@/components/SEO";
 import { RelatedProducts } from "@/components/RelatedProducts";
 import { RecommendedProducts } from "@/components/RecommendedProducts";
 import { ProductReviews, type ProductReview } from "@/components/ProductReviews";
@@ -57,11 +58,16 @@ import {
 import { getSellerSlug } from "@/lib/sellerUtils";
 import { fixVietnameseEncoding } from "@/lib/vietnameseText";
 
+// Normalize embedded <h1> tags to <h2> so each product page keeps strictly one primary <h1>
+const downgradeEmbeddedH1 = (html: string): string =>
+  html.replace(/<(\/?)h1\b([^>]*)>/gi, "<$1h2$2>");
+
 // Sanitize seller-provided HTML. Allow common rich-text + trusted iframes only.
 const sanitizeProductHtml = (html: string) => {
   if (!html) return "";
+  const normalized = downgradeEmbeddedH1(html);
   if (typeof window === "undefined") {
-    return html
+    return normalized
       .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "")
       .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, "")
       .replace(/on\w+="[^"]*"/gi, "")
@@ -78,7 +84,7 @@ const sanitizeProductHtml = (html: string) => {
       }
     }
   });
-  return DOMPurify.sanitize(html, {
+  return DOMPurify.sanitize(normalized, {
     ADD_TAGS: ["iframe"],
     ADD_ATTR: [
       "allow",
@@ -445,6 +451,11 @@ export default function ProductDetail({
   if (isUnavailable || !product) {
     return (
       <div className="min-h-screen bg-background">
+        <SEO
+          title="Sản phẩm không có sẵn"
+          description="Tài liệu này có thể đã bị người bán gỡ bỏ, tạm ẩn hoặc đường dẫn không tồn tại."
+          noindex
+        />
         <Header />
         <main className="mx-auto max-w-[1280px] px-4 py-12 sm:px-6 lg:px-8">
           <ErrorState

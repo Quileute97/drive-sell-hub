@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import SellerProfile from "@/pages/SellerProfile";
 import { buildHead, SITE_URL } from "@/lib/seoHead";
-import { fetchSellerBySlugOrId } from "@/lib/sellerUtils";
+import { fetchSellerBySlugOrId, getSellerSlug } from "@/lib/sellerUtils";
 import { supabase } from "@/integrations/supabase/client";
 import { fixVietnameseEncoding } from "@/lib/vietnameseText";
 import { buildProductListItem } from "@/lib/productSchemaBuilder";
@@ -36,14 +36,24 @@ export const Route = createFileRoute("/nguoi-ban/$slug")({
     }
   },
   head: ({ params, loaderData }) => {
-    const path = `/nguoi-ban/${params.slug}`;
     const seller = loaderData?.seller;
-    const sellerName = seller?.full_name ? fixVietnameseEncoding(seller.full_name) : "Người bán uy tín";
+    if (!seller) {
+      return buildHead({
+        title: "Không tìm thấy người bán",
+        description: "Gian hàng này không tồn tại hoặc không còn hoạt động trên Salemylink.",
+        path: `/nguoi-ban/${params.slug}`,
+        noindex: true,
+      });
+    }
+
+    const sellerName = seller.full_name ? fixVietnameseEncoding(seller.full_name) : "Người bán uy tín";
+    const canonicalSlug = getSellerSlug({ full_name: sellerName, user_id: seller.user_id });
+    const path = `/nguoi-ban/${canonicalSlug}`;
     const products = loaderData?.products || [];
 
     const breadcrumb = {
-      "@context": "https://schema.org",
       "@type": "BreadcrumbList",
+      "@id": `${SITE_URL}${path}#breadcrumb`,
       itemListElement: [
         { "@type": "ListItem", position: 1, name: "Trang chủ", item: SITE_URL },
         { "@type": "ListItem", position: 2, name: "Người bán", item: `${SITE_URL}/nguoi-ban` },
@@ -52,7 +62,6 @@ export const Route = createFileRoute("/nguoi-ban/$slug")({
     };
 
     const profilePage = {
-      "@context": "https://schema.org",
       "@type": "ProfilePage",
       "@id": `${SITE_URL}${path}#profile`,
       name: `${sellerName} – Gian hàng người bán trên Salemylink`,
@@ -82,8 +91,8 @@ export const Route = createFileRoute("/nguoi-ban/$slug")({
 
     if (products.length > 0) {
       structuredData.push({
-        "@context": "https://schema.org",
         "@type": "ItemList",
+        "@id": `${SITE_URL}${path}#products`,
         name: `Top sản phẩm nổi bật của ${sellerName}`,
         numberOfItems: products.length,
         itemListElement: products.map((p, i) =>

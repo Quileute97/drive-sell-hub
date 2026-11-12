@@ -231,6 +231,11 @@ export default function SellerProfile({
   if (!seller) {
     return (
       <div className="min-h-screen bg-background">
+        <SEO
+          title="Không tìm thấy người bán"
+          description="Gian hàng này không tồn tại hoặc không còn hoạt động trên Salemylink."
+          noindex
+        />
         <Header />
         <main className="mx-auto max-w-[1280px] px-4 py-12 sm:px-6 lg:px-8">
           <ErrorState

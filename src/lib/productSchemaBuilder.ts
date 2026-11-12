@@ -157,6 +157,7 @@ export interface BuildProductSchemaOptions {
   categoryName?: string | null;
   categorySlug?: string | null;
   sellerName?: string | null;
+  sellerSlug?: string | null;
   thumbnail_url?: string | null;
   images?: any;
   google_drive_link?: string | null;
@@ -231,12 +232,20 @@ export function buildProductSchema(options: BuildProductSchemaOptions) {
       availability: "https://schema.org/InStock",
       itemCondition: "https://schema.org/NewCondition",
       url: `${SITE_URL}${path}`,
-      seller: {
-        "@type": "Organization",
-        "@id": `${SITE_URL}/#organization`,
-        name: sellerName === "Salemylink.com" ? "Salemylink.com" : sellerName,
-        url: SITE_URL,
-      },
+      seller:
+        sellerName !== "Salemylink.com" && options.sellerSlug
+          ? {
+              "@type": "Person",
+              "@id": `${SITE_URL}/nguoi-ban/${options.sellerSlug}#seller`,
+              name: sellerName,
+              url: `${SITE_URL}/nguoi-ban/${options.sellerSlug}`,
+            }
+          : {
+              "@type": "Organization",
+              "@id": `${SITE_URL}/#organization`,
+              name: "Salemylink.com",
+              url: SITE_URL,
+            },
       shippingDetails: {
         "@type": "OfferShippingDetails",
         shippingDestination: {

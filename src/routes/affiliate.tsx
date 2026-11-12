@@ -8,6 +8,7 @@ export const Route = createFileRoute("/affiliate")({
       title: "Chương trình Affiliate – Hoa hồng 5% trọn đời",
       description: "Kiếm tiền cùng Salemylink: nhận 5% hoa hồng từ mỗi đơn hàng và doanh thu người bán bạn giới thiệu.",
       path: "/affiliate",
+      noindex: true,
     }),
   component: Affiliate,
 });

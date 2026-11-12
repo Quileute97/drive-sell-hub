@@ -224,6 +224,11 @@ export default function Category({
   if (!category) {
     return (
       <div className="min-h-screen bg-background">
+        <SEO
+          title="Không tìm thấy danh mục"
+          description="Danh mục này hiện không tồn tại hoặc đã bị ẩn khỏi hệ thống."
+          noindex
+        />
         <Header />
         <main className="mx-auto max-w-[1280px] px-4 py-12 sm:px-6 lg:px-8">
           <ErrorState

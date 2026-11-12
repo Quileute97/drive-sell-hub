@@ -6,7 +6,8 @@ import { fixVietnameseEncoding } from "@/lib/vietnameseText";
 import { getProductReviewData } from "@/lib/reviews";
 import { buildProductSchema, cleanSchemaName } from "@/lib/productSchemaBuilder";
 import { resolveAllProductImages, sanitizeImageUrl, sanitizeImageArray } from "@/lib/productImages";
-import { generateSku, safeIsoDate } from "@/lib/skuUtils";
+import { safeIsoDate } from "@/lib/skuUtils";
+import { getSellerSlug } from "@/lib/sellerUtils";
 
 export const Route = createFileRoute("/san-pham/$slug")({
   loader: async ({ params }) => {
@@ -62,6 +63,10 @@ export const Route = createFileRoute("/san-pham/$slug")({
         ratingValue,
         reviews,
         sellerName: seller?.full_name || null,
+        sellerSlug: getSellerSlug({
+          full_name: seller?.full_name || null,
+          user_id: seller?.user_id || data.seller_id || undefined,
+        }),
         sellerAvatar: seller?.avatar_url || null,
         categoryName: category?.name || null,
         categorySlug: category?.slug || null,
@@ -76,33 +81,14 @@ export const Route = createFileRoute("/san-pham/$slug")({
   },
   head: ({ params, loaderData }) => {
     const rawSlug = decodeURIComponent(params.slug || "").trim().replace(/\/$/, "");
-    const path = `/san-pham/${rawSlug}`;
-    if (!loaderData) {
-      const fallbackTitle = rawSlug
-        .replace(/-/g, " ")
-        .replace(/\b\w/g, (c) => c.toUpperCase());
-      const cleanTitle = cleanSchemaName(fallbackTitle, "Sản phẩm số");
-      const fallbackDesc = `${cleanTitle}. Mua tài liệu số, ebook, khóa học chất lượng cao tải ngay qua Google Drive tại Salemylink.com.`;
-
-      const fallbackProductSchema = buildProductSchema({
-        id: null,
-        slug: rawSlug,
-        name: cleanTitle,
-        description: fallbackDesc,
-        price: 0,
-        sellerName: "Salemylink",
-        categoryName: "Sản phẩm số",
-      });
-
+    const canonicalSlug = (loaderData?.slug || rawSlug).trim();
+    const path = `/san-pham/${canonicalSlug}`;
+    if (!loaderData || loaderData.status !== "active") {
       return buildHead({
-        title: `${cleanTitle} | Salemylink`,
-        description: fallbackDesc,
+        title: "Sản phẩm không có sẵn",
+        description: "Tài liệu này hiện không tồn tại hoặc đã bị gỡ khỏi hệ thống Salemylink.",
         path,
-        type: "product",
-        structuredData: {
-          "@context": "https://schema.org",
-          "@graph": [fallbackProductSchema],
-        },
+        noindex: true,
       });
     }
 
@@ -128,7 +114,7 @@ export const Route = createFileRoute("/san-pham/$slug")({
 
     const defaultValidFrom = safeIsoDate(Date.now() - 30 * 24 * 60 * 60 * 1000);
     const validFrom = safeIsoDate(loaderData.createdAt, defaultValidFrom);
-    const priceValidUntil = safeIsoDate(Date.now() + 365 * 24 * 60 * 60 * 1000);
+    const modifiedIso = safeIsoDate(loaderData.updatedAt || loaderData.createdAt, validFrom);
 
     const productImages = resolveAllProductImages({
       thumbnail_url: loaderData.thumbnail_url,
@@ -136,8 +122,6 @@ export const Route = createFileRoute("/san-pham/$slug")({
       google_drive_link: loaderData.google_drive_link,
     });
     const finalImage = productImages[0] || `${SITE_URL}/og-image.png`;
-
-    const productSku = generateSku(loaderData.id, rawSlug);
 
     const breadcrumbNode = {
       "@type": "BreadcrumbList",
@@ -165,13 +149,14 @@ export const Route = createFileRoute("/san-pham/$slug")({
 
     const productSchema = buildProductSchema({
       id: loaderData.id,
-      slug: rawSlug,
+      slug: canonicalSlug,
       name: loaderData.name,
       description: desc,
       price: loaderData.price,
       categoryName: loaderData.categoryName,
       categorySlug: loaderData.categorySlug,
       sellerName: loaderData.sellerName,
+      sellerSlug: loaderData.sellerSlug,
       thumbnail_url: loaderData.thumbnail_url,
       images: loaderData.images,
       google_drive_link: loaderData.google_drive_link,
@@ -192,11 +177,11 @@ export const Route = createFileRoute("/san-pham/$slug")({
       name: title,
       description: desc,
       datePublished: validFrom,
-      dateModified: safeIsoDate(loaderData.updatedAt || loaderData.createdAt, validFrom),
+      dateModified: modifiedIso,
       isPartOf: { "@id": `${SITE_URL}/#website` },
       breadcrumb: { "@id": `${SITE_URL}${path}#breadcrumb` },
       mainEntity: { "@id": `${SITE_URL}${path}#product` },
-      inLanguage: "vi",
+      inLanguage: "vi-VN",
     };
 
     const faqItems: { name: string; text: string }[] = [
@@ -261,6 +246,9 @@ export const Route = createFileRoute("/san-pham/$slug")({
       path,
       type: "product",
       image: finalImage,
+      price: loaderData.price,
+      currency: "VND",
+      keywords: Array.isArray(loaderData.tags) && loaderData.tags.length > 0 ? loaderData.tags : undefined,
       structuredData: {
         "@context": "https://schema.org",
         "@graph": graphNodes,

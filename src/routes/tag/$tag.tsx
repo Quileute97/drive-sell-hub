@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import TagProducts from "@/pages/TagProducts";
-import { getTagSeo } from "@/data/seoOverrides";
+import { getTagSeo, hasTagOverride } from "@/data/seoOverrides";
 import { buildHead, SITE_URL } from "@/lib/seoHead";
 import { supabase } from "@/integrations/supabase/client";
 import { fixVietnameseEncoding } from "@/lib/vietnameseText";
@@ -23,10 +23,11 @@ export const Route = createFileRoute("/tag/$tag")({
     }
   },
   head: ({ params, loaderData }) => {
-    const tag = decodeURIComponent(params.tag);
+    const tag = decodeURIComponent(params.tag || "").trim();
     const seo = getTagSeo(tag);
-    const path = `/tag/${params.tag}`;
+    const path = `/tag/${encodeURIComponent(tag)}`;
     const items = loaderData?.items ?? [];
+    const noindex = items.length === 0 && !hasTagOverride(tag);
     const breadcrumb = {
       "@type": "BreadcrumbList",
       "@id": `${SITE_URL}${path}#breadcrumb`,
@@ -77,7 +78,8 @@ export const Route = createFileRoute("/tag/$tag")({
       ogDescription: seo.ogDescription,
       twTitle: seo.twTitle,
       twDescription: seo.twDescription,
-      structuredData,
+      noindex,
+      structuredData: noindex ? undefined : structuredData,
     });
   },
   component: TagRoutePage,

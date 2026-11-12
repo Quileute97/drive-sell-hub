@@ -3,6 +3,7 @@ import "./lib/error-capture";
 import { consumeLastCapturedError } from "./lib/error-capture";
 import { renderErrorPage } from "./lib/error-page";
 import { handleGeminiSeoRequest } from "./server/geminiDriveSeo";
+import { buildDynamicSitemapXml, buildSitemapIndexXml } from "./server/sitemap";
 
 type ServerEntry = {
   fetch: (request: Request, env: unknown, ctx: unknown) => Promise<Response> | Response;
@@ -75,7 +76,7 @@ function applyCacheHeaders(request: Request, res: Response): Response {
   }
 
   const url = new URL(request.url);
-  const isPrivate = /^\/(admin|seller-dashboard|seller-auth|auth|cart|withdrawal|payment)(\/|$)/.test(url.pathname);
+  const isPrivate = /^\/(admin|seller-dashboard|seller-auth|seller-signup|auth|cart|withdrawal|payment|orders|wishlist|read|affiliate)(\/|$)/.test(url.pathname);
 
   const newHeaders = new Headers(res.headers);
   if (isPrivate) {
@@ -105,23 +106,31 @@ export default {
 
       // Explicit handler for sitemap-index.xml to prevent 500/404 SSR errors
       if (url.pathname === "/sitemap-index.xml") {
-        const today = new Date().toISOString().split("T")[0];
-        const sitemapIndexXml = `<?xml version="1.0" encoding="UTF-8"?>
-<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <sitemap>
-    <loc>https://salemylink.com/sitemap.xml</loc>
-    <lastmod>${today}</lastmod>
-  </sitemap>
-</sitemapindex>`;
         return applySecurityHeaders(
-          new Response(sitemapIndexXml, {
+          new Response(buildSitemapIndexXml(), {
             status: 200,
             headers: {
               "content-type": "application/xml; charset=utf-8",
-              "cache-control": "public, max-age=86400",
+              "cache-control": "public, max-age=3600, s-maxage=3600, stale-while-revalidate=86400",
             },
           }),
         );
+      }
+
+      // Dynamic sitemap.xml with live active products/categories/sellers/tags; falls back to static asset if upstream fails
+      if (url.pathname === "/sitemap.xml" && (request.method === "GET" || request.method === "HEAD")) {
+        const dynamicXml = await buildDynamicSitemapXml(env as Record<string, string | undefined>).catch(() => null);
+        if (dynamicXml) {
+          return applySecurityHeaders(
+            new Response(request.method === "HEAD" ? null : dynamicXml, {
+              status: 200,
+              headers: {
+                "content-type": "application/xml; charset=utf-8",
+                "cache-control": "public, max-age=3600, s-maxage=3600, stale-while-revalidate=86400",
+              },
+            }),
+          );
+        }
       }
 
       const handler = await getServerEntry();

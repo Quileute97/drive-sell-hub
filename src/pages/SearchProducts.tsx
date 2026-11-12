@@ -245,7 +245,7 @@ export default function SearchProducts() {
         description={metaDescription}
         keywords={metaKeywords}
         url={canonicalUrl}
-        noindex={Boolean(filters.q)}
+        noindex={true}
       />
 
       <Header />

@@ -12,7 +12,9 @@ Disallow: /checkout/
 Disallow: /payment/
 Disallow: /auth/
 Disallow: /seller-auth/
+Disallow: /seller-signup/
 Disallow: /read/
+Disallow: /wishlist/
 
 # Search Engine Crawlers (Follow explicit disallow paths)
 User-agent: Googlebot
@@ -26,7 +28,9 @@ Disallow: /checkout/
 Disallow: /payment/
 Disallow: /auth/
 Disallow: /seller-auth/
+Disallow: /seller-signup/
 Disallow: /read/
+Disallow: /wishlist/
 
 User-agent: Bingbot
 Allow: /
@@ -39,7 +43,9 @@ Disallow: /checkout/
 Disallow: /payment/
 Disallow: /auth/
 Disallow: /seller-auth/
+Disallow: /seller-signup/
 Disallow: /read/
+Disallow: /wishlist/
 
 User-agent: Baiduspider
 Allow: /
@@ -52,7 +58,9 @@ Disallow: /checkout/
 Disallow: /payment/
 Disallow: /auth/
 Disallow: /seller-auth/
+Disallow: /seller-signup/
 Disallow: /read/
+Disallow: /wishlist/
 
 User-agent: YandexBot
 Allow: /
@@ -65,7 +73,9 @@ Disallow: /checkout/
 Disallow: /payment/
 Disallow: /auth/
 Disallow: /seller-auth/
+Disallow: /seller-signup/
 Disallow: /read/
+Disallow: /wishlist/
 
 # Social Media Bots
 User-agent: Twitterbot
@@ -89,7 +99,9 @@ Disallow: /checkout/
 Disallow: /payment/
 Disallow: /auth/
 Disallow: /seller-auth/
+Disallow: /seller-signup/
 Disallow: /read/
+Disallow: /wishlist/
 
 User-agent: ClaudeBot
 Allow: /
@@ -102,7 +114,9 @@ Disallow: /checkout/
 Disallow: /payment/
 Disallow: /auth/
 Disallow: /seller-auth/
+Disallow: /seller-signup/
 Disallow: /read/
+Disallow: /wishlist/
 
 User-agent: PerplexityBot
 Allow: /
@@ -115,7 +129,9 @@ Disallow: /checkout/
 Disallow: /payment/
 Disallow: /auth/
 Disallow: /seller-auth/
+Disallow: /seller-signup/
 Disallow: /read/
+Disallow: /wishlist/
 
 User-agent: Google-Extended
 Allow: /
@@ -128,7 +144,9 @@ Disallow: /checkout/
 Disallow: /payment/
 Disallow: /auth/
 Disallow: /seller-auth/
+Disallow: /seller-signup/
 Disallow: /read/
+Disallow: /wishlist/
 
 # XML Sitemaps
 Sitemap: https://salemylink.com/sitemap-index.xml

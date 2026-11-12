@@ -90,11 +90,11 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "UTF-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1.0" },
-      { title: "Salemylink - Marketplace Ebook, Tài Liệu Học Tập & Khóa Học Online | Việt Nam" },
+      { title: "Salemylink - Mua Bán Tài Liệu Số, Ebook & Khóa Học" },
       {
         name: "description",
         content:
-          "Salemylink - Nền tảng mua bán tài liệu số, ebook, khóa học trực tuyến qua Google Drive uy tín hàng đầu Việt Nam. Tải xuống tức thì, thanh toán an toàn.",
+          "Marketplace mua bán tài liệu số, ebook, khóa học online qua Google Drive uy tín tại Việt Nam. Tải xuống tức thì, thanh toán PayOS an toàn.",
       },
       { name: "author", content: "Salemylink.com" },
       {

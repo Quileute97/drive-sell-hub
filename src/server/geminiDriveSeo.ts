@@ -43,11 +43,13 @@ interface EnvLike {
   VITE_SUPABASE_URL?: string | undefined;
   SUPABASE_PUBLISHABLE_KEY?: string | undefined;
   VITE_SUPABASE_PUBLISHABLE_KEY?: string | undefined;
+  SUPABASE_ANON_KEY?: string | undefined;
+  VITE_SUPABASE_ANON_KEY?: string | undefined;
 }
 
 const DEFAULT_SUPABASE_URL = "https://dfalphamyvdfewixrnju.supabase.co";
 const DEFAULT_SUPABASE_ANON_KEY =
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRmYWxwaGFteXZkZmV3aXhybmp1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTU1ODcyODIsImV4cCI6MjA3MTE2MzI4Mn0.T908t3vL1v1L0jY_4lJ_F5mR2o_gT-N-aW-sK-pI_qA";
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRmYWxwaGFteXZkZmV3aXhybmp1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYwMzUwODksImV4cCI6MjA3MTYxMTA4OX0.1Jq2r7Y57ZgeeHcbEwpRQI_5pwAkBl3CPpinHgL__e0";
 
 const DRIVE_ID_RE = /^[a-zA-Z0-9_-]{10,120}$/;
 
@@ -395,12 +397,23 @@ async function verifyAuthenticatedUser(
 
   const supabaseUrl =
     (await resolveEnvVar(env, ["SUPABASE_URL", "VITE_SUPABASE_URL"])) ||
+    (typeof import.meta !== "undefined" &&
+      (import.meta as { env?: Record<string, string | undefined> }).env?.[
+        "VITE_SUPABASE_URL"
+      ]?.trim()) ||
     DEFAULT_SUPABASE_URL;
   const supabaseKey =
     (await resolveEnvVar(env, [
       "SUPABASE_PUBLISHABLE_KEY",
       "VITE_SUPABASE_PUBLISHABLE_KEY",
-    ])) || DEFAULT_SUPABASE_ANON_KEY;
+      "SUPABASE_ANON_KEY",
+      "VITE_SUPABASE_ANON_KEY",
+    ])) ||
+    (typeof import.meta !== "undefined" &&
+      (import.meta as { env?: Record<string, string | undefined> }).env?.[
+        "VITE_SUPABASE_PUBLISHABLE_KEY"
+      ]?.trim()) ||
+    DEFAULT_SUPABASE_ANON_KEY;
 
   try {
     const res = await fetch(`${supabaseUrl.replace(/\/+$/, "")}/auth/v1/user`, {

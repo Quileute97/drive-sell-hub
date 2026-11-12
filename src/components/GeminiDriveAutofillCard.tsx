@@ -138,9 +138,18 @@ export function GeminiDriveAutofillCard({
     lastTriggeredUrlRef.current = link;
 
     try {
-      const {
+      let {
         data: { session },
       } = await supabase.auth.getSession();
+
+      const expiresAtMs = (session?.expires_at ?? 0) * 1000;
+      if (!session?.access_token || (expiresAtMs > 0 && expiresAtMs - Date.now() < 60_000)) {
+        const refreshed = await supabase.auth.refreshSession();
+        if (refreshed.data.session?.access_token) {
+          session = refreshed.data.session;
+        }
+      }
+
       if (!session?.access_token) {
         throw new Error("Vui lòng đăng nhập lại để sử dụng Gemini AI.");
       }
@@ -148,25 +157,38 @@ export function GeminiDriveAutofillCard({
       const categoryName =
         categories.find((c) => c.id === categoryId)?.name || "";
 
-      const headers: Record<string, string> = {
-        "content-type": "application/json",
-        authorization: `Bearer ${session.access_token}`,
-      };
-      if (customApiKey.trim()) {
-        headers["x-gemini-api-key"] = customApiKey.trim();
-      }
-
-      const res = await fetch("/api/gemini-seo", {
-        method: "POST",
-        headers,
-        body: JSON.stringify({
-          googleDriveLink: link,
-          userHint: userHint.trim(),
-          existingTitle: existingTitle.trim(),
-          categoryName,
-          categories,
-        }),
+      const payloadBody = JSON.stringify({
+        googleDriveLink: link,
+        userHint: userHint.trim(),
+        existingTitle: existingTitle.trim(),
+        categoryName,
+        categories,
       });
+
+      const callGeminiSeoEndpoint = async (accessToken: string) => {
+        const headers: Record<string, string> = {
+          "content-type": "application/json",
+          authorization: `Bearer ${accessToken}`,
+        };
+        if (customApiKey.trim()) {
+          headers["x-gemini-api-key"] = customApiKey.trim();
+        }
+        return fetch("/api/gemini-seo", {
+          method: "POST",
+          headers,
+          body: payloadBody,
+        });
+      };
+
+      let res = await callGeminiSeoEndpoint(session.access_token);
+
+      // If token just expired right before the request, refresh session once and retry
+      if (res.status === 401) {
+        const refreshed = await supabase.auth.refreshSession();
+        if (refreshed.data.session?.access_token) {
+          res = await callGeminiSeoEndpoint(refreshed.data.session.access_token);
+        }
+      }
 
       const data = (await res.json().catch(() => ({}))) as Partial<
         GeminiGeneratedProductFields

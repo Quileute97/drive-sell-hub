@@ -34,10 +34,14 @@ export const Route = createFileRoute("/danh-muc/$slug")({
         .limit(24);
 
       return {
-        category,
+        category: {
+          ...category,
+          name: fixVietnameseEncoding(category.name),
+          description: category.description ? fixVietnameseEncoding(category.description) : null,
+        },
         products: products || [],
-        name: category.name as string,
-        description: category.description as string | null,
+        name: fixVietnameseEncoding(category.name),
+        description: category.description ? fixVietnameseEncoding(category.description) : null,
         items: products || [],
       };
     } catch {

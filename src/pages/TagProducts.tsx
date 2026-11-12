@@ -20,6 +20,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Link, useParams } from "@/lib/router-compat";
 import { getTagSeo } from "@/data/seoOverrides";
 import { sanitizeImageArray, sanitizeImageUrl } from "@/lib/productImages";
+import { fixVietnameseEncoding } from "@/lib/vietnameseText";
 
 export default function TagProducts({
   initialProducts,
@@ -95,6 +96,8 @@ export default function TagProducts({
 
         const cleaned = (data || []).map((p: any) => ({
           ...p,
+          title: fixVietnameseEncoding(p.title),
+          short_description: p.short_description ? fixVietnameseEncoding(p.short_description) : null,
           thumbnail_url: sanitizeImageUrl(p.thumbnail_url),
           images: sanitizeImageArray(p.images),
         }));
@@ -180,12 +183,15 @@ export default function TagProducts({
               </p>
             </div>
 
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-medium text-muted-foreground">
+            <div className="flex items-center gap-2 w-full sm:w-auto">
+              <span className="text-xs font-medium text-muted-foreground shrink-0">
                 Sắp xếp:
               </span>
               <Select value={sortBy} onValueChange={setSortBy}>
-                <SelectTrigger className="h-12 sm:h-10 w-[180px]">
+                <SelectTrigger
+                  aria-label="Sắp xếp sản phẩm theo tiêu chí"
+                  className="h-12 sm:h-10 w-full sm:w-[180px]"
+                >
                   <SelectValue placeholder="Sắp xếp" />
                 </SelectTrigger>
                 <SelectContent>
@@ -209,7 +215,7 @@ export default function TagProducts({
                   <Link
                     key={t}
                     to={`/tag/${encodeURIComponent(t)}`}
-                    className="inline-flex min-h-8 items-center rounded-full border border-border bg-muted/50 px-3 py-1 text-xs font-medium text-foreground hover:bg-secondary hover:text-primary transition-colors"
+                    className="inline-flex min-h-11 sm:min-h-8 items-center rounded-full border border-border bg-surface px-3 py-1 text-xs font-medium text-foreground hover:bg-button-hover hover:text-primary transition-colors"
                   >
                     #{t}
                   </Link>

@@ -14,6 +14,7 @@ import {
   Compass,
   Shield,
   LayoutDashboard,
+  Package,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -254,6 +255,16 @@ export const Header = () => {
                       </span>
                     )}
                   </Link>
+                  {user && (
+                    <Link
+                      to="/orders"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="flex min-h-11 items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-foreground hover:bg-muted"
+                    >
+                      <Package className="h-4 w-4 text-primary" />
+                      <span>{t("nav.myOrders")}</span>
+                    </Link>
+                  )}
                   <a
                     href="https://t.me/+2ZkLgrmVJgBkMGM1"
                     target="_blank"
@@ -557,6 +568,12 @@ export const Header = () => {
                   <Link to="/cart">
                     <ShoppingCart className="h-4 w-4 mr-2 text-muted-foreground" />
                     {t("nav.cart")}
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/orders">
+                    <Package className="h-4 w-4 mr-2 text-muted-foreground" />
+                    {t("nav.myOrders")}
                   </Link>
                 </DropdownMenuItem>
                 {isSeller && (

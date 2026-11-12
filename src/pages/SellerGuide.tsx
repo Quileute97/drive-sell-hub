@@ -1,5 +1,6 @@
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
+import { Breadcrumb } from "@/components/Breadcrumb";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Link } from "@/lib/router-compat";
@@ -17,7 +18,7 @@ import { SEO } from "@/components/SEO";
 
 export default function SellerGuide() {
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-background">
       <SEO 
         title="Hướng dẫn bán hàng sản phẩm digital"
         description="Hướng dẫn chi tiết cách bán sản phẩm digital trên Salemylink. Từ chuẩn bị sản phẩm, upload lên Drive, tạo listing đến tăng doanh số hiệu quả."
@@ -26,7 +27,8 @@ export default function SellerGuide() {
       />
       <Header />
       
-      <main className="container mx-auto px-4 py-12">
+      <main className="mx-auto max-w-[1280px] px-4 py-6 sm:px-6 lg:px-8">
+        <Breadcrumb items={[{ label: "Hướng dẫn bán hàng" }]} />
         <section className="text-center mb-16">
           <h1 className="text-4xl lg:text-5xl font-bold mb-6">
             Hướng dẫn bán hàng

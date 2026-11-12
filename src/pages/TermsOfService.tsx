@@ -1,11 +1,14 @@
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
+import { Breadcrumb } from "@/components/Breadcrumb";
 import { Card, CardContent } from "@/components/ui/card";
 import { SEO } from "@/components/SEO";
 
+const LAST_UPDATED = "2026-11-12";
+
 export default function TermsOfService() {
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-background">
       <SEO 
         title="Điều khoản sử dụng"
         description="Điều khoản sử dụng của Salemylink.com. Quy định về đăng ký tài khoản, mua bán sản phẩm digital, thanh toán và trách nhiệm của người dùng."
@@ -14,9 +17,12 @@ export default function TermsOfService() {
       />
       <Header />
       
-      <main className="container mx-auto px-4 py-12 max-w-4xl">
-        <h1 className="text-4xl font-bold mb-6">Điều khoản sử dụng</h1>
-        <p className="text-muted-foreground mb-8">Cập nhật lần cuối: {new Date(lastUpdated).toLocaleDateString('vi-VN')}</p>
+      <main className="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
+        <Breadcrumb items={[{ label: "Điều khoản sử dụng" }]} />
+        <h1 className="text-3xl sm:text-4xl font-bold mb-3 text-foreground">Điều khoản sử dụng</h1>
+        <p className="text-muted-foreground mb-8 text-sm">
+          Cập nhật lần cuối: {new Date(LAST_UPDATED).toLocaleDateString("vi-VN")}
+        </p>
 
         <div className="prose max-w-none space-y-8">
           <Card>

@@ -1,5 +1,6 @@
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
+import { Breadcrumb } from "@/components/Breadcrumb";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Link } from "@/lib/router-compat";
@@ -15,7 +16,7 @@ import { SEO } from "@/components/SEO";
 
 export default function HowItWorks() {
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-background">
       <SEO 
         title="Cách thức hoạt động - Mua bán sản phẩm digital"
         description="Tìm hiểu cách mua và bán sản phẩm digital trên Salemylink. Quy trình đơn giản chỉ với 4 bước cho người bán và 3 bước cho người mua."
@@ -24,7 +25,8 @@ export default function HowItWorks() {
       />
       <Header />
       
-      <main className="container mx-auto px-4 py-12">
+      <main className="mx-auto max-w-[1280px] px-4 py-6 sm:px-6 lg:px-8">
+        <Breadcrumb items={[{ label: "Cách thức hoạt động" }]} />
         <section className="text-center mb-16">
           <h1 className="text-4xl lg:text-5xl font-bold mb-6">
             Cách thức hoạt động

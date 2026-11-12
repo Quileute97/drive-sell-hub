@@ -10,5 +10,5 @@ export const Route = createFileRoute("/withdrawal")({
       path: "/withdrawal",
       noindex: true,
     }),
-  component: Withdrawal,
+  component: () => <Withdrawal standalone />,
 });

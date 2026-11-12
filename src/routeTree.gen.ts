@@ -15,6 +15,7 @@ import { Route as AffiliateRouteImport } from './routes/affiliate'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as CartRouteImport } from './routes/cart'
 import { Route as HowItWorksRouteImport } from './routes/how-it-works'
+import { Route as OrdersRouteImport } from './routes/orders'
 import { Route as PrivacyPolicyRouteImport } from './routes/privacy-policy'
 import { Route as SearchRouteImport } from './routes/search'
 import { Route as SellerAuthRouteImport } from './routes/seller-auth'
@@ -71,6 +72,11 @@ const CartRoute = CartRouteImport.update({
 const HowItWorksRoute = HowItWorksRouteImport.update({
   id: '/how-it-works',
   path: '/how-it-works',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OrdersRoute = OrdersRouteImport.update({
+  id: '/orders',
+  path: '/orders',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PrivacyPolicyRoute = PrivacyPolicyRouteImport.update({
@@ -216,6 +222,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/cart': typeof CartRoute
   '/how-it-works': typeof HowItWorksRoute
+  '/orders': typeof OrdersRoute
   '/privacy-policy': typeof PrivacyPolicyRoute
   '/search': typeof SearchRoute
   '/seller-auth': typeof SellerAuthRoute
@@ -251,6 +258,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/cart': typeof CartRoute
   '/how-it-works': typeof HowItWorksRoute
+  '/orders': typeof OrdersRoute
   '/privacy-policy': typeof PrivacyPolicyRoute
   '/search': typeof SearchRoute
   '/seller-auth': typeof SellerAuthRoute
@@ -287,6 +295,7 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/cart': typeof CartRoute
   '/how-it-works': typeof HowItWorksRoute
+  '/orders': typeof OrdersRoute
   '/privacy-policy': typeof PrivacyPolicyRoute
   '/search': typeof SearchRoute
   '/seller-auth': typeof SellerAuthRoute
@@ -324,6 +333,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/cart'
     | '/how-it-works'
+    | '/orders'
     | '/privacy-policy'
     | '/search'
     | '/seller-auth'
@@ -359,6 +369,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/cart'
     | '/how-it-works'
+    | '/orders'
     | '/privacy-policy'
     | '/search'
     | '/seller-auth'
@@ -394,6 +405,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/cart'
     | '/how-it-works'
+    | '/orders'
     | '/privacy-policy'
     | '/search'
     | '/seller-auth'
@@ -430,6 +442,7 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   CartRoute: typeof CartRoute
   HowItWorksRoute: typeof HowItWorksRoute
+  OrdersRoute: typeof OrdersRoute
   PrivacyPolicyRoute: typeof PrivacyPolicyRoute
   SearchRoute: typeof SearchRoute
   SellerAuthRoute: typeof SellerAuthRoute
@@ -501,6 +514,13 @@ declare module '@tanstack/react-router' {
       path: '/how-it-works'
       fullPath: '/how-it-works'
       preLoaderRoute: typeof HowItWorksRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/orders': {
+      id: '/orders'
+      path: '/orders'
+      fullPath: '/orders'
+      preLoaderRoute: typeof OrdersRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/privacy-policy': {
@@ -702,6 +722,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   CartRoute: CartRoute,
   HowItWorksRoute: HowItWorksRoute,
+  OrdersRoute: OrdersRoute,
   PrivacyPolicyRoute: PrivacyPolicyRoute,
   SearchRoute: SearchRoute,
   SellerAuthRoute: SellerAuthRoute,

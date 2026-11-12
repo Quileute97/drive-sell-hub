@@ -1,5 +1,6 @@
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
+import { Breadcrumb } from '@/components/Breadcrumb';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -118,41 +119,48 @@ export const Cart = () => {
       />
       <Header />
       
-      <main className="container mx-auto px-4 py-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-foreground mb-2">Giỏ hàng của bạn</h1>
-          <p className="text-muted-foreground">
+      <main className="mx-auto max-w-[1280px] px-4 py-6 sm:px-6 lg:px-8">
+        <Breadcrumb items={[{ label: "Giỏ hàng" }]} />
+
+        <div className="mb-6">
+          <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-1">Giỏ hàng của bạn</h1>
+          <p className="text-sm text-muted-foreground">
             Bạn có {totalItems} sản phẩm trong giỏ hàng
           </p>
         </div>
 
-        {cartItems.length === 0 ? (
-          <Card className="text-center py-12">
+        {loading ? (
+          <div className="flex items-center justify-center py-12 rounded-2xl border border-border bg-surface">
+            <Loader2 className="h-7 w-7 animate-spin text-primary" />
+            <span className="ml-2 text-sm text-muted-foreground">Đang tải giỏ hàng...</span>
+          </div>
+        ) : cartItems.length === 0 ? (
+          <Card className="text-center py-12 rounded-2xl border-border bg-surface">
             <CardContent>
-              <ShoppingBag className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-lg font-semibold mb-2">Giỏ hàng trống</h3>
-              <p className="text-muted-foreground mb-4">
+              <ShoppingBag className="h-14 w-14 text-muted-foreground mx-auto mb-4" />
+              <h2 className="text-lg font-semibold mb-2">Giỏ hàng trống</h2>
+              <p className="text-muted-foreground mb-5 text-sm">
                 Hãy khám phá các sản phẩm digital tuyệt vời của chúng tôi
               </p>
-              <Button asChild>
-                <a href="/">Tiếp tục mua sắm</a>
-              </Button>
+              <div className="flex flex-wrap justify-center gap-2">
+                <Button asChild className="min-h-11 sm:min-h-10">
+                  <Link to="/search">Khám phá tài liệu</Link>
+                </Button>
+                <Button variant="outline" asChild className="min-h-11 sm:min-h-10">
+                  <Link to="/">Về trang chủ</Link>
+                </Button>
+              </div>
             </CardContent>
           </Card>
-        ) : loading ? (
-          <div className="flex items-center justify-center py-12">
-            <Loader2 className="h-8 w-8 animate-spin" />
-            <span className="ml-2">Đang tải giỏ hàng...</span>
-          </div>
         ) : (
-          <div className="grid lg:grid-cols-3 gap-8">
+          <div className="grid lg:grid-cols-3 gap-6">
             {/* Cart Items */}
             <div className="lg:col-span-2 space-y-4">
               {cartItems.map((item) => (
-                <Card key={item.id}>
-                  <CardContent className="p-6">
-                    <div className="flex items-center space-x-4">
-                      <div className="w-20 h-20 bg-muted rounded-lg flex items-center justify-center overflow-hidden">
+                <Card key={item.id} className="rounded-2xl border-border bg-surface">
+                  <CardContent className="p-4 sm:p-6">
+                    <div className="flex items-start gap-3.5 sm:gap-4">
+                      <div className="w-16 h-16 sm:w-20 sm:h-20 shrink-0 bg-muted rounded-xl flex items-center justify-center overflow-hidden border border-border">
                         {item.product.thumbnail_url ? (
                           <img 
                             src={item.product.thumbnail_url} 
@@ -160,58 +168,63 @@ export const Cart = () => {
                             className="w-full h-full object-cover"
                           />
                         ) : (
-                          <ShoppingBag className="h-8 w-8 text-muted-foreground" />
+                          <ShoppingBag className="h-7 w-7 text-muted-foreground" />
                         )}
                       </div>
                       
-                      <div className="flex-1">
-                        <div className="flex items-start justify-between">
-                          <div>
-                            <h3 className="font-semibold text-lg">{item.product.title}</h3>
-                            <p className="text-sm text-muted-foreground">
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="min-w-0">
+                            <h3 className="font-semibold text-base sm:text-lg leading-snug break-words">{item.product.title}</h3>
+                            <p className="text-xs sm:text-sm text-muted-foreground mt-0.5 truncate">
                               Người bán: {item.product.profiles?.full_name || 'Không xác định'}
                             </p>
-                            <Badge variant="secondary" className="mt-1">
+                            <Badge variant="secondary" className="mt-1.5 text-xs">
                               {item.product.category?.name || 'Không phân loại'}
                             </Badge>
                           </div>
                           <Button
                             variant="ghost"
-                            size="sm"
+                            size="icon"
+                            aria-label={`Xóa ${item.product.title} khỏi giỏ hàng`}
                             onClick={() => removeItem(item.id)}
-                            className="text-red-500 hover:text-red-600"
+                            className="h-10 w-10 shrink-0 text-destructive hover:text-destructive hover:bg-destructive/10"
                           >
                             <Trash2 className="h-4 w-4" />
                           </Button>
                         </div>
                         
-                        <div className="flex items-center justify-between mt-4">
-                          <div className="flex items-center space-x-2">
+                        <div className="flex flex-wrap items-center justify-between gap-3 mt-4">
+                          <div className="flex items-center gap-2">
                             <Button
                               variant="outline"
-                              size="sm"
+                              size="icon"
+                              aria-label="Giảm số lượng"
+                              className="h-10 w-10 sm:h-9 sm:w-9"
                               onClick={() => updateQuantity(item.id, item.quantity - 1)}
                               disabled={item.quantity <= 1}
                             >
-                              <Minus className="h-3 w-3" />
+                              <Minus className="h-3.5 w-3.5" />
                             </Button>
-                            <span className="px-3 py-1 border rounded-md text-sm font-medium">
+                            <span className="px-3 py-1.5 border border-border rounded-lg text-sm font-medium tabular-nums min-w-10 text-center">
                               {item.quantity}
                             </span>
                             <Button
                               variant="outline"
-                              size="sm"
+                              size="icon"
+                              aria-label="Tăng số lượng"
+                              className="h-10 w-10 sm:h-9 sm:w-9"
                               onClick={() => updateQuantity(item.id, item.quantity + 1)}
                             >
-                              <Plus className="h-3 w-3" />
+                              <Plus className="h-3.5 w-3.5" />
                             </Button>
                           </div>
                           
                           <div className="text-right">
-                            <p className="text-lg font-semibold">
+                            <p className="text-base sm:text-lg font-bold text-primary tabular-nums">
                               {formatPrice(item.product.price * item.quantity)}
                             </p>
-                            <p className="text-sm text-muted-foreground">
+                            <p className="text-xs text-muted-foreground tabular-nums">
                               {formatPrice(item.product.price)} x {item.quantity}
                             </p>
                           </div>

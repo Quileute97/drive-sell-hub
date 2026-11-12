@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/hooks/use-toast';
 import { Eye, EyeOff, ArrowLeft } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { SEO } from '@/components/SEO';
@@ -20,6 +21,7 @@ const Auth = () => {
   const [loading, setLoading] = useState(false);
 
   const { signIn, signUp, signInWithGoogle, user } = useAuth();
+  const { toast } = useToast();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -37,7 +39,11 @@ const Auth = () => {
         await signIn(email, password);
       } else {
         if (password !== confirmPassword) {
-          alert('Mật khẩu xác nhận không khớp');
+          toast({
+            variant: 'destructive',
+            title: 'Lỗi xác nhận mật khẩu',
+            description: 'Mật khẩu xác nhận không khớp. Vui lòng kiểm tra lại.',
+          });
           return;
         }
         await signUp(email, password, fullName);
@@ -144,6 +150,7 @@ const Auth = () => {
                         type="button"
                         variant="ghost"
                         size="sm"
+                        aria-label={showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
                         className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
                         onClick={() => setShowPassword(!showPassword)}
                       >
@@ -227,6 +234,7 @@ const Auth = () => {
                         type="button"
                         variant="ghost"
                         size="sm"
+                        aria-label={showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
                         className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
                         onClick={() => setShowPassword(!showPassword)}
                       >
@@ -287,13 +295,13 @@ const Auth = () => {
 
         <p className="text-center text-sm text-muted-foreground mt-6">
           Bằng cách đăng ký, bạn đồng ý với{' '}
-          <a href="#" className="text-primary hover:underline">
+          <Link to="/terms-of-service" className="text-primary hover:underline">
             Điều khoản dịch vụ
-          </a>{' '}
+          </Link>{' '}
           và{' '}
-          <a href="#" className="text-primary hover:underline">
+          <Link to="/privacy-policy" className="text-primary hover:underline">
             Chính sách bảo mật
-          </a>{' '}
+          </Link>{' '}
           của chúng tôi.
         </p>
       </div>

@@ -29,6 +29,9 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Header } from '@/components/Header';
+import { Footer } from '@/components/Footer';
+import { Breadcrumb } from '@/components/Breadcrumb';
 import {
   Dialog,
   DialogContent,
@@ -61,7 +64,7 @@ interface WithdrawalRequest {
   bank_accounts: BankAccount;
 }
 
-export default function Withdrawal() {
+export default function Withdrawal({ standalone = false }: { standalone?: boolean }) {
   const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -331,7 +334,7 @@ export default function Withdrawal() {
     );
   };
 
-  return (
+  const content = (
     <div className="space-y-6">
       {/* Balance Overview */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -699,6 +702,29 @@ export default function Withdrawal() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+    </div>
+  );
+
+  if (!standalone) {
+    return content;
+  }
+
+  return (
+    <div className="min-h-screen bg-background">
+      <Header />
+      <main className="mx-auto max-w-[1280px] px-4 py-6 sm:px-6 lg:px-8">
+        <Breadcrumb
+          items={[
+            { label: "Dashboard Bán hàng", href: "/seller-dashboard" },
+            { label: "Rút tiền" },
+          ]}
+        />
+        <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-6">
+          Quản lý rút tiền
+        </h1>
+        {content}
+      </main>
+      <Footer />
     </div>
   );
 }

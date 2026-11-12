@@ -150,12 +150,16 @@ export default function GuideDetail() {
               </div>
               {guide.categorySlug && (
                 <div className="mt-6 text-center">
-                  <Link to={`/danh-muc/${guide.categorySlug}`}>
-                    <Button variant="outline">
-                      Xem thêm trong danh mục {guide.category}
-                      <ArrowRight className="h-4 w-4 ml-2" />
-                    </Button>
-                  </Link>
+                  <Button
+                    variant="outline"
+                    asChild
+                    className="h-auto min-h-11 max-w-full whitespace-normal py-2.5 text-center"
+                  >
+                    <Link to={`/danh-muc/${guide.categorySlug}`}>
+                      <span>Xem thêm trong danh mục {guide.category}</span>
+                      <ArrowRight className="h-4 w-4 shrink-0" />
+                    </Link>
+                  </Button>
                 </div>
               )}
             </section>

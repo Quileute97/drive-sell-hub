@@ -164,11 +164,11 @@ export interface BuildProductSchemaOptions {
   ratingAverage?: number | string | null;
   ratingCount?: number | string | null;
   reviews?: Array<{
-    authorName?: string;
-    comment?: string;
-    rating?: number;
-    datePublished?: string;
-    createdAt?: string;
+    authorName?: string | undefined;
+    comment?: string | undefined;
+    rating?: number | undefined;
+    datePublished?: string | undefined;
+    createdAt?: string | undefined;
   }> | null;
   fileFormat?: string | null;
   fileSize?: string | null;
@@ -284,7 +284,7 @@ export function buildProductSchema(options: BuildProductSchemaOptions) {
       ? Math.max(1, Math.round(rawRatingCount))
       : (options.reviews?.length || 1);
 
-    productNode.aggregateRating = {
+    productNode["aggregateRating"] = {
       "@type": "AggregateRating",
       "@id": `${SITE_URL}${path}#rating`,
       ratingValue: validRatingValue,
@@ -297,7 +297,7 @@ export function buildProductSchema(options: BuildProductSchemaOptions) {
 
   // Only attach review array if real reviews exist (never insert fake placeholder reviews)
   if (hasReviewsList) {
-    productNode.review = options.reviews!.map((r, idx) => ({
+    productNode["review"] = options.reviews!.map((r, idx) => ({
       "@type": "Review",
       "@id": `${SITE_URL}${path}#review-${idx + 1}`,
       reviewRating: {

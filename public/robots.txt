@@ -6,6 +6,8 @@ Allow: /
 Disallow: /admin/
 Disallow: /seller-dashboard/
 Disallow: /cart/
+Disallow: /orders/
+Disallow: /withdrawal/
 Disallow: /checkout/
 Disallow: /payment/
 Disallow: /auth/
@@ -18,6 +20,8 @@ Allow: /
 Disallow: /admin/
 Disallow: /seller-dashboard/
 Disallow: /cart/
+Disallow: /orders/
+Disallow: /withdrawal/
 Disallow: /checkout/
 Disallow: /payment/
 Disallow: /auth/
@@ -29,6 +33,8 @@ Allow: /
 Disallow: /admin/
 Disallow: /seller-dashboard/
 Disallow: /cart/
+Disallow: /orders/
+Disallow: /withdrawal/
 Disallow: /checkout/
 Disallow: /payment/
 Disallow: /auth/
@@ -40,6 +46,8 @@ Allow: /
 Disallow: /admin/
 Disallow: /seller-dashboard/
 Disallow: /cart/
+Disallow: /orders/
+Disallow: /withdrawal/
 Disallow: /checkout/
 Disallow: /payment/
 Disallow: /auth/
@@ -51,6 +59,8 @@ Allow: /
 Disallow: /admin/
 Disallow: /seller-dashboard/
 Disallow: /cart/
+Disallow: /orders/
+Disallow: /withdrawal/
 Disallow: /checkout/
 Disallow: /payment/
 Disallow: /auth/
@@ -73,6 +83,8 @@ Allow: /
 Disallow: /admin/
 Disallow: /seller-dashboard/
 Disallow: /cart/
+Disallow: /orders/
+Disallow: /withdrawal/
 Disallow: /checkout/
 Disallow: /payment/
 Disallow: /auth/
@@ -84,6 +96,8 @@ Allow: /
 Disallow: /admin/
 Disallow: /seller-dashboard/
 Disallow: /cart/
+Disallow: /orders/
+Disallow: /withdrawal/
 Disallow: /checkout/
 Disallow: /payment/
 Disallow: /auth/
@@ -95,6 +109,8 @@ Allow: /
 Disallow: /admin/
 Disallow: /seller-dashboard/
 Disallow: /cart/
+Disallow: /orders/
+Disallow: /withdrawal/
 Disallow: /checkout/
 Disallow: /payment/
 Disallow: /auth/
@@ -106,6 +122,8 @@ Allow: /
 Disallow: /admin/
 Disallow: /seller-dashboard/
 Disallow: /cart/
+Disallow: /orders/
+Disallow: /withdrawal/
 Disallow: /checkout/
 Disallow: /payment/
 Disallow: /auth/

@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
+import { Breadcrumb } from "@/components/Breadcrumb";
 import { Copy, TrendingUp, MousePointerClick, ShoppingCart, Wallet } from "lucide-react";
 import { SEO } from "@/components/SEO";
 
@@ -108,15 +109,25 @@ export default function Affiliate() {
     toast({ title: "Đã sao chép" });
   };
 
-  if (loading || !fetched) {
-    return <div className="min-h-screen flex items-center justify-center">Đang tải...</div>;
+  if (loading || (user && !fetched)) {
+    return (
+      <div className="min-h-screen flex flex-col bg-background">
+        <SEO title="Affiliate - Kiếm hoa hồng 5%" description="Tham gia chương trình affiliate, nhận 5% hoa hồng cho mỗi đơn hàng giới thiệu thành công." noindex />
+        <Header />
+        <main className="flex-1 flex items-center justify-center text-sm text-muted-foreground">
+          Đang tải...
+        </main>
+        <Footer />
+      </div>
+    );
   }
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-background">
       <SEO title="Affiliate - Kiếm hoa hồng 5%" description="Tham gia chương trình affiliate, nhận 5% hoa hồng cho mỗi đơn hàng giới thiệu thành công." noindex />
       <Header />
-      <main className="flex-1 container mx-auto px-4 py-8 max-w-5xl">
+      <main className="flex-1 mx-auto w-full max-w-[1280px] px-4 py-6 sm:px-6 lg:px-8">
+        <Breadcrumb items={[{ label: "Chương trình Affiliate" }]} />
         <h1 className="text-3xl font-bold mb-2">Chương trình Affiliate</h1>
         <p className="text-muted-foreground mb-6">Nhận 5% hoa hồng cho mỗi đơn hàng từ link giới thiệu, và 5% doanh thu từ các seller bạn giới thiệu tham gia (cookie 30 ngày).</p>
 

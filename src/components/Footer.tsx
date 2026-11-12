@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Facebook, Twitter, Instagram, Youtube, Mail, Phone, MapPin, ExternalLink } from "lucide-react";
+import { Mail, Phone, MapPin, ExternalLink } from "lucide-react";
 import { TelegramIcon } from "@/components/icons/TelegramIcon";
 import { supabase } from "@/integrations/supabase/client";
 import { Link } from "@/lib/router-compat";
@@ -88,24 +88,14 @@ export const Footer = ({
                 href={TELEGRAM_COMMUNITY_URL}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-sky-500/10 text-sky-700 hover:bg-[#229ED9] hover:text-white transition-colors"
+                className="inline-flex min-h-9 items-center gap-2 rounded-lg bg-sky-500/10 px-3 py-1.5 text-xs font-medium text-sky-700 hover:bg-[#229ED9] hover:text-white transition-colors"
                 aria-label="Group Telegram (Cộng đồng)"
                 title="Group Telegram (Cộng đồng)"
               >
-                <TelegramIcon className="h-4 w-4" />
+                <TelegramIcon className="h-4 w-4 shrink-0" />
+                <span>Cộng đồng Telegram</span>
+                <ExternalLink className="h-3 w-3 shrink-0" />
               </a>
-              <Button variant="ghost" size="icon" className="h-9 w-9" aria-label="Facebook">
-                <Facebook className="h-4 w-4" />
-              </Button>
-              <Button variant="ghost" size="icon" className="h-9 w-9" aria-label="Twitter">
-                <Twitter className="h-4 w-4" />
-              </Button>
-              <Button variant="ghost" size="icon" className="h-9 w-9" aria-label="Instagram">
-                <Instagram className="h-4 w-4" />
-              </Button>
-              <Button variant="ghost" size="icon" className="h-9 w-9" aria-label="Youtube">
-                <Youtube className="h-4 w-4" />
-              </Button>
             </nav>
           </div>
 

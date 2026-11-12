@@ -1,5 +1,6 @@
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
+import { Breadcrumb } from "@/components/Breadcrumb";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Users, Target, Heart, TrendingUp, ArrowRight } from "lucide-react";
@@ -8,7 +9,7 @@ import { SEO } from "@/components/SEO";
 
 export default function About() {
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-background">
       <SEO 
         title="Về Salemylink - Nền tảng sản phẩm digital"
         description="Tìm hiểu về Salemylink - nền tảng thương mại điện tử hàng đầu cho sản phẩm digital tại Việt Nam. Sứ mệnh, tầm nhìn và giá trị cốt lõi của chúng tôi."
@@ -17,7 +18,8 @@ export default function About() {
       />
       <Header />
       
-      <main className="container mx-auto px-4 py-12">
+      <main className="mx-auto max-w-[1280px] px-4 py-6 sm:px-6 lg:px-8">
+        <Breadcrumb items={[{ label: "Về chúng tôi" }]} />
         {/* Hero Section */}
         <section className="text-center mb-16">
           <h1 className="text-4xl lg:text-5xl font-bold mb-6">

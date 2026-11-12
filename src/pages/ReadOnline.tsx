@@ -3,6 +3,7 @@ import { useParams, useNavigate, Link } from "@/lib/router-compat";
 import { supabase } from "@/integrations/supabase/client";
 import { getGoogleDrivePreviewUrl } from "@/lib/productAccess";
 import { Button } from "@/components/ui/button";
+import { SEO, SITE_URL } from "@/components/SEO";
 import { ArrowLeft, ShieldAlert, Maximize2, Minimize2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -24,7 +25,7 @@ const ReadOnline = () => {
         .eq("slug", slug)
         .maybeSingle();
 
-      if (error || !data) {
+      if (error || !data || data.status !== "active") {
         toast({ title: "Không tìm thấy sản phẩm", variant: "destructive" });
         navigate("/");
         return;
@@ -103,6 +104,12 @@ const ReadOnline = () => {
 
   return (
     <div className="fixed inset-0 z-50 flex flex-col bg-background">
+      <SEO
+        title={title ? `${title} - Đọc trực tuyến` : "Đọc trực tuyến"}
+        description="Đọc tài liệu trực tuyến trên Salemylink."
+        url={`${SITE_URL}/read/${slug || ""}`}
+        noindex
+      />
       <header className="border-b bg-card px-4 py-3 flex items-center justify-between gap-3">
         <div className="flex items-center gap-2 min-w-0">
           <Button variant="ghost" size="sm" asChild>

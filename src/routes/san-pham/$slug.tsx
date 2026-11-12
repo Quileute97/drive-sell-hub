@@ -5,7 +5,7 @@ import { buildHead, SITE_URL } from "@/lib/seoHead";
 import { fixVietnameseEncoding } from "@/lib/vietnameseText";
 import { getProductReviewData } from "@/lib/reviews";
 import { buildProductSchema, cleanSchemaName } from "@/lib/productSchemaBuilder";
-import { resolveAllProductImages, resolveProductImage, sanitizeImageUrl, sanitizeImageArray } from "@/lib/productImages";
+import { resolveAllProductImages, sanitizeImageUrl, sanitizeImageArray } from "@/lib/productImages";
 import { generateSku, safeIsoDate } from "@/lib/skuUtils";
 
 export const Route = createFileRoute("/san-pham/$slug")({
@@ -14,13 +14,13 @@ export const Route = createFileRoute("/san-pham/$slug")({
       const slug = decodeURIComponent(params.slug || "").trim().replace(/\/$/, "");
       const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(slug);
 
-      let query = supabase
+      const query = supabase
         .from("products")
         .select(
           "id, slug, title, short_description, description, price, original_price, thumbnail_url, images, google_drive_link, download_only_link, read_only, meta_title, meta_description, rating_average, rating_count, download_count, view_count, file_size, file_format, tags, seller_id, category_id, created_at, updated_at, status, profiles!products_seller_id_fkey(user_id, full_name, avatar_url, is_verified), categories(id, name, slug)"
         );
 
-      let { data } = isUuid
+      const { data } = isUuid
         ? await query.or(`id.eq.${slug},slug.eq."${slug}"`).maybeSingle()
         : await query.eq("slug", slug).maybeSingle();
 

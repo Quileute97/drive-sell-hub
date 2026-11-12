@@ -12,11 +12,11 @@ export function extractGoogleDriveFileId(driveUrl: string | null): string | null
   if (!driveUrl) return null;
   
   // Format: https://drive.google.com/file/d/{FILE_ID}/view
-  const fileMatch = driveUrl.match(/\/file\/d\/([^\/?#]+)/);
+  const fileMatch = driveUrl.match(/\/file\/d\/([^/?#]+)/);
   if (fileMatch) return fileMatch[1] ?? null;
   
   // Google Workspace URLs: /document/d/{ID}, /presentation/d/{ID}, /spreadsheets/d/{ID}, /forms/d/{ID}
-  const workspaceMatch = driveUrl.match(/\/(?:document|presentation|spreadsheets|forms)\/d\/([^\/?#]+)/);
+  const workspaceMatch = driveUrl.match(/\/(?:document|presentation|spreadsheets|forms)\/d\/([^/?#]+)/);
   if (workspaceMatch) return workspaceMatch[1] ?? null;
   
   // Format: https://drive.google.com/open?id={FILE_ID} or ?id={FILE_ID}
@@ -24,7 +24,7 @@ export function extractGoogleDriveFileId(driveUrl: string | null): string | null
   if (openMatch) return openMatch[1] ?? null;
   
   // Folder URL (last resort): /folders/{ID}
-  const folderMatch = driveUrl.match(/\/folders\/([^\/?#]+)/);
+  const folderMatch = driveUrl.match(/\/folders\/([^/?#]+)/);
   if (folderMatch) return folderMatch[1] ?? null;
   
   return null;

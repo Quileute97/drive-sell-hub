@@ -641,7 +641,7 @@ export default function ProductDetail({
               )}
 
               {/* Quick Stats Row */}
-              <div className="flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-border pt-3 text-xs sm:text-sm text-muted-foreground">
+              <div className="flex flex-wrap items-center gap-x-3 sm:gap-x-4 gap-y-2 border-t border-border pt-3 text-xs sm:text-sm text-muted-foreground">
                 <div className="flex items-center gap-1.5">
                   <div className="flex items-center gap-0.5">
                     {Array.from({ length: 5 }).map((_, i) => (

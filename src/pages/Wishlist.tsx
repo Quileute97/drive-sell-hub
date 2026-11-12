@@ -13,6 +13,7 @@ import { ProductCard, type ProductCardData } from "@/components/ProductCard";
 import { EmptyState, ErrorState, ProductGridSkeleton } from "@/components/States";
 import { RecommendedProducts } from "@/components/RecommendedProducts";
 import { sanitizeImageArray, sanitizeImageUrl } from "@/lib/productImages";
+import { fixVietnameseEncoding } from "@/lib/vietnameseText";
 
 const SELECT = `
   id, slug, title, short_description, description, price, original_price,
@@ -60,6 +61,8 @@ const Wishlist = () => {
         setProducts(
           (data || []).map((p: any) => ({
             ...p,
+            title: fixVietnameseEncoding(p.title),
+            short_description: p.short_description ? fixVietnameseEncoding(p.short_description) : null,
             thumbnail_url: sanitizeImageUrl(p.thumbnail_url),
             images: sanitizeImageArray(p.images),
           })) as ProductCardData[]
@@ -107,7 +110,7 @@ const Wishlist = () => {
             <span className="text-muted-foreground">
               Danh sách đang lưu trên trình duyệt này. Đăng nhập để đồng bộ lâu dài trên mọi thiết bị.
             </span>
-            <Button size="sm" variant="outline" asChild>
+            <Button size="sm" variant="outline" className="min-h-11 sm:min-h-9" asChild>
               <Link to="/auth">Đăng nhập đồng bộ</Link>
             </Button>
           </div>

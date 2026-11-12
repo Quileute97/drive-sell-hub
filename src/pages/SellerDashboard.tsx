@@ -243,24 +243,24 @@ const SellerDashboard = () => {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5 lg:w-[500px]">
-            <TabsTrigger value="shop" className="flex items-center gap-2">
+          <TabsList className="flex h-auto w-full justify-start overflow-x-auto sm:grid sm:grid-cols-5 lg:w-[560px]">
+            <TabsTrigger value="shop" className="flex shrink-0 items-center gap-2 min-h-10">
               <Store className="h-4 w-4" />
               Cửa hàng
             </TabsTrigger>
-            <TabsTrigger value="products" className="flex items-center gap-2">
+            <TabsTrigger value="products" className="flex shrink-0 items-center gap-2 min-h-10">
               <Package className="h-4 w-4" />
               Sản phẩm
             </TabsTrigger>
-            <TabsTrigger value="orders" className="flex items-center gap-2">
+            <TabsTrigger value="orders" className="flex shrink-0 items-center gap-2 min-h-10">
               <ShoppingBag className="h-4 w-4" />
               Đơn hàng
             </TabsTrigger>
-            <TabsTrigger value="revenue" className="flex items-center gap-2">
+            <TabsTrigger value="revenue" className="flex shrink-0 items-center gap-2 min-h-10">
               <TrendingUp className="h-4 w-4" />
               Doanh thu
             </TabsTrigger>
-            <TabsTrigger value="withdrawal" className="flex items-center gap-2">
+            <TabsTrigger value="withdrawal" className="flex shrink-0 items-center gap-2 min-h-10">
               <DollarSign className="h-4 w-4" />
               Rút tiền
             </TabsTrigger>
@@ -294,8 +294,8 @@ const SellerDashboard = () => {
                     />
                   </div>
                   
-                  <div className="flex-1 space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
+                  <div className="flex-1 space-y-4 w-full">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
                         <Label htmlFor="shop-name">Tên cửa hàng</Label>
                         <Input
@@ -318,7 +318,7 @@ const SellerDashboard = () => {
                       </div>
                     </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <Label htmlFor="shop-phone">Số điện thoại</Label>
                     <Input

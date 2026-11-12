@@ -54,7 +54,7 @@ export const Route = createFileRoute("/tag/$tag")({
         itemListElement: items.map((p, i) =>
           buildProductListItem({
             position: i + 1,
-            name: p.title,
+            name: fixVietnameseEncoding(p.title),
             slug: p.slug,
             description: (p as any).description || (p as any).short_description,
             thumbnail_url: p.thumbnail_url,

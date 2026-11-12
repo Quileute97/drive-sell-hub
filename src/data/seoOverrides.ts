@@ -210,12 +210,21 @@ const TAG_OVERRIDES: Record<string, SeoOverride> = {
 
 
 
-export function getCategorySeo(slug: string, name: string): SeoOverride {
+export function getCategorySeo(
+  slug: string,
+  name: string,
+  customDesc?: string | null
+): SeoOverride {
   const key = normalize(slug);
   if (CATEGORY_OVERRIDES[key]) return withSocial(CATEGORY_OVERRIDES[key], name);
+  const cleanedCustom = customDesc ? customDesc.trim() : "";
+  const description =
+    cleanedCustom.length >= 20
+      ? cleanedCustom
+      : `Kho ${name} chất lượng cao, tải xuống nhanh qua Google Drive. Mua bán an toàn tại Salemylink.`;
   return withSocial({
     title: `${name} | Salemylink`,
-    description: `Kho ${name} chất lượng cao, tải xuống nhanh qua Google Drive. Mua bán an toàn tại Salemylink.`,
+    description,
     keywords: [name, `mua ${name}`, `tải ${name}`, "salemylink"],
   }, name);
 }

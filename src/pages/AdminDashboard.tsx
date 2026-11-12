@@ -1,8 +1,11 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useNavigate } from "@/lib/router-compat";
+import { Link, useNavigate } from "@/lib/router-compat";
 import { supabase } from "@/integrations/supabase/client";
 import type { Database } from "@/integrations/supabase/types";
 import { useUserRole } from "@/hooks/useUserRole";
+import { Header } from "@/components/Header";
+import { Footer } from "@/components/Footer";
+import { SellerDashboardPanel } from "@/components/SellerDashboardPanel";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -11,7 +14,6 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -46,6 +48,9 @@ import {
   AlertTriangle,
   Search,
   Clock,
+  LayoutDashboard,
+  Shield,
+  ExternalLink,
 } from "lucide-react";
 import {
   LineChart,
@@ -218,6 +223,7 @@ export default function AdminDashboard() {
 
   const [confirmManualOrder, setConfirmManualOrder] = useState<PendingManualConfirmState | null>(null);
   const [rejectDialog, setRejectDialog] = useState<RejectWithdrawalState | null>(null);
+  const [viewMode, setViewMode] = useState<"admin" | "seller">("admin");
 
   useEffect(() => {
     if (!roleLoading && !isAdmin) {
@@ -659,8 +665,12 @@ export default function AdminDashboard() {
 
   if (roleLoading || loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="h-8 w-8 animate-spin" />
+      <div className="min-h-screen bg-background flex flex-col">
+        <Header />
+        <div className="flex flex-1 items-center justify-center py-24">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+        <Footer />
       </div>
     );
   }
@@ -670,45 +680,99 @@ export default function AdminDashboard() {
   }
 
   return (
-    <div className="container mx-auto py-8 px-4">
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-8">
-        <div>
-          <h1 className="text-3xl font-bold">Quản Trị Hệ Thống</h1>
-          <p className="text-sm text-muted-foreground mt-1 flex items-center gap-1.5">
-            <QrCode className="h-4 w-4 text-primary shrink-0" />
-            <span>
-              Chỉ ghi nhận đơn hoàn thành, doanh thu, hoa hồng và số dư Seller khi khách hàng đã
-              quét mã QR thanh toán thành công.
-            </span>
-          </p>
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
-          {pendingPayosOrders.length > 0 && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={verifyAllPendingPayOS}
-              disabled={syncingAllPayOS || refreshing}
-            >
-              {syncingAllPayOS ? (
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+    <div className="min-h-screen bg-background flex flex-col">
+      <Header />
+      <main className="flex-1 container mx-auto py-8 px-4">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between mb-8">
+          <div>
+            <h1 className="text-3xl font-bold">
+              {viewMode === "admin" ? "Quản Trị Hệ Thống" : "Dashboard Bán hàng (Admin)"}
+            </h1>
+            <p className="text-sm text-muted-foreground mt-1 flex items-center gap-1.5">
+              {viewMode === "admin" ? (
+                <>
+                  <QrCode className="h-4 w-4 text-primary shrink-0" />
+                  <span>
+                    Chỉ ghi nhận đơn hoàn thành, doanh thu, hoa hồng và số dư Seller khi khách hàng đã
+                    quét mã QR thanh toán thành công.
+                  </span>
+                </>
               ) : (
-                <QrCode className="h-4 w-4 mr-2" />
+                <>
+                  <LayoutDashboard className="h-4 w-4 text-primary shrink-0" />
+                  <span>
+                    Quản lý cửa hàng, đăng bán sản phẩm, theo dõi đơn hàng và doanh thu trực tiếp từ tài khoản Admin.
+                  </span>
+                </>
               )}
-              Đồng bộ PayOS ({pendingPayosOrders.length})
+            </p>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="grid w-full grid-cols-2 rounded-lg border border-border bg-muted/50 p-1 sm:inline-flex sm:w-auto">
+              <Button
+                type="button"
+                variant={viewMode === "admin" ? "default" : "ghost"}
+                size="sm"
+                className="px-2 text-xs sm:px-3 sm:text-sm"
+                onClick={() => setViewMode("admin")}
+              >
+                <Shield className="h-4 w-4 mr-1.5 shrink-0" />
+                <span className="truncate">Quản trị hệ thống</span>
+              </Button>
+              <Button
+                type="button"
+                variant={viewMode === "seller" ? "default" : "ghost"}
+                size="sm"
+                className="px-2 text-xs sm:px-3 sm:text-sm"
+                onClick={() => setViewMode("seller")}
+              >
+                <LayoutDashboard className="h-4 w-4 mr-1.5 shrink-0" />
+                <span className="truncate">Dashboard bán hàng</span>
+              </Button>
+            </div>
+
+            <Button variant="outline" size="sm" asChild>
+              <Link to="/seller-dashboard">
+                <ExternalLink className="h-4 w-4 mr-1.5" />
+                Trang bán hàng
+              </Link>
             </Button>
-          )}
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => fetchDashboardData(true)}
-            disabled={refreshing}
-          >
-            <RefreshCw className={`h-4 w-4 mr-2 ${refreshing ? "animate-spin" : ""}`} />
-            Làm mới
-          </Button>
+
+            {viewMode === "admin" && (
+              <>
+                {pendingPayosOrders.length > 0 && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={verifyAllPendingPayOS}
+                    disabled={syncingAllPayOS || refreshing}
+                  >
+                    {syncingAllPayOS ? (
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    ) : (
+                      <QrCode className="h-4 w-4 mr-2" />
+                    )}
+                    Đồng bộ PayOS ({pendingPayosOrders.length})
+                  </Button>
+                )}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => fetchDashboardData(true)}
+                  disabled={refreshing}
+                >
+                  <RefreshCw className={`h-4 w-4 mr-2 ${refreshing ? "animate-spin" : ""}`} />
+                  Làm mới
+                </Button>
+              </>
+            )}
+          </div>
         </div>
-      </div>
+
+        {viewMode === "seller" ? (
+          <SellerDashboardPanel embedded />
+        ) : (
+          <>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 mb-8">
         <Card>
@@ -873,10 +937,10 @@ export default function AdminDashboard() {
       </div>
 
       <Tabs defaultValue="sellers" className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="sellers">Cửa Hàng ({sellers.length})</TabsTrigger>
-          <TabsTrigger value="products">Sản Phẩm ({products.length})</TabsTrigger>
-          <TabsTrigger value="orders">
+        <TabsList className="flex h-auto w-full justify-start overflow-x-auto sm:inline-flex sm:w-auto">
+          <TabsTrigger value="sellers" className="shrink-0">Cửa Hàng ({sellers.length})</TabsTrigger>
+          <TabsTrigger value="products" className="shrink-0">Sản Phẩm ({products.length})</TabsTrigger>
+          <TabsTrigger value="orders" className="shrink-0">
             Đơn Hàng ({orders.length})
             {orderStats.unverifiedOrders > 0 && (
               <Badge variant="destructive" className="ml-1.5 px-1.5 py-0 text-[10px]">
@@ -884,7 +948,7 @@ export default function AdminDashboard() {
               </Badge>
             )}
           </TabsTrigger>
-          <TabsTrigger value="withdrawals">
+          <TabsTrigger value="withdrawals" className="shrink-0">
             Rút Tiền
             {pendingWithdrawalsCount > 0 && (
               <Badge variant="secondary" className="ml-1.5 px-1.5 py-0 text-[10px]">
@@ -904,7 +968,7 @@ export default function AdminDashboard() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <ScrollArea className="h-[600px]">
+              <div className="max-h-[600px] w-full overflow-auto">
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -1004,7 +1068,7 @@ export default function AdminDashboard() {
                     })}
                   </TableBody>
                 </Table>
-              </ScrollArea>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
@@ -1016,7 +1080,7 @@ export default function AdminDashboard() {
               <CardDescription>Danh sách tất cả sản phẩm từ các cửa hàng</CardDescription>
             </CardHeader>
             <CardContent>
-              <ScrollArea className="h-[600px]">
+              <div className="max-h-[600px] w-full overflow-auto">
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -1087,7 +1151,7 @@ export default function AdminDashboard() {
                     ))}
                   </TableBody>
                 </Table>
-              </ScrollArea>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
@@ -1144,7 +1208,7 @@ export default function AdminDashboard() {
               </div>
             </CardHeader>
             <CardContent>
-              <ScrollArea className="h-[600px]">
+              <div className="max-h-[600px] w-full overflow-auto">
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -1310,7 +1374,7 @@ export default function AdminDashboard() {
                     )}
                   </TableBody>
                 </Table>
-              </ScrollArea>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
@@ -1322,7 +1386,7 @@ export default function AdminDashboard() {
               <CardDescription>Xử lý thanh toán hàng tháng cho các cửa hàng</CardDescription>
             </CardHeader>
             <CardContent>
-              <ScrollArea className="h-[600px]">
+              <div className="max-h-[600px] w-full overflow-auto">
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -1426,7 +1490,7 @@ export default function AdminDashboard() {
                     ))}
                   </TableBody>
                 </Table>
-              </ScrollArea>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
@@ -1527,6 +1591,10 @@ export default function AdminDashboard() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+          </>
+        )}
+      </main>
+      <Footer />
     </div>
   );
 }

@@ -38,6 +38,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useAuth } from "@/contexts/AuthContext";
+import { useUserRole } from "@/hooks/useUserRole";
 import { useCart } from "@/hooks/useCart";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -184,11 +185,12 @@ export default function ProductDetail({
 
   const { toast } = useToast();
   const { addToCart } = useCart();
+  const { isAdmin } = useUserRole();
 
   const isOwner = Boolean(
     user &&
     product &&
-    (user.id === product.seller_id || (user as any).role === "admin")
+    (user.id === product.seller_id || isAdmin)
   );
 
   useEffect(() => {

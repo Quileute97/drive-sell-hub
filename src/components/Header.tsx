@@ -133,15 +133,15 @@ export const Header = () => {
 
   return (
     <header className="sticky top-0 z-40 w-full border-b border-border bg-surface">
-      <div className="mx-auto flex h-16 max-w-[1280px] items-center justify-between gap-1.5 min-[375px]:gap-2 sm:gap-3 px-3 min-[375px]:px-4 sm:px-6 lg:px-8">
+      <div className="mx-auto flex h-16 max-w-[1280px] items-center justify-between gap-1 min-[400px]:gap-2 sm:gap-3 px-2.5 min-[400px]:px-4 sm:px-6 lg:px-8">
         {/* Left: Mobile Drawer Trigger + Brand + Inline Nav */}
-        <div className="flex items-center gap-1.5 min-[375px]:gap-2 sm:gap-3 shrink-0">
+        <div className="flex items-center gap-1 min-[400px]:gap-2 sm:gap-3 shrink-0">
           <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
             <SheetTrigger asChild>
               <Button
                 variant="outline"
                 size="icon"
-                className="lg:hidden h-12 w-10 min-[375px]:w-11 sm:h-10 sm:w-10 shrink-0"
+                className="lg:hidden h-10 w-9 min-[400px]:w-10 shrink-0"
                 aria-label="Mở menu điều hướng"
               >
                 <Menu className="h-5 w-5" />
@@ -312,8 +312,11 @@ export const Header = () => {
 
               <div className="border-t border-border p-3.5 space-y-2 bg-surface">
                 <Button variant="default" className="w-full h-11" asChild>
-                  <Link to="/seller-signup" onClick={() => setMobileMenuOpen(false)}>
-                    {t("nav.sellerAuth")}
+                  <Link
+                    to={isSeller ? "/seller-dashboard" : "/seller-signup"}
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    {isSeller ? t("nav.sellerDashboard") : t("nav.sellerAuth")}
                   </Link>
                 </Button>
                 {!user && (
@@ -472,12 +475,12 @@ export const Header = () => {
         </div>
 
         {/* Right: Actions */}
-        <div className="flex items-center gap-1 min-[375px]:gap-1.5 sm:gap-2 shrink-0">
+        <div className="flex items-center gap-1 min-[400px]:gap-1.5 sm:gap-2 shrink-0">
           {/* Mobile Search Shortcut (<lg) */}
           <Button
             variant="outline"
             size="icon"
-            className="lg:hidden h-12 w-10 min-[375px]:w-11 sm:h-10 sm:w-10"
+            className="lg:hidden h-10 w-9 min-[400px]:w-10"
             asChild
           >
             <Link to="/search" aria-label={t("nav.search")}>
@@ -513,7 +516,7 @@ export const Header = () => {
           <Button
             variant="outline"
             size="icon"
-            className="relative h-12 w-10 min-[375px]:w-11 sm:h-10 sm:w-10"
+            className="relative h-10 w-9 min-[400px]:w-10"
             asChild
           >
             <Link
@@ -537,7 +540,7 @@ export const Header = () => {
                 <Button
                   variant="outline"
                   size="default"
-                  className="h-12 w-10 min-[375px]:w-11 md:w-auto lg:w-10 xl:w-auto sm:h-10 px-0 md:px-3 lg:px-0 xl:px-3 gap-1.5"
+                  className="h-10 w-9 min-[400px]:w-10 md:w-auto lg:w-10 xl:w-auto px-0 md:px-3 lg:px-0 xl:px-3 gap-1.5"
                   aria-label={t("nav.account")}
                 >
                   <User className="h-4 w-4" />
@@ -606,7 +609,7 @@ export const Header = () => {
             <Button
               variant="outline"
               size="default"
-              className="h-12 w-10 min-[375px]:w-11 md:w-auto lg:w-10 xl:w-auto sm:h-10 px-0 md:px-3 lg:px-0 xl:px-3 gap-1.5"
+              className="h-10 w-9 min-[400px]:w-10 md:w-auto lg:w-10 xl:w-auto px-0 md:px-3 lg:px-0 xl:px-3 gap-1.5"
               asChild
             >
               <Link to="/auth" aria-label={t("nav.login")}>
@@ -623,9 +626,11 @@ export const Header = () => {
             className="hidden sm:inline-flex h-10 px-3 lg:px-3 xl:px-4 whitespace-nowrap"
             asChild
           >
-            <Link to="/seller-signup">
-              <span className="hidden xl:inline">{t("nav.sellerAuth")}</span>
-              <span className="xl:hidden">Đăng bán</span>
+            <Link to={isSeller ? "/seller-dashboard" : "/seller-signup"}>
+              <span className="hidden xl:inline">
+                {isSeller ? t("nav.sellerDashboard") : t("nav.sellerAuth")}
+              </span>
+              <span className="xl:hidden">{isSeller ? "Bán hàng" : "Đăng bán"}</span>
             </Link>
           </Button>
         </div>

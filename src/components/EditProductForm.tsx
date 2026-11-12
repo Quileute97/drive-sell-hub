@@ -22,6 +22,7 @@ import {
   DialogDescription,
 } from '@/components/ui/dialog';
 import { useAuth } from '@/contexts/AuthContext';
+import { useUserRole } from '@/hooks/useUserRole';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery } from '@tanstack/react-query';
 import { toast } from 'sonner';
@@ -86,6 +87,7 @@ interface EditProductFormProps {
 
 const EditProductForm = ({ product, onClose, onSuccess, onDelete }: EditProductFormProps) => {
   const { user } = useAuth();
+  const { isAdmin } = useUserRole();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [showPreviewModal, setShowPreviewModal] = useState(false);
@@ -256,7 +258,7 @@ const EditProductForm = ({ product, onClose, onSuccess, onDelete }: EditProductF
     setIsSubmitting(true);
 
     try {
-      const { error } = await supabase
+      let query = supabase
         .from('products')
         .update({
           title: formData.title.trim(),
@@ -280,8 +282,13 @@ const EditProductForm = ({ product, onClose, onSuccess, onDelete }: EditProductF
           read_only: isReadOnly,
           updated_at: new Date().toISOString()
         })
-        .eq('id', product.id)
-        .eq('seller_id', user.id);
+        .eq('id', product.id);
+
+      if (!isAdmin) {
+        query = query.eq('seller_id', user.id);
+      }
+
+      const { error } = await query;
 
       if (error) throw error;
 
@@ -305,11 +312,16 @@ const EditProductForm = ({ product, onClose, onSuccess, onDelete }: EditProductF
     setIsDeleting(true);
 
     try {
-      const { error } = await supabase
+      let deleteQuery = supabase
         .from('products')
         .delete()
-        .eq('id', product.id)
-        .eq('seller_id', user.id);
+        .eq('id', product.id);
+
+      if (!isAdmin) {
+        deleteQuery = deleteQuery.eq('seller_id', user.id);
+      }
+
+      const { error } = await deleteQuery;
 
       if (error) throw error;
 

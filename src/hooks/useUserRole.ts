@@ -5,15 +5,17 @@ export type UserRole = 'admin' | 'seller' | 'buyer' | null;
 
 export const useUserRole = () => {
   const [role, setRole] = useState<UserRole>(null);
+  const [roles, setRoles] = useState<Exclude<UserRole, null>[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const checkUserRole = async () => {
       try {
         const { data: { user } } = await supabase.auth.getUser();
-        
+
         if (!user) {
           setRole(null);
+          setRoles([]);
           setLoading(false);
           return;
         }
@@ -24,20 +26,27 @@ export const useUserRole = () => {
           .eq('user_id', user.id);
 
         if (userRoles && userRoles.length > 0) {
-          // Prioritize admin role
-          if (userRoles.some(r => r.role === 'admin')) {
+          const roleList = userRoles
+            .map((r) => r.role)
+            .filter((r): r is Exclude<UserRole, null> => r === 'admin' || r === 'seller' || r === 'buyer');
+          setRoles(roleList);
+
+          // Prioritize display role while keeping full roles list for permissions
+          if (roleList.includes('admin')) {
             setRole('admin');
-          } else if (userRoles.some(r => r.role === 'seller')) {
+          } else if (roleList.includes('seller')) {
             setRole('seller');
           } else {
             setRole('buyer');
           }
         } else {
+          setRoles(['buyer']);
           setRole('buyer');
         }
       } catch (error) {
         console.error('Error checking user role:', error);
         setRole(null);
+        setRoles([]);
       } finally {
         setLoading(false);
       }
@@ -52,5 +61,9 @@ export const useUserRole = () => {
     return () => subscription.unsubscribe();
   }, []);
 
-  return { role, loading, isAdmin: role === 'admin', isSeller: role === 'seller' };
+  const isAdmin = roles.includes('admin') || role === 'admin';
+  // Admin accounts also have full access to the Seller Dashboard and selling tools
+  const isSeller = roles.includes('seller') || isAdmin;
+
+  return { role, roles, loading, isAdmin, isSeller };
 };

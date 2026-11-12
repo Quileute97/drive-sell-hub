@@ -27,7 +27,7 @@ export const Route = createFileRoute("/danh-muc/$slug")({
 
       const { data: products } = await supabase
         .from("products")
-        .select("id, slug, title, short_description, description, price, original_price, rating_average, rating_count, download_count, view_count, google_drive_link, thumbnail_url, images, created_at, updated_at, file_format, profiles!products_seller_id_fkey(full_name)")
+        .select("id, slug, title, short_description, description, price, original_price, rating_average, rating_count, download_count, view_count, google_drive_link, download_only_link, read_only, thumbnail_url, images, created_at, updated_at, file_format, file_size, tags, seller_id, profiles!products_seller_id_fkey(user_id, full_name, avatar_url, is_verified), categories(id, name, slug)")
         .eq("status", "active")
         .eq("category_id", category.id)
         .order("created_at", { ascending: false })

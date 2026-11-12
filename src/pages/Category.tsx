@@ -1,124 +1,221 @@
-import { useState, useEffect } from "react";
-import { useParams, useNavigate, Link } from "@/lib/router-compat";
+import { useEffect, useMemo, useState } from "react";
+import { ChevronLeft, ChevronRight, Filter, X } from "lucide-react";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
-import { Star, Eye, Download, ChevronRight } from "lucide-react";
-import { getGoogleDriveThumbnail } from "@/lib/utils";
-import { ProductThumbnail } from "@/components/ProductThumbnail";
 import { SEO } from "@/components/SEO";
+import { Breadcrumb } from "@/components/Breadcrumb";
 import { RelatedCategories } from "@/components/RelatedCategories";
+import { ProductCard, type ProductCardData } from "@/components/ProductCard";
+import { ProductFilterControls } from "@/components/ProductFilterControls";
+import { EmptyState, ErrorState, ProductGridSkeleton } from "@/components/States";
+import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
+import { supabase } from "@/integrations/supabase/client";
+import { useNavigate, useParams, useSearchParams } from "@/lib/router-compat";
 import { getCategorySeo } from "@/data/seoOverrides";
+import {
+  LANGUAGE_LABELS,
+  MAX_PRICE_SLIDER,
+  formatMoneyVnd,
+  parseFiltersFromSearchParams,
+  queryFilteredProducts,
+  serializeFiltersToSearchParams,
+  type ProductFilterState,
+  type ProductSortOption,
+} from "@/lib/productQuery";
+import { sanitizeImageArray, sanitizeImageUrl } from "@/lib/productImages";
 
-interface Product {
-  id: string;
-  slug: string;
-  title: string;
-  short_description: string;
-  price: number;
-  original_price: number;
-  rating_average: number;
-  rating_count: number;
-  download_count: number;
-  view_count: number;
-  google_drive_link: string;
-  thumbnail_url: string;
-  created_at: string;
-  updated_at: string;
-  file_format: string | null;
-}
-
-interface Category {
+interface CategoryInfo {
   id: string;
   name: string;
-  description: string;
+  description: string | null;
   slug: string;
   image_url: string | null;
   updated_at: string;
 }
 
+const PAGE_SIZE = 12;
+
 export default function Category({
   initialCategory,
   initialProducts,
 }: {
-  initialCategory?: Category | null;
-  initialProducts?: Product[];
+  initialCategory?: CategoryInfo | null;
+  initialProducts?: any[];
 }) {
   const { slug } = useParams();
   const navigate = useNavigate();
-  const [category, setCategory] = useState<Category | null>(initialCategory || null);
-  const [products, setProducts] = useState<Product[]>(initialProducts || []);
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const [category, setCategory] = useState<CategoryInfo | null>(
+    initialCategory || null
+  );
+  const [products, setProducts] = useState<ProductCardData[]>(() =>
+    (initialProducts || []).slice(0, PAGE_SIZE)
+  );
+  const [totalCount, setTotalCount] = useState<number>(
+    initialProducts?.length || 0
+  );
   const [loading, setLoading] = useState(!initialCategory);
-  const { toast } = useToast();
+  const [filtering, setFiltering] = useState(false);
+  const [error, setError] = useState(false);
+  const [reloadKey, setReloadKey] = useState(0);
+  const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
 
+  const filters = useMemo(
+    () => parseFiltersFromSearchParams(searchParams),
+    [searchParams]
+  );
+
+  // Sync category metadata when route slug changes
   useEffect(() => {
-    if (slug) {
-      fetchCategoryAndProducts();
-    } else if (!initialCategory) {
+    if (initialCategory && initialCategory.slug === slug) {
+      setCategory(initialCategory);
       setLoading(false);
+      return;
     }
-  }, [slug]);
 
-  const fetchCategoryAndProducts = async () => {
-    try {
-      const { data: categoryData, error: categoryError } = await supabase
-        .from('categories')
-        .select('*')
-        .eq('slug', slug!)
-        .eq('is_active', true)
-        .single();
-
-      if (categoryError) throw categoryError;
-      setCategory(categoryData as any);
-
-      const { data: productsData, error: productsError } = await supabase
-        .from('products')
-        .select('*')
-        .eq('category_id', categoryData.id)
-        .eq('status', 'active')
-        .order('created_at', { ascending: false });
-
-      if (productsError) throw productsError;
-      setProducts((productsData || []) as any);
-    } catch (error) {
-      console.error('Error:', error);
-      toast({
-        title: "Lỗi",
-        description: "Không thể tải danh mục",
-        variant: "destructive",
-      });
-      navigate('/');
-    } finally {
+    if (!slug) {
       setLoading(false);
+      return;
     }
+
+    let cancelled = false;
+    const loadCategory = async () => {
+      setLoading(true);
+      try {
+        const { data, error: err } = await supabase
+          .from("categories")
+          .select("*")
+          .eq("slug", slug)
+          .eq("is_active", true)
+          .maybeSingle();
+
+        if (cancelled) return;
+        if (err || !data) {
+          setCategory(null);
+        } else {
+          setCategory(data as CategoryInfo);
+        }
+      } catch (err) {
+        console.error("Error fetching category:", err);
+        if (!cancelled) setCategory(null);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    };
+
+    loadCategory();
+    return () => {
+      cancelled = true;
+    };
+  }, [slug, initialCategory]);
+
+  // Query server-filtered products for this category whenever URL filters change
+  useEffect(() => {
+    if (!category?.id) return;
+
+    const isDefaultState =
+      !filters.q &&
+      filters.minPrice === 0 &&
+      filters.maxPrice === MAX_PRICE_SLIDER &&
+      !filters.hasRating &&
+      !filters.hasImage &&
+      !filters.freeOnly &&
+      filters.lang === "all" &&
+      filters.sort === "newest" &&
+      filters.page === 1;
+
+    // Preserve SSR-hydrated first page immediately while still fetching accurate total count if needed
+    if (isDefaultState && initialCategory?.id === category.id && initialProducts && initialProducts.length > 0 && initialProducts.length < 24) {
+      setProducts(
+        initialProducts.slice(0, PAGE_SIZE).map((p: any) => ({
+          ...p,
+          thumbnail_url: sanitizeImageUrl(p.thumbnail_url),
+          images: sanitizeImageArray(p.images),
+        }))
+      );
+      setTotalCount(initialProducts.length);
+      setFiltering(false);
+      setError(false);
+      return;
+    }
+
+    let cancelled = false;
+    const run = async () => {
+      setFiltering(true);
+      setError(false);
+      try {
+        const res = await queryFilteredProducts<ProductCardData>({
+          filters,
+          fixedCategoryId: category.id,
+          pageSize: PAGE_SIZE,
+        });
+        if (cancelled) return;
+        setProducts(
+          (res.items || []).map((p: any) => ({
+            ...p,
+            thumbnail_url: sanitizeImageUrl(p.thumbnail_url),
+            images: sanitizeImageArray(p.images),
+          }))
+        );
+        setTotalCount(res.totalCount);
+      } catch (err) {
+        console.error("Error filtering category products:", err);
+        if (!cancelled) setError(true);
+      } finally {
+        if (!cancelled) setFiltering(false);
+      }
+    };
+
+    run();
+    return () => {
+      cancelled = true;
+    };
+  }, [category?.id, filters, reloadKey, initialCategory?.id, initialProducts]);
+
+  const updateFilters = (patch: Partial<ProductFilterState>) => {
+    const next: ProductFilterState = { ...filters, ...patch };
+    setSearchParams(
+      serializeFiltersToSearchParams(next, { omitCategories: true })
+    );
   };
 
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('vi-VN', {
-      style: 'currency',
-      currency: 'VND'
-    }).format(price);
+  const resetFilters = () => {
+    setSearchParams(new URLSearchParams());
   };
+
+  const activeFilterCount =
+    (filters.minPrice > 0 || filters.maxPrice < MAX_PRICE_SLIDER ? 1 : 0) +
+    (filters.hasRating ? 1 : 0) +
+    (filters.hasImage ? 1 : 0) +
+    (filters.freeOnly ? 1 : 0) +
+    (filters.lang !== "all" ? 1 : 0);
+
+  const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
 
   if (loading) {
     return (
-      <div className="min-h-screen">
+      <div className="min-h-screen bg-background">
         <Header />
-        <div className="container mx-auto px-4 py-12">
-          <div className="animate-pulse space-y-8">
-            <div className="h-12 bg-muted rounded w-1/3"></div>
-            <div className="h-6 bg-muted rounded w-2/3"></div>
-            <div className="grid md:grid-cols-3 lg:grid-cols-4 gap-6">
-              {[...Array(8)].map((_, i) => (
-                <div key={i} className="h-80 bg-muted rounded"></div>
-              ))}
-            </div>
-          </div>
-        </div>
+        <main className="mx-auto max-w-[1280px] px-4 py-8 sm:px-6 lg:px-8 space-y-6">
+          <div className="h-5 w-48 animate-pulse rounded bg-muted" />
+          <div className="h-28 w-full animate-pulse rounded-2xl bg-muted" />
+          <ProductGridSkeleton count={6} />
+        </main>
         <Footer />
       </div>
     );
@@ -126,12 +223,17 @@ export default function Category({
 
   if (!category) {
     return (
-      <div className="min-h-screen">
+      <div className="min-h-screen bg-background">
         <Header />
-        <div className="container mx-auto px-4 py-12 text-center">
-          <h1 className="text-2xl font-bold mb-4">Không tìm thấy danh mục</h1>
-          <Button onClick={() => navigate('/')}>Về trang chủ</Button>
-        </div>
+        <main className="mx-auto max-w-[1280px] px-4 py-12 sm:px-6 lg:px-8">
+          <ErrorState
+            title="Không tìm thấy danh mục"
+            description="Danh mục này hiện không tồn tại hoặc đã bị ẩn khỏi hệ thống."
+            action={
+              <Button onClick={() => navigate("/")}>Về trang chủ</Button>
+            }
+          />
+        </main>
         <Footer />
       </div>
     );
@@ -140,15 +242,12 @@ export default function Category({
   const siteUrl = "https://salemylink.com";
   const categoryUrl = `${siteUrl}/danh-muc/${category.slug}`;
   const categoryImage = category.image_url || `${siteUrl}/og-image.png`;
-
-  // SEO meta — per-slug overrides with generic fallback
   const seoOverride = getCategorySeo(category.slug, category.name);
-  const metaTitle = seoOverride.title;
-  const baseDescription = seoOverride.description;
-  const countSuffix = products.length > 0 ? ` Hiện có ${products.length} sản phẩm.` : "";
-  const metaDescription = `${baseDescription}${countSuffix}`.substring(0, 160);
-
-  // Long-tail keywords for category ranking
+  const countSuffix = totalCount > 0 ? ` Hiện có ${totalCount} sản phẩm.` : "";
+  const metaDescription = `${seoOverride.description}${countSuffix}`.substring(
+    0,
+    160
+  );
   const metaKeywords = [
     ...(seoOverride.keywords || []),
     category.name,
@@ -159,144 +258,10 @@ export default function Category({
     "salemylink",
   ].join(", ");
 
-  // Find latest updated product for dateModified
-  const latestUpdate = products.length > 0 
-    ? products.reduce((latest, p) => 
-        new Date(p.updated_at) > new Date(latest) ? p.updated_at : latest, 
-        products[0]!.updated_at
-      )
-    : category.updated_at;
-
-  // === Structured Data using @graph ===
-  const graphNodes: Record<string, any>[] = [];
-
-  // 1. Organization
-  graphNodes.push({
-    "@type": "Organization",
-    "@id": `${siteUrl}/#organization`,
-    name: "Salemylink.com",
-    url: siteUrl,
-    logo: {
-      "@type": "ImageObject",
-      url: `${siteUrl}/logo.png`,
-    },
-  });
-
-  // 2. WebSite
-  graphNodes.push({
-    "@type": "WebSite",
-    "@id": `${siteUrl}/#website`,
-    url: siteUrl,
-    name: "Salemylink.com",
-    publisher: { "@id": `${siteUrl}/#organization` },
-    potentialAction: {
-      "@type": "SearchAction",
-      target: {
-        "@type": "EntryPoint",
-        urlTemplate: `${siteUrl}/search?q={search_term_string}`,
-      },
-      "query-input": "required name=search_term_string",
-    },
-  });
-
-  // 3. BreadcrumbList
-  graphNodes.push({
-    "@type": "BreadcrumbList",
-    "@id": `${categoryUrl}#breadcrumb`,
-    itemListElement: [
-      {
-        "@type": "ListItem",
-        position: 1,
-        name: "Trang chủ",
-        item: siteUrl,
-      },
-      {
-        "@type": "ListItem",
-        position: 2,
-        name: category.name,
-        item: categoryUrl,
-      },
-    ],
-  });
-
-  // 4. CollectionPage
-  graphNodes.push({
-    "@type": "CollectionPage",
-    "@id": `${categoryUrl}#webpage`,
-    url: categoryUrl,
-    name: metaTitle,
-    description: metaDescription,
-    dateModified: new Date(latestUpdate).toISOString(),
-    isPartOf: { "@id": `${siteUrl}/#website` },
-    breadcrumb: { "@id": `${categoryUrl}#breadcrumb` },
-    about: { "@id": `${categoryUrl}#itemlist` },
-    inLanguage: "vi",
-  });
-
-  // 5. ItemList — core schema for category SEO
-  graphNodes.push({
-    "@type": "ItemList",
-    "@id": `${categoryUrl}#itemlist`,
-    name: `${category.name} - Danh sách sản phẩm digital`,
-    description: `Tổng hợp ${products.length} sản phẩm digital ${category.name} chất lượng cao tại Salemylink.com`,
-    numberOfItems: products.length,
-    itemListElement: products.slice(0, 30).map((product, index) => {
-      const imgUrl = product.thumbnail_url
-        ? (product.thumbnail_url.startsWith("http") ? product.thumbnail_url : `${siteUrl}${product.thumbnail_url.startsWith("/") ? "" : "/"}${product.thumbnail_url}`)
-        : (getGoogleDriveThumbnail(product.google_drive_link) || `${siteUrl}/og-image.png`);
-      return {
-        "@type": "ListItem",
-        position: index + 1,
-        name: product.title,
-        url: `${siteUrl}/san-pham/${product.slug}`,
-        image: imgUrl,
-      };
-    }),
-  });
-
-  // 6. FAQPage for category — helps rank for question-based queries
-  graphNodes.push({
-    "@type": "FAQPage",
-    "@id": `${categoryUrl}#faq`,
-    mainEntity: [
-      {
-        "@type": "Question",
-        name: `${category.name} là gì?`,
-        acceptedAnswer: {
-          "@type": "Answer",
-          text: category.description || `${category.name} là danh mục sản phẩm digital trên Salemylink.com, bao gồm các tài liệu, ebook, khóa học và file digital chất lượng cao. Hiện có ${products.length} sản phẩm đang bán.`,
-        },
-      },
-      {
-        "@type": "Question",
-        name: `Mua ${category.name} ở đâu uy tín?`,
-        acceptedAnswer: {
-          "@type": "Answer",
-          text: `Bạn có thể mua ${category.name} chất lượng cao tại Salemylink.com - nền tảng bán sản phẩm digital uy tín hàng đầu Việt Nam. Thanh toán an toàn, nhận file ngay sau khi mua. Hiện có ${products.length} sản phẩm ${category.name} với giá tốt nhất.`,
-        },
-      },
-      {
-        "@type": "Question",
-        name: `${category.name} có những sản phẩm nào?`,
-        acceptedAnswer: {
-          "@type": "Answer",
-          text: products.length > 0 
-            ? `Danh mục ${category.name} hiện có ${products.length} sản phẩm, bao gồm: ${products.slice(0, 5).map(p => p.title).join(', ')}${products.length > 5 ? ` và ${products.length - 5} sản phẩm khác` : ''}.`
-            : `Danh mục ${category.name} đang được cập nhật thêm sản phẩm mới. Hãy quay lại thường xuyên để khám phá.`,
-        },
-      },
-    ],
-  });
-
-  const combinedStructuredData = {
-    "@context": "https://schema.org",
-    "@graph": graphNodes,
-  };
-
   return (
-    <div className="min-h-screen">
-      <SEO 
-        title={metaTitle}
+    <div className="min-h-screen bg-background">
+      <SEO
+        title={seoOverride.title}
         description={metaDescription}
         keywords={metaKeywords}
         url={categoryUrl}
@@ -305,159 +270,314 @@ export default function Category({
         ogDescription={`${seoOverride.ogDescription}${countSuffix}`}
         twTitle={seoOverride.twTitle}
         twDescription={seoOverride.twDescription}
-        modifiedTime={new Date(latestUpdate).toISOString()}
+        modifiedTime={new Date(category.updated_at).toISOString()}
       />
 
       <Header />
-      
-      <main className="container mx-auto px-4 py-12">
-        {/* Breadcrumb navigation */}
-        <nav aria-label="Breadcrumb" className="mb-6">
-          <ol className="flex items-center text-sm text-muted-foreground" itemScope itemType="https://schema.org/BreadcrumbList">
-            <li itemProp="itemListElement" itemScope itemType="https://schema.org/ListItem">
-              <Link to="/" className="hover:text-primary transition-colors" itemProp="item">
-                <span itemProp="name">Trang chủ</span>
-              </Link>
-              <meta itemProp="position" content="1" />
-            </li>
-            <ChevronRight className="h-3 w-3 mx-2" />
-            <li itemProp="itemListElement" itemScope itemType="https://schema.org/ListItem">
-              <span itemProp="name" className="text-foreground font-medium">{category.name}</span>
-              <meta itemProp="position" content="2" />
-            </li>
-          </ol>
-        </nav>
 
-        {/* Category Header — semantic header with H1 */}
-        <header className="mb-10">
-          <h1 className="text-4xl font-bold mb-3">
-            {category.name}
-          </h1>
-          {category.description && (
-            <p className="text-lg text-muted-foreground max-w-3xl leading-relaxed">
-              {category.description}
-            </p>
+      <main className="mx-auto max-w-[1280px] px-4 py-6 sm:px-6 lg:px-8">
+        <Breadcrumb items={[{ label: category.name }]} />
+
+        {/* Category Header Card */}
+        <header className="mb-6 rounded-2xl border border-border bg-surface p-5 sm:p-6">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+            <div className="space-y-1.5">
+              <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
+                {category.name}
+              </h1>
+              {category.description && (
+                <p className="max-w-3xl text-sm leading-relaxed text-muted-foreground sm:text-base">
+                  {category.description}
+                </p>
+              )}
+            </div>
+            <div className="shrink-0 rounded-full bg-secondary px-3.5 py-1.5 text-xs font-semibold text-primary tabular-nums">
+              {totalCount} sản phẩm
+            </div>
+          </div>
+
+          {activeFilterCount > 0 && (
+            <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-border pt-3">
+              <span className="text-xs font-medium text-muted-foreground">
+                Đang lọc:
+              </span>
+              {filters.freeOnly && (
+                <button
+                  type="button"
+                  onClick={() => updateFilters({ freeOnly: false, page: 1 })}
+                  className="inline-flex items-center gap-1 rounded-full bg-secondary px-2.5 py-1 text-xs font-medium text-primary hover:bg-primary hover:text-primary-foreground transition-colors"
+                >
+                  <span>Miễn phí</span>
+                  <X className="h-3 w-3" />
+                </button>
+              )}
+              {!filters.freeOnly &&
+                (filters.minPrice > 0 || filters.maxPrice < MAX_PRICE_SLIDER) && (
+                  <button
+                    type="button"
+                    onClick={() =>
+                      updateFilters({
+                        minPrice: 0,
+                        maxPrice: MAX_PRICE_SLIDER,
+                        page: 1,
+                      })
+                    }
+                    className="inline-flex items-center gap-1 rounded-full bg-secondary px-2.5 py-1 text-xs font-medium text-primary hover:bg-primary hover:text-primary-foreground transition-colors"
+                  >
+                    <span>
+                      {formatMoneyVnd(filters.minPrice)} –{" "}
+                      {formatMoneyVnd(filters.maxPrice)}
+                    </span>
+                    <X className="h-3 w-3" />
+                  </button>
+                )}
+              {filters.hasRating && (
+                <button
+                  type="button"
+                  onClick={() => updateFilters({ hasRating: false, page: 1 })}
+                  className="inline-flex items-center gap-1 rounded-full bg-secondary px-2.5 py-1 text-xs font-medium text-primary hover:bg-primary hover:text-primary-foreground transition-colors"
+                >
+                  <span>Có đánh giá</span>
+                  <X className="h-3 w-3" />
+                </button>
+              )}
+              {filters.hasImage && (
+                <button
+                  type="button"
+                  onClick={() => updateFilters({ hasImage: false, page: 1 })}
+                  className="inline-flex items-center gap-1 rounded-full bg-secondary px-2.5 py-1 text-xs font-medium text-primary hover:bg-primary hover:text-primary-foreground transition-colors"
+                >
+                  <span>Có ảnh bìa</span>
+                  <X className="h-3 w-3" />
+                </button>
+              )}
+              {filters.lang !== "all" && (
+                <button
+                  type="button"
+                  onClick={() => updateFilters({ lang: "all", page: 1 })}
+                  className="inline-flex items-center gap-1 rounded-full bg-secondary px-2.5 py-1 text-xs font-medium text-primary hover:bg-primary hover:text-primary-foreground transition-colors"
+                >
+                  <span>{LANGUAGE_LABELS[filters.lang]}</span>
+                  <X className="h-3 w-3" />
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={resetFilters}
+                className="text-xs font-medium text-accent hover:underline ml-1"
+              >
+                Xoá tất cả
+              </button>
+            </div>
           )}
-          <p className="text-muted-foreground mt-3">
-            Hiện có <strong>{products.length}</strong> sản phẩm digital chất lượng cao
-          </p>
         </header>
 
-        {/* Products Grid */}
-        {products.length > 0 ? (
-          <section aria-label={`Danh sách sản phẩm ${category.name}`}>
-            <div className="grid md:grid-cols-3 lg:grid-cols-4 gap-6">
-              {products.map((product, index) => (
-                <article 
-                  key={product.id}
-                  className="group flex flex-col h-full"
-                >
-                  <Card
-                    className="hover:shadow-xl transition-all duration-300 hover:-translate-y-2 h-full flex flex-col overflow-hidden"
+        {/* 12-Col Layout: Sticky Filter Sidebar + Category Products */}
+        <div className="grid gap-6 lg:grid-cols-12 items-start">
+          <aside
+            className="hidden lg:block lg:col-span-3 lg:sticky lg:top-20 rounded-2xl border border-border bg-surface p-5"
+            aria-label="Bộ lọc trong danh mục"
+          >
+            <ProductFilterControls
+              filters={filters}
+              categories={[]}
+              hideCategories
+              onChange={updateFilters}
+              onReset={resetFilters}
+            />
+          </aside>
+
+          <div className="lg:col-span-9 min-w-0 space-y-5">
+            {/* Toolbar */}
+            <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border bg-surface p-3.5">
+              <div className="flex items-center gap-2">
+                <Sheet open={mobileFilterOpen} onOpenChange={setMobileFilterOpen}>
+                  <SheetTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="lg:hidden h-12 px-4 gap-2 scroll-mt-24"
+                    >
+                      <Filter className="h-4 w-4" />
+                      <span>Bộ lọc</span>
+                      {activeFilterCount > 0 && (
+                        <span className="inline-flex size-5 items-center justify-center rounded-full bg-primary text-xs font-semibold text-primary-foreground tabular-nums">
+                          {activeFilterCount}
+                        </span>
+                      )}
+                    </Button>
+                  </SheetTrigger>
+                  <SheetContent
+                    side="bottom"
+                    className="max-h-[85vh] flex flex-col rounded-t-2xl p-0"
                   >
-                    <div className="relative overflow-hidden aspect-[4/3] bg-muted">
-                      <Link to={`/san-pham/${product.slug}`} className="block w-full h-full">
-                        <div className="w-full h-full group-hover:scale-105 transition-transform duration-300">
-                          <ProductThumbnail
-                            googleDriveLink={product.google_drive_link}
-                            thumbnailUrl={product.thumbnail_url}
-                            fileFormat={product.file_format}
-                            title={product.title}
-                            size={600}
-                            loading={index < 4 ? "eager" : "lazy"}
-                            fetchPriority={index < 4 ? "high" : "auto"}
-                          />
-                        </div>
-                      </Link>
+                    <SheetHeader className="border-b border-border px-5 py-4 text-left">
+                      <SheetTitle>Bộ lọc — {category.name}</SheetTitle>
+                    </SheetHeader>
+                    <div className="flex-1 overflow-y-auto overflow-x-hidden px-5 py-4">
+                      <ProductFilterControls
+                        filters={filters}
+                        categories={[]}
+                        hideCategories
+                        onChange={updateFilters}
+                        onReset={resetFilters}
+                        onCloseMobile={() => setMobileFilterOpen(false)}
+                        showResetTop={false}
+                      />
                     </div>
-                    <CardContent className="p-4 flex-grow flex flex-col">
-                      <Link to={`/san-pham/${product.slug}`} className="block mb-2">
-                        <h2 className="font-semibold line-clamp-2 group-hover:text-primary transition-colors text-base min-h-[3rem]">
-                          {product.title}
-                        </h2>
-                      </Link>
-                      {product.short_description && (
-                        <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
-                          {product.short_description}
-                        </p>
-                      )}
+                  </SheetContent>
+                </Sheet>
 
-                      {/* Rating */}
-                      {product.rating_count > 0 && (
-                        <div className="flex items-center mb-3">
-                          <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                          <span className="ml-1 text-sm font-medium">
-                            {product.rating_average?.toFixed(1)}
-                          </span>
-                          <span className="text-xs text-muted-foreground ml-1">
-                            ({product.rating_count} đánh giá)
-                          </span>
-                        </div>
-                      )}
+                <span className="hidden sm:inline text-sm text-muted-foreground tabular-nums">
+                  {totalCount} tài liệu
+                </span>
+              </div>
 
-                      {/* Stats */}
-                      {(product.download_count > 0 || product.view_count > 0) && (
-                        <div className="flex items-center space-x-4 mb-3 text-xs text-muted-foreground">
-                          {product.download_count > 0 && (
-                            <div className="flex items-center">
-                              <Download className="h-3 w-3 mr-1" />
-                              {product.download_count} lượt tải
-                            </div>
-                          )}
-                          {product.view_count > 0 && (
-                            <div className="flex items-center">
-                              <Eye className="h-3 w-3 mr-1" />
-                              {product.view_count} lượt xem
-                            </div>
-                          )}
-                        </div>
-                      )}
-
-                      {/* Price */}
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <div className="text-lg font-bold text-primary">
-                            {formatPrice(product.price)}
-                          </div>
-                          {product.original_price > product.price && (
-                            <div className="text-xs text-muted-foreground line-through">
-                              {formatPrice(product.original_price)}
-                            </div>
-                          )}
-                        </div>
-                        {product.original_price > product.price && (
-                          <Badge variant="destructive" className="text-xs">
-                            -{Math.round(((product.original_price - product.price) / product.original_price) * 100)}%
-                          </Badge>
-                        )}
-                      </div>
-                    </CardContent>
-                  </Card>
-                </article>
-              ))}
+              <div className="flex items-center gap-2 ml-auto">
+                <span className="hidden sm:inline text-xs font-medium text-muted-foreground">
+                  Sắp xếp:
+                </span>
+                <Select
+                  value={filters.sort}
+                  onValueChange={(value) =>
+                    updateFilters({ sort: value as ProductSortOption, page: 1 })
+                  }
+                >
+                  <SelectTrigger className="h-12 sm:h-10 w-[165px] min-[375px]:w-[180px] sm:w-[200px]">
+                    <SelectValue placeholder="Sắp xếp" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="newest">Mới nhất</SelectItem>
+                    <SelectItem value="popular">Phổ biến nhất</SelectItem>
+                    <SelectItem value="rating">Đánh giá cao nhất</SelectItem>
+                    <SelectItem value="price_asc">Giá: Thấp đến cao</SelectItem>
+                    <SelectItem value="price_desc">Giá: Cao đến thấp</SelectItem>
+                    <SelectItem value="oldest">Cũ nhất</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
 
-            {/* SEO-friendly text block for crawlers */}
-            <div className="mt-12 prose prose-sm max-w-none text-muted-foreground">
-              <h2 className="text-xl font-semibold text-foreground">
-                Mua {category.name} chất lượng cao tại Salemylink.com
-              </h2>
-              <p>
-                Salemylink.com cung cấp {products.length} sản phẩm {category.name} được tuyển chọn kỹ lưỡng.
-                Tất cả sản phẩm đều được kiểm duyệt về chất lượng, đảm bảo an toàn khi tải xuống.
-                Thanh toán nhanh chóng qua nhiều phương thức, nhận file ngay sau khi thanh toán thành công.
-              </p>
-            </div>
-          </section>
-        ) : (
-          <div className="text-center py-12">
-            <p className="text-xl text-muted-foreground">Chưa có sản phẩm nào trong danh mục này</p>
-            <p className="text-muted-foreground mt-2">Danh mục {category.name} đang được cập nhật. Hãy quay lại sau!</p>
+            {filtering ? (
+              <ProductGridSkeleton count={6} />
+            ) : error ? (
+              <ErrorState onRetry={() => setReloadKey((k) => k + 1)} />
+            ) : products.length === 0 ? (
+              <EmptyState
+                title="Không tìm thấy sản phẩm phù hợp"
+                description={
+                  activeFilterCount > 0
+                    ? "Không tìm thấy sản phẩm. Thử bỏ bớt điều kiện lọc giá hoặc ngôn ngữ."
+                    : `Danh mục ${category.name} hiện đang được cập nhật thêm tài liệu mới.`
+                }
+                action={
+                  activeFilterCount > 0 ? (
+                    <Button variant="outline" onClick={resetFilters}>
+                      Xoá bộ lọc
+                    </Button>
+                  ) : undefined
+                }
+              />
+            ) : (
+              <section aria-label={`Danh sách sản phẩm ${category.name}`} className="space-y-5">
+                <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3 lg:gap-5">
+                  {products.map((product, index) => (
+                    <ProductCard
+                      key={product.id}
+                      product={product}
+                      hideCategory
+                      loading={index < 3 ? "eager" : "lazy"}
+                      fetchPriority={index < 2 ? "high" : "auto"}
+                    />
+                  ))}
+                </div>
+
+                {totalPages > 1 && (
+                  <nav
+                    aria-label="Phân trang"
+                    className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border bg-surface px-4 py-3"
+                  >
+                    <span className="text-xs sm:text-sm text-muted-foreground tabular-nums">
+                      Trang <strong>{filters.page}</strong> / {totalPages}
+                    </span>
+
+                    <div className="flex items-center gap-1.5">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        disabled={filters.page <= 1}
+                        onClick={() =>
+                          updateFilters({ page: Math.max(1, filters.page - 1) })
+                        }
+                        className="h-11 sm:h-10 px-3"
+                      >
+                        <ChevronLeft className="h-4 w-4 mr-1" />
+                        <span>Trước</span>
+                      </Button>
+
+                      {Array.from({ length: totalPages })
+                        .slice(
+                          Math.max(0, filters.page - 3),
+                          Math.min(totalPages, filters.page + 2)
+                        )
+                        .map((_, idx) => {
+                          const start = Math.max(0, filters.page - 3);
+                          const pageNum = start + idx + 1;
+                          return (
+                            <Button
+                              key={pageNum}
+                              variant={
+                                pageNum === filters.page ? "default" : "outline"
+                              }
+                              size="sm"
+                              onClick={() => updateFilters({ page: pageNum })}
+                              className={
+                                pageNum === filters.page
+                                  ? "h-11 sm:h-10 min-w-11 sm:min-w-10 px-2.5 tabular-nums"
+                                  : "hidden sm:inline-flex sm:h-10 sm:min-w-10 px-2.5 tabular-nums"
+                              }
+                            >
+                              {pageNum}
+                            </Button>
+                          );
+                        })}
+
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        disabled={filters.page >= totalPages}
+                        onClick={() =>
+                          updateFilters({
+                            page: Math.min(totalPages, filters.page + 1),
+                          })
+                        }
+                        className="h-11 sm:h-10 px-3"
+                      >
+                        <span>Sau</span>
+                        <ChevronRight className="h-4 w-4 ml-1" />
+                      </Button>
+                    </div>
+                  </nav>
+                )}
+
+                {/* SEO text block for crawlers */}
+                <div className="rounded-2xl border border-border bg-surface p-5 text-sm text-muted-foreground leading-relaxed">
+                  <h2 className="mb-2 text-base font-semibold text-foreground">
+                    Mua {category.name} chất lượng cao tại Salemylink.com
+                  </h2>
+                  <p className="text-pretty">
+                    Salemylink.com cung cấp {totalCount} sản phẩm {category.name}{" "}
+                    được tuyển chọn kỹ lưỡng. Thanh toán nhanh chóng qua nhiều
+                    phương thức, nhận link Google Drive ngay sau khi thanh toán
+                    thành công.
+                  </p>
+                </div>
+              </section>
+            )}
           </div>
-        )}
+        </div>
 
-        {/* Related Categories — cross-linking for SEO authority */}
-        <RelatedCategories 
+        <RelatedCategories
           currentCategoryId={category.id}
           title={`Danh mục liên quan đến ${category.name}`}
         />

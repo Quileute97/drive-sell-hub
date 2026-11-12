@@ -1,246 +1,180 @@
-import { useState, useEffect } from "react";
-import { Link, useNavigate } from "@/lib/router-compat";
-import { Card, CardContent, CardFooter } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Star, Download, Eye, ShoppingCart, ArrowRight, BookOpen } from "lucide-react";
+import { useEffect, useState } from "react";
+import { ArrowRight, Star } from "lucide-react";
+import { Link } from "@/lib/router-compat";
 import { supabase } from "@/integrations/supabase/client";
-import { useCart } from "@/hooks/useCart";
-import { FreeDownloadButton } from "@/components/FreeDownloadButton";
+import { ProductCard, type ProductCardData } from "@/components/ProductCard";
 import { ProductThumbnail } from "@/components/ProductThumbnail";
-import { getProductDownloadUrl, isFreeProduct } from "@/lib/productAccess";
-
-interface RelatedProduct {
-  id: string;
-  slug: string;
-  title: string;
-  short_description: string;
-  price: number;
-  original_price: number;
-  google_drive_link: string;
-  download_only_link?: string | null;
-  read_only?: boolean | null;
-  download_count: number;
-  view_count: number;
-  rating_average: number;
-  rating_count: number;
-  file_format: string;
-  file_size: string;
-  profiles: {
-    full_name: string;
-  };
-  categories: {
-    name: string;
-    slug: string;
-  };
-}
+import { formatMoneyVnd } from "@/lib/productQuery";
+import { sanitizeImageArray, sanitizeImageUrl } from "@/lib/productImages";
+import { fixVietnameseEncoding } from "@/lib/vietnameseText";
 
 interface RelatedProductsProps {
   categoryId: string;
   currentProductId: string;
-  categorySlug?: string;
+  categorySlug?: string | undefined;
+  variant?: "section" | "sidebar" | undefined;
+  limit?: number | undefined;
 }
 
-export const RelatedProducts = ({ categoryId, currentProductId, categorySlug }: RelatedProductsProps) => {
-  const [products, setProducts] = useState<RelatedProduct[]>([]);
+const RELATED_SELECT = `
+  id, slug, title, short_description, description, price, original_price,
+  thumbnail_url, images, google_drive_link, download_only_link, read_only,
+  download_count, view_count, rating_average, rating_count,
+  file_format, file_size, tags, seller_id,
+  profiles!products_seller_id_fkey(user_id, full_name, avatar_url, is_verified),
+  categories(id, name, slug)
+`;
+
+export const RelatedProducts = ({
+  categoryId,
+  currentProductId,
+  categorySlug,
+  variant = "section",
+  limit = 3,
+}: RelatedProductsProps) => {
+  const [products, setProducts] = useState<ProductCardData[]>([]);
   const [loading, setLoading] = useState(true);
-  const { addToCart } = useCart();
-  const navigate = useNavigate();
 
   useEffect(() => {
-    fetchRelatedProducts();
-  }, [categoryId, currentProductId]);
-
-  const fetchRelatedProducts = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('products')
-        .select(`
-          *,
-          profiles!products_seller_id_fkey(full_name),
-          categories(name, slug)
-        `)
-        .eq('status', 'active')
-        .eq('category_id', categoryId)
-        .neq('id', currentProductId)
-        .order('created_at', { ascending: false })
-        .limit(4);
-
-      if (error) throw error;
-      setProducts((data || []) as any);
-    } catch (error) {
-      console.error('Error fetching related products:', error);
-    } finally {
+    if (!categoryId) {
       setLoading(false);
+      return;
     }
-  };
 
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('vi-VN', {
-      style: 'currency',
-      currency: 'VND'
-    }).format(price);
-  };
+    let cancelled = false;
+    const fetchRelated = async () => {
+      try {
+        setLoading(true);
+        const { data, error } = await supabase
+          .from("products")
+          .select(RELATED_SELECT)
+          .eq("status", "active")
+          .eq("category_id", categoryId)
+          .neq("id", currentProductId)
+          .order("download_count", { ascending: false })
+          .limit(limit);
 
-  const renderStars = (rating: number) => {
-    const stars = [];
-    for (let i = 0; i < 5; i++) {
-      stars.push(
-        <Star
-          key={i}
-          className={`h-3 w-3 ${
-            i < Math.floor(rating)
-              ? 'fill-yellow-400 text-yellow-400'
-              : 'text-gray-300'
-          }`}
-        />
-      );
-    }
-    return stars;
-  };
+        if (error) throw error;
+        if (cancelled) return;
+
+        const cleaned = (data || []).map((p: any) => ({
+          ...p,
+          thumbnail_url: sanitizeImageUrl(p.thumbnail_url),
+          images: sanitizeImageArray(p.images),
+        }));
+        setProducts(cleaned);
+      } catch (error) {
+        console.error("Error fetching related products:", error);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    };
+
+    fetchRelated();
+    return () => {
+      cancelled = true;
+    };
+  }, [categoryId, currentProductId, limit]);
 
   if (loading || products.length === 0) {
     return null;
   }
 
+  if (variant === "sidebar") {
+    return (
+      <section
+        aria-labelledby="sidebar-related-heading"
+        className="rounded-2xl border border-border bg-surface p-4 sm:p-5"
+      >
+        <div className="mb-3 flex items-center justify-between gap-2 border-b border-border pb-2.5">
+          <h2
+            id="sidebar-related-heading"
+            className="text-sm font-semibold text-foreground"
+          >
+            Sản phẩm liên quan ({products.length})
+          </h2>
+          {categorySlug && (
+            <Link
+              to={`/danh-muc/${categorySlug}`}
+              className="inline-flex min-h-11 sm:min-h-8 items-center gap-1 text-xs font-medium text-primary hover:underline"
+            >
+              <span>Xem thêm</span>
+              <ArrowRight className="h-3 w-3" />
+            </Link>
+          )}
+        </div>
+
+        <div className="space-y-2.5">
+          {products.map((p) => {
+            const ratingAvg =
+              p.rating_count && p.rating_count > 0
+                ? Number(p.rating_average || 5).toFixed(1)
+                : null;
+            return (
+              <Link
+                key={p.id}
+                to={`/san-pham/${p.slug}`}
+                onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+                className="group flex min-h-12 items-start gap-3 rounded-xl p-2 hover:bg-button-hover transition-colors"
+              >
+                <div className="w-16 aspect-4/3 shrink-0 overflow-hidden rounded-lg bg-muted">
+                  <ProductThumbnail
+                    thumbnailUrl={p.thumbnail_url}
+                    googleDriveLink={p.google_drive_link}
+                    fileFormat={p.file_format}
+                    title={p.title}
+                    size={240}
+                    loading="lazy"
+                  />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <h3 className="line-clamp-2 text-xs font-semibold leading-snug text-pretty text-foreground group-hover:text-primary transition-colors">
+                    {fixVietnameseEncoding(p.title)}
+                  </h3>
+                  <div className="mt-1 flex items-center justify-between gap-2">
+                    <span className="text-xs font-bold text-primary tabular-nums">
+                      {formatMoneyVnd(p.price)}
+                    </span>
+                    {ratingAvg && (
+                      <span className="inline-flex items-center gap-0.5 text-xs text-muted-foreground tabular-nums">
+                        <Star className="h-3 w-3 fill-[var(--status-star)] text-[var(--status-star)]" />
+                        <span>{ratingAvg}</span>
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </Link>
+            );
+          })}
+        </div>
+      </section>
+    );
+  }
+
   return (
-    <section className="mt-16" aria-labelledby="related-products-heading">
-      <div className="mb-8 flex items-center justify-between">
-        <h2 id="related-products-heading" className="text-2xl lg:text-3xl font-bold">
-          Cùng Danh mục 
-          <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-            {" "}sản phẩm
-          </span>
+    <section className="mt-10" aria-labelledby="related-products-heading">
+      <div className="mb-4 flex items-center justify-between gap-4">
+        <h2
+          id="related-products-heading"
+          className="text-lg font-bold tracking-tight text-foreground sm:text-xl"
+        >
+          Sản phẩm cùng danh mục
         </h2>
         {categorySlug && (
-          <Link 
+          <Link
             to={`/danh-muc/${categorySlug}`}
-            className="text-sm text-primary hover:underline flex items-center gap-1"
+            className="inline-flex min-h-9 items-center gap-1 text-sm font-medium text-primary hover:underline whitespace-nowrap"
           >
-            Xem tất cả
+            <span>Xem tất cả</span>
             <ArrowRight className="h-4 w-4" />
           </Link>
         )}
       </div>
 
-      <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {products.map((product) => {
-          const isFree = isFreeProduct(product.price);
-          const downloadUrl = getProductDownloadUrl(product.google_drive_link, product.download_only_link);
-
-          return <article key={product.id} className="group">
-            <Link to={`/san-pham/${product.slug}`} className="block" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
-              <Card className="hover:shadow-lg transition-all duration-300 hover:-translate-y-1 flex flex-col h-full">
-                <div className="relative overflow-hidden rounded-t-lg aspect-[4/3] bg-muted">
-                  <div className="w-full h-full group-hover:scale-105 transition-transform duration-300">
-                    <ProductThumbnail
-                      googleDriveLink={product.google_drive_link}
-                      thumbnailUrl={null}
-                      fileFormat={product.file_format}
-                      title={product.title}
-                      size={600}
-                      loading="lazy"
-                    />
-                  </div>
-                  {product.original_price > product.price && (
-                    <Badge className="absolute top-3 left-3 bg-destructive text-destructive-foreground shadow-md z-10">
-                      -{Math.round(((product.original_price - product.price) / product.original_price) * 100)}%
-                    </Badge>
-                  )}
-                </div>
-
-                <CardContent className="p-4 flex-grow flex flex-col">
-                  <div className="mb-2 flex items-center gap-2 flex-wrap">
-                    <Badge variant="secondary" className="text-xs hover:bg-primary hover:text-primary-foreground transition-colors">
-                      {product.categories?.name}
-                    </Badge>
-                    {product.file_format && (
-                      <Badge variant="outline" className="text-xs font-medium bg-primary/10 text-primary border-primary/20">
-                        {product.file_format.toUpperCase()}
-                      </Badge>
-                    )}
-                  </div>
-                  
-                  <h3 className="font-semibold text-base mb-2 line-clamp-2 min-h-[3rem] group-hover:text-primary transition-colors">
-                    {product.title}
-                  </h3>
-                  
-                  <p className="text-sm text-muted-foreground mb-3 line-clamp-2 min-h-[2.5rem]">
-                    {product.short_description}
-                  </p>
-
-                  {product.rating_count > 0 && (
-                    <div className="flex items-center mb-3">
-                      <div className="flex items-center mr-2">
-                        {renderStars(product.rating_average || 0)}
-                      </div>
-                      <span className="text-xs text-muted-foreground">
-                        ({product.rating_count})
-                      </span>
-                    </div>
-                  )}
-
-                  <div className="flex items-center text-xs text-muted-foreground mb-3 gap-3 flex-wrap">
-                    {product.download_count > 0 && (
-                      <div className="flex items-center">
-                        <Download className="h-3.5 w-3.5 mr-1" />
-                        <span>{product.download_count}</span>
-                      </div>
-                    )}
-                    {product.view_count > 0 && (
-                      <div className="flex items-center">
-                        <Eye className="h-3.5 w-3.5 mr-1" />
-                        <span>{product.view_count}</span>
-                      </div>
-                    )}
-                    {product.file_size && (
-                      <div className="flex items-center">
-                        <span>📄 {product.file_size}</span>
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="mt-auto">
-                    <div className="flex items-baseline gap-2 mb-2">
-                      <div className="text-lg font-bold text-primary">
-                        {isFree ? 'Miễn phí' : formatPrice(product.price)}
-                      </div>
-                      {product.original_price > product.price && (
-                        <div className="text-xs text-muted-foreground line-through">
-                          {formatPrice(product.original_price)}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </Link>
-            <CardFooter className="p-4 pt-2">
-              {product.read_only ? (
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  className="w-full"
-                  onClick={() => navigate(`/read/${product.slug}`)}
-                >
-                  <BookOpen className="h-4 w-4 mr-2" />
-                  Đọc trực tuyến (Full màn hình)
-                </Button>
-              ) : isFree ? (
-                <FreeDownloadButton size="sm" downloadUrl={downloadUrl} />
-              ) : (
-                <Button 
-                  className="w-full" 
-                  size="sm"
-                  onClick={() => addToCart(product.id)}
-                >
-                  <ShoppingCart className="h-4 w-4 mr-2" />
-                  Thêm vào giỏ
-                </Button>
-              )}
-            </CardFooter>
-          </article>;
-        })}
+      <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3 lg:gap-5">
+        {products.map((product) => (
+          <ProductCard key={product.id} product={product} />
+        ))}
       </div>
     </section>
   );

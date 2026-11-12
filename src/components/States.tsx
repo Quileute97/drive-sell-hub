@@ -1,32 +1,36 @@
-import type { LucideIcon } from 'lucide-react';
-import { AlertTriangle, RefreshCw } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { cn } from '@/lib/utils';
+import type { LucideIcon } from "lucide-react";
+import { AlertCircle, RefreshCw, SearchX } from "lucide-react";
+import { Link } from "@/lib/router-compat";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 /* ---------------------------------------------------------------- */
 /* Loading skeleton                                                   */
 /* ---------------------------------------------------------------- */
 
 export const ProductCardSkeleton = () => (
-  <Card className="flex h-full flex-col overflow-hidden">
-    <div className="aspect-4/3 animate-pulse bg-muted" />
-    <CardContent className="flex grow flex-col p-4">
-      <div className="mb-3 flex gap-2">
-        <div className="h-5 w-20 animate-pulse rounded-full bg-muted" />
-        <div className="h-5 w-12 animate-pulse rounded-full bg-muted" />
-      </div>
-      <div className="mb-2 h-5 w-full animate-pulse rounded bg-muted" />
-      <div className="mb-4 h-5 w-2/3 animate-pulse rounded bg-muted" />
-      <div className="mb-2 h-3 w-full animate-pulse rounded bg-muted" />
-      <div className="mb-4 h-3 w-4/5 animate-pulse rounded bg-muted" />
-      <div className="mt-auto h-7 w-28 animate-pulse rounded bg-muted" />
-    </CardContent>
-  </Card>
+  <div
+    className="flex h-full flex-col overflow-hidden rounded-2xl border border-border bg-card p-3 sm:p-4"
+    aria-busy="true"
+  >
+    <div className="aspect-4/3 w-full animate-pulse rounded-xl bg-muted" />
+    <div className="mt-3 flex gap-2">
+      <div className="h-5 w-20 animate-pulse rounded-full bg-muted" />
+      <div className="h-5 w-12 animate-pulse rounded-full bg-muted" />
+    </div>
+    <div className="mt-2.5 h-4 w-11/12 animate-pulse rounded bg-muted" />
+    <div className="mt-1.5 h-4 w-2/3 animate-pulse rounded bg-muted" />
+    <div className="mt-2.5 h-3.5 w-full animate-pulse rounded bg-muted" />
+    <div className="mt-1.5 h-3.5 w-4/5 animate-pulse rounded bg-muted" />
+    <div className="mt-auto flex items-center justify-between gap-2 border-t border-border pt-3">
+      <div className="h-5 w-24 animate-pulse rounded bg-muted" />
+      <div className="h-9 w-24 animate-pulse rounded-xl bg-muted" />
+    </div>
+  </div>
 );
 
 export const ProductGridSkeleton = ({
-  count = 8,
+  count = 6,
   className,
 }: {
   count?: number;
@@ -34,10 +38,7 @@ export const ProductGridSkeleton = ({
 }) => (
   <div
     aria-hidden="true"
-    className={cn(
-      'grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4',
-      className
-    )}
+    className={cn("grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3 lg:gap-5", className)}
   >
     {Array.from({ length: count }).map((_, i) => (
       <ProductCardSkeleton key={i} />
@@ -58,29 +59,27 @@ interface EmptyStateProps {
 }
 
 export const EmptyState = ({
-  icon: Icon,
+  icon: Icon = SearchX,
   title,
   description,
   action,
   className,
 }: EmptyStateProps) => (
-  <div
+  <section
     className={cn(
-      'flex flex-col items-center justify-center rounded-xl border border-dashed border-border bg-muted/30 px-6 py-16 text-center animate-fade-in',
+      "flex flex-col items-center justify-center rounded-2xl border border-border bg-surface px-6 py-14 text-center",
       className
     )}
   >
-    {Icon && (
-      <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-primary/10">
-        <Icon className="h-7 w-7 text-primary" />
-      </div>
-    )}
-    <h3 className="text-lg font-semibold">{title}</h3>
+    <div className="flex size-12 items-center justify-center rounded-2xl bg-muted">
+      <Icon className="h-6 w-6 text-muted-foreground" />
+    </div>
+    <h2 className="mt-4 text-lg font-semibold text-balance text-foreground">{title}</h2>
     {description && (
-      <p className="mt-2 max-w-md text-sm text-muted-foreground">{description}</p>
+      <p className="mt-1.5 max-w-md text-sm text-pretty text-muted-foreground">{description}</p>
     )}
-    {action && <div className="mt-6">{action}</div>}
-  </div>
+    {action && <div className="mt-5">{action}</div>}
+  </section>
 );
 
 /* ---------------------------------------------------------------- */
@@ -88,35 +87,49 @@ export const EmptyState = ({
 /* ---------------------------------------------------------------- */
 
 interface ErrorStateProps {
-  title?: string;
-  description?: string;
-  onRetry?: () => void;
-  className?: string;
+  title?: string | undefined;
+  description?: string | undefined;
+  onRetry?: (() => void) | undefined;
+  showHomeLink?: boolean | undefined;
+  action?: React.ReactNode | undefined;
+  className?: string | undefined;
 }
 
 export const ErrorState = ({
-  title = 'Không tải được dữ liệu',
-  description = 'Đã có sự cố khi kết nối. Vui lòng thử lại sau ít phút.',
+  title = "Không tải được dữ liệu",
+  description = "Đã có sự cố khi kết nối. Vui lòng thử lại sau ít phút.",
   onRetry,
+  showHomeLink = true,
+  action,
   className,
 }: ErrorStateProps) => (
-  <div
+  <section
     role="alert"
     className={cn(
-      'flex flex-col items-center justify-center rounded-xl border border-destructive/25 bg-destructive/5 px-6 py-16 text-center animate-fade-in',
+      "flex flex-col items-center justify-center rounded-2xl border border-border bg-surface px-6 py-14 text-center",
       className
     )}
   >
-    <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-destructive/10">
-      <AlertTriangle className="h-7 w-7 text-destructive" />
+    <div className="flex size-12 items-center justify-center rounded-2xl bg-[var(--tint-danger-bg)]">
+      <AlertCircle className="h-6 w-6 text-[var(--status-danger)]" />
     </div>
-    <h3 className="text-lg font-semibold">{title}</h3>
-    <p className="mt-2 max-w-md text-sm text-muted-foreground">{description}</p>
-    {onRetry && (
-      <Button variant="outline" className="mt-6" onClick={onRetry}>
-        <RefreshCw className="mr-2 h-4 w-4" />
-        Thử lại
-      </Button>
+    <h2 className="mt-4 text-lg font-semibold text-balance text-foreground">{title}</h2>
+    <p className="mt-1.5 max-w-md text-sm text-pretty text-muted-foreground">{description}</p>
+    {(action || onRetry || showHomeLink) && (
+      <div className="mt-5 flex flex-wrap items-center justify-center gap-3">
+        {action}
+        {onRetry && (
+          <Button className="min-h-10" onClick={onRetry}>
+            <RefreshCw className="h-4 w-4" />
+            <span>Thử lại</span>
+          </Button>
+        )}
+        {showHomeLink && !action && (
+          <Button variant="outline" className="min-h-10" asChild>
+            <Link to="/">Về trang chủ</Link>
+          </Button>
+        )}
+      </div>
     )}
-  </div>
+  </section>
 );

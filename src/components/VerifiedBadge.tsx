@@ -9,13 +9,15 @@ import {
 interface VerifiedBadgeProps {
   verified?: boolean | null | undefined;
   /** icon = chỉ icon nhỏ cạnh tên, full = badge có chữ */
-  variant?: 'icon' | 'full';
-  className?: string;
+  variant?: 'icon' | 'full' | undefined;
+  size?: 'sm' | 'md' | undefined;
+  className?: string | undefined;
 }
 
 export const VerifiedBadge = ({
   verified,
   variant = 'icon',
+  size = 'md',
   className,
 }: VerifiedBadgeProps) => {
   if (!verified) return null;
@@ -37,7 +39,7 @@ export const VerifiedBadge = ({
           <BadgeCheck
             className={cn(
               'shrink-0 text-primary',
-              variant === 'full' ? 'h-3.5 w-3.5' : 'h-4 w-4'
+              variant === 'full' || size === 'sm' ? 'h-3.5 w-3.5' : 'h-4 w-4'
             )}
           />
           {variant === 'full' && <span>Đã xác minh</span>}

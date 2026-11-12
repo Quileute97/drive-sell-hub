@@ -45,7 +45,14 @@ function getInitialLanguage(): SupportedLanguage {
 }
 
 export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [language, setLanguageState] = useState<SupportedLanguage>(getInitialLanguage);
+  const [language, setLanguageState] = useState<SupportedLanguage>(DEFAULT_LANGUAGE);
+
+  useEffect(() => {
+    const preferred = getInitialLanguage();
+    if (preferred !== DEFAULT_LANGUAGE) {
+      setLanguageState(preferred);
+    }
+  }, []);
 
   const setLanguage = useCallback((newLang: SupportedLanguage) => {
     if (!isValidLanguage(newLang)) return;

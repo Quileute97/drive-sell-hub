@@ -3,21 +3,24 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Star } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
-interface Review {
+export interface ProductReview {
   id: string;
   rating: number;
   comment: string;
   is_verified_purchase: boolean;
   created_at: string;
-  profiles: {
-    full_name: string;
-    avatar_url: string;
-  };
+  profiles?: {
+    full_name?: string | null;
+    avatar_url?: string | null;
+  } | null;
 }
+
+type Review = ProductReview;
 
 interface ProductReviewsProps {
   productId: string;
@@ -26,7 +29,7 @@ interface ProductReviewsProps {
 
 export const ProductReviews = ({ productId, initialReviews }: ProductReviewsProps) => {
   const [reviews, setReviews] = useState<Review[]>(initialReviews || []);
-  const [loading, setLoading] = useState(!initialReviews && typeof window !== 'undefined');
+  const [loading, setLoading] = useState(false);
   const [userHasPurchased, setUserHasPurchased] = useState(false);
   const [userReview, setUserReview] = useState<Review | null>(null);
   const [showReviewForm, setShowReviewForm] = useState(false);
@@ -71,7 +74,7 @@ export const ProductReviews = ({ productId, initialReviews }: ProductReviewsProp
     try {
       const { data: { user } } = await supabase.auth.getUser();
       setCurrentUser(user);
-      
+
       if (!user) return;
 
       // Check if user has purchased this product
@@ -132,7 +135,7 @@ export const ProductReviews = ({ productId, initialReviews }: ProductReviewsProp
 
     try {
       setSubmitting(true);
-      
+
       if (currentUser && userReview) {
         // Update existing review for logged-in user
         const { error } = await supabase
@@ -195,29 +198,43 @@ export const ProductReviews = ({ productId, initialReviews }: ProductReviewsProp
   };
 
   const renderStars = (currentRating: number, interactive: boolean = false) => {
+    if (!interactive) {
+      return (
+        <div
+          className="flex items-center gap-1"
+          role="img"
+          aria-label={`Đánh giá ${currentRating} trên 5 sao`}
+        >
+          {[1, 2, 3, 4, 5].map((star) => (
+            <Star
+              key={star}
+              className={`h-4 w-4 ${
+                star <= currentRating
+                  ? 'fill-[var(--status-star)] text-[var(--status-star)]'
+                  : 'text-muted-foreground/30'
+              }`}
+            />
+          ))}
+        </div>
+      );
+    }
+
     return (
-      <div className="flex gap-1">
+      <div className="flex items-center gap-1">
         {[1, 2, 3, 4, 5].map((star) => (
           <button
             key={star}
             type="button"
-            disabled={!interactive}
-            onClick={() => interactive && setRating(star)}
-            onKeyDown={(e) => {
-              if (interactive && (e.key === 'Enter' || e.key === ' ')) {
-                e.preventDefault();
-                setRating(star);
-              }
-            }}
-            className={`p-0 border-0 bg-transparent ${interactive ? 'cursor-pointer focus:outline-hidden focus:ring-2 focus:ring-primary focus:ring-offset-1 rounded' : 'cursor-default'}`}
-            aria-label={interactive ? `Đánh giá ${star} sao` : undefined}
+            onClick={() => setRating(star)}
+            className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-xl transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            aria-label={`Đánh giá ${star} sao`}
           >
             <Star
               className={`h-5 w-5 ${
                 star <= currentRating
-                  ? 'fill-yellow-400 text-yellow-400'
-                  : 'text-muted-foreground/40'
-              } ${interactive ? 'hover:scale-110 transition-transform' : ''}`}
+                  ? 'fill-[var(--status-star)] text-[var(--status-star)]'
+                  : 'text-muted-foreground/30'
+              }`}
             />
           </button>
         ))}
@@ -250,14 +267,14 @@ export const ProductReviews = ({ productId, initialReviews }: ProductReviewsProp
   }
 
   return (
-    <Card className="mt-8">
-      <CardContent className="p-6">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold">
+    <Card className="mt-8 rounded-2xl border-border bg-surface">
+      <CardContent className="p-5 sm:p-6">
+        <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+          <h2 className="text-lg font-bold tracking-tight text-foreground sm:text-xl">
             Đánh giá sản phẩm ({reviews.length})
           </h2>
           {!showReviewForm && (
-            <Button onClick={() => setShowReviewForm(true)}>
+            <Button size="sm" className="min-h-11 sm:min-h-9" onClick={() => setShowReviewForm(true)}>
               {userReview ? 'Chỉnh sửa đánh giá' : 'Viết đánh giá'}
             </Button>
           )}
@@ -270,7 +287,7 @@ export const ProductReviews = ({ productId, initialReviews }: ProductReviewsProp
               <h3 className="font-semibold mb-3">
                 {userReview ? 'Chỉnh sửa đánh giá của bạn' : 'Viết đánh giá'}
               </h3>
-              
+
               <div className="space-y-4">
                 {/* Guest name field - only show for non-logged users */}
                 {!currentUser && (
@@ -337,38 +354,50 @@ export const ProductReviews = ({ productId, initialReviews }: ProductReviewsProp
               <p className="mt-2">Hãy là người đầu tiên đánh giá!</p>
             </div>
           ) : (
-            reviews.map((review) => (
-              <Card key={review.id} className="border">
-                <CardContent className="p-4">
-                  <div className="flex items-start gap-4">
-                    <img
-                      src={review.profiles?.avatar_url || "/placeholder.svg"}
-                      alt={review.profiles?.full_name}
-                      className="w-12 h-12 rounded-full object-cover"
-                    />
-                    <div className="flex-1">
-                      <div className="flex items-center justify-between mb-2">
+            reviews.map((review) => {
+              const guestMatch = !review.profiles?.full_name
+                ? review.comment?.match(/^\[([^\]]+)\]\s*([\s\S]*)$/)
+                : null;
+              const reviewerName =
+                review.profiles?.full_name || guestMatch?.[1] || 'Người dùng';
+              const displayComment = guestMatch ? guestMatch[2] : review.comment;
+
+              return (
+                <div key={review.id} className="rounded-xl border border-border bg-muted/30 p-4">
+                  <div className="flex items-start gap-3.5">
+                    <Avatar className="h-10 w-10 shrink-0 ring-1 ring-border">
+                      {review.profiles?.avatar_url && (
+                        <AvatarImage src={review.profiles.avatar_url} alt={reviewerName} />
+                      )}
+                      <AvatarFallback className="text-xs font-semibold">
+                        {reviewerName.charAt(0).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="min-w-0 flex-1">
+                      <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
                         <div>
-                          <div className="font-medium">
-                            {review.profiles?.full_name || 'Người dùng'}
+                          <div className="flex flex-wrap items-center gap-2 text-sm font-semibold text-foreground">
+                            <span>{reviewerName}</span>
                             {review.is_verified_purchase && (
-                              <span className="ml-2 text-xs text-green-600 bg-green-50 px-2 py-0.5 rounded">
+                              <span className="rounded-full bg-[var(--tint-success-bg)] px-2 py-0.5 text-xs font-medium text-[var(--status-success)]">
                                 ✓ Đã mua hàng
                               </span>
                             )}
                           </div>
-                          <div className="text-sm text-muted-foreground">
+                          <div className="text-xs text-muted-foreground">
                             {formatDate(review.created_at)}
                           </div>
                         </div>
                         {renderStars(review.rating)}
                       </div>
-                      <p className="text-sm whitespace-pre-wrap">{review.comment}</p>
+                      <p className="text-sm leading-relaxed text-foreground whitespace-pre-wrap">
+                        {displayComment}
+                      </p>
                     </div>
                   </div>
-                </CardContent>
-              </Card>
-            ))
+                </div>
+              );
+            })
           )}
         </div>
       </CardContent>

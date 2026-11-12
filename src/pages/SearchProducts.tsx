@@ -1,493 +1,657 @@
-import { useState, useEffect } from "react";
-import { useSearchParams, useNavigate, Link } from "@/lib/router-compat";
-import { Card, CardContent, CardFooter } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Star, Download, Eye, ShoppingCart, Search, Filter, BookOpen } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
-import { useCart } from "@/hooks/useCart";
-import { getGoogleDriveThumbnail } from "@/lib/utils";
+import { useEffect, useMemo, useRef, useState } from "react";
+import {
+  ArrowUpRight,
+  ChevronLeft,
+  ChevronRight,
+  Filter,
+  Search,
+  TrendingUp,
+  X,
+} from "lucide-react";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { SEO } from "@/components/SEO";
-import { ProductThumbnail } from "@/components/ProductThumbnail";
+import { Breadcrumb } from "@/components/Breadcrumb";
+import { ProductCard, type ProductCardData } from "@/components/ProductCard";
+import {
+  ProductFilterControls,
+  type FilterCategoryOption,
+} from "@/components/ProductFilterControls";
+import { EmptyState, ErrorState, ProductGridSkeleton } from "@/components/States";
 import { RelatedCategories } from "@/components/RelatedCategories";
-import { FreeDownloadButton } from "@/components/FreeDownloadButton";
-import { getProductDownloadUrl, isFreeProduct } from "@/lib/productAccess";
+import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
+import { supabase } from "@/integrations/supabase/client";
+import { Link, useSearchParams } from "@/lib/router-compat";
+import {
+  DEFAULT_PRODUCT_FILTERS,
+  LANGUAGE_LABELS,
+  MAX_PRICE_SLIDER,
+  POPULAR_SEARCH_KEYWORDS,
+  formatMoneyVnd,
+  parseFiltersFromSearchParams,
+  queryFilteredProducts,
+  serializeFiltersToSearchParams,
+  type ProductFilterState,
+  type ProductSortOption,
+} from "@/lib/productQuery";
+import { sanitizeImageArray, sanitizeImageUrl } from "@/lib/productImages";
 
-interface Product {
-  id: string;
-  slug: string;
-  title: string;
-  description: string;
-  short_description: string;
-  price: number;
-  original_price: number;
-  thumbnail_url: string;
-  google_drive_link: string;
-  download_only_link?: string | null;
-  read_only?: boolean | null;
-  download_count: number;
-  view_count: number;
-  rating_average: number;
-  rating_count: number;
-  file_format: string;
-  file_size: string;
-  profiles: {
-    full_name: string;
-  };
-  categories: {
-    id: string;
-    name: string;
-    slug: string;
-  };
-}
-
-interface Category {
-  id: string;
-  name: string;
-  slug: string;
-}
+const PAGE_SIZE = 12;
 
 export default function SearchProducts() {
-  const [searchParams] = useSearchParams();
-  const navigate = useNavigate();
-  const [products, setProducts] = useState<Product[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [categories, setCategories] = useState<FilterCategoryOption[]>([]);
+  const [products, setProducts] = useState<ProductCardData[]>([]);
+  const [totalCount, setTotalCount] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState(searchParams.get('q') || '');
-  const [selectedCategory, setSelectedCategory] = useState(searchParams.get('category') || 'all');
-  const [sortBy, setSortBy] = useState(searchParams.get('sort') || 'newest');
-  const { toast } = useToast();
-  const { addToCart } = useCart();
+  const [error, setError] = useState(false);
+  const [reloadKey, setReloadKey] = useState(0);
+  const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
 
-  const handleMissingFreeDownload = () => {
-    toast({
-      title: "Thiếu link tải",
-      description: "Tài liệu miễn phí này hiện chưa có link tải hợp lệ",
-      variant: "destructive",
-    });
-  };
+  // Sync URL params -> filter state
+  const filters = useMemo(
+    () => parseFiltersFromSearchParams(searchParams, categories),
+    [searchParams, categories]
+  );
+
+  const [searchInput, setSearchInput] = useState(filters.q);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const searchBoxRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    fetchCategories();
+    setSearchInput(filters.q);
+  }, [filters.q]);
+
+  useEffect(() => {
+    const handleOutside = (e: MouseEvent) => {
+      if (
+        searchBoxRef.current &&
+        !searchBoxRef.current.contains(e.target as Node)
+      ) {
+        setShowSuggestions(false);
+      }
+    };
+    document.addEventListener("mousedown", handleOutside);
+    return () => document.removeEventListener("mousedown", handleOutside);
   }, []);
 
+  // Load categories + active counts once
   useEffect(() => {
-    fetchProducts();
-  }, [searchParams]);
+    let cancelled = false;
+    const loadCategories = async () => {
+      try {
+        const { data } = await supabase
+          .from("categories")
+          .select("id, name, slug, products(id, status)")
+          .eq("is_active", true)
+          .order("sort_order", { ascending: true });
 
-  const fetchCategories = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('categories')
-        .select('id, name, slug')
-        .eq('is_active', true)
-        .order('sort_order', { ascending: true });
+        if (cancelled) return;
+        const formatted: FilterCategoryOption[] = (data || []).map((c: any) => ({
+          id: c.id,
+          name: c.name,
+          slug: c.slug,
+          product_count: Array.isArray(c.products)
+            ? c.products.filter((p: any) => !p.status || p.status === "active").length
+            : 0,
+        }));
+        setCategories(formatted);
+      } catch (err) {
+        console.error("Error loading filter categories:", err);
+      }
+    };
+    loadCategories();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
-      if (error) throw error;
-      setCategories(data || []);
-    } catch (error) {
-      console.error('Error fetching categories:', error);
+  const categoryIdsMap = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const c of categories) {
+      map.set(c.slug, c.id);
+      map.set(c.id, c.id);
     }
-  };
+    return map;
+  }, [categories]);
 
-  const fetchProducts = async () => {
-    try {
+  // Fetch filtered products from Supabase
+  useEffect(() => {
+    // Wait until categories resolve if ?cat= or ?category= is specified
+    const hasCatParam = Boolean(
+      searchParams.get("cat") || searchParams.get("category")
+    );
+    if (hasCatParam && categories.length === 0) return;
+
+    let cancelled = false;
+    const run = async () => {
       setLoading(true);
-      let query = supabase
-        .from('products')
-        .select(`
-          *,
-          profiles!products_seller_id_fkey(full_name),
-          categories(id, name, slug)
-        `)
-        .eq('status', 'active');
-
-      // Search by keyword
-      const searchTerm = searchParams.get('q');
-      if (searchTerm) {
-        query = query.or(`title.ilike.%${searchTerm}%,description.ilike.%${searchTerm}%,short_description.ilike.%${searchTerm}%`);
+      setError(false);
+      try {
+        const res = await queryFilteredProducts<ProductCardData>({
+          filters,
+          categoryIdsMap,
+          pageSize: PAGE_SIZE,
+        });
+        if (cancelled) return;
+        const cleaned = (res.items || []).map((p: any) => ({
+          ...p,
+          thumbnail_url: sanitizeImageUrl(p.thumbnail_url),
+          images: sanitizeImageArray(p.images),
+        }));
+        setProducts(cleaned);
+        setTotalCount(res.totalCount);
+      } catch (err) {
+        console.error("Error querying filtered products:", err);
+        if (!cancelled) setError(true);
+      } finally {
+        if (!cancelled) setLoading(false);
       }
+    };
 
-      // Filter by category
-      const categoryId = searchParams.get('category');
-      if (categoryId && categoryId !== 'all') {
-        query = query.eq('category_id', categoryId);
-      }
+    run();
+    return () => {
+      cancelled = true;
+    };
+  }, [filters, categoryIdsMap, categories.length, searchParams, reloadKey]);
 
-      // Sort
-      const sort = searchParams.get('sort') || 'newest';
-      switch (sort) {
-        case 'newest':
-          query = query.order('created_at', { ascending: false });
-          break;
-        case 'oldest':
-          query = query.order('created_at', { ascending: true });
-          break;
-        case 'price_asc':
-          query = query.order('price', { ascending: true });
-          break;
-        case 'price_desc':
-          query = query.order('price', { ascending: false });
-          break;
-        case 'popular':
-          query = query.order('download_count', { ascending: false });
-          break;
-        case 'rating':
-          query = query.order('rating_average', { ascending: false });
-          break;
-      }
-
-      const { data, error } = await query;
-
-      if (error) throw error;
-      setProducts((data || []) as any);
-    } catch (error) {
-      console.error('Error fetching products:', error);
-      toast({
-        title: "Lỗi",
-        description: "Không thể tải danh sách sản phẩm",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
+  const updateFilters = (patch: Partial<ProductFilterState>) => {
+    const next: ProductFilterState = {
+      ...filters,
+      ...patch,
+    };
+    const nextParams = serializeFiltersToSearchParams(next);
+    setSearchParams(nextParams);
   };
 
-  const handleSearch = () => {
-    const params = new URLSearchParams();
-    if (searchQuery) params.set('q', searchQuery);
-    if (selectedCategory !== 'all') params.set('category', selectedCategory);
-    if (sortBy !== 'newest') params.set('sort', sortBy);
-    
-    navigate(`/search?${params.toString()}`);
+  const resetFilters = () => {
+    setSearchInput("");
+    setSearchParams(new URLSearchParams());
   };
 
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('vi-VN', {
-      style: 'currency',
-      currency: 'VND'
-    }).format(price);
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setShowSuggestions(false);
+    updateFilters({ q: searchInput.trim(), page: 1 });
   };
 
-  const renderStars = (rating: number) => {
-    const stars = [];
-    for (let i = 0; i < 5; i++) {
-      stars.push(
-        <Star
-          key={i}
-          className={`h-4 w-4 ${
-            i < Math.floor(rating)
-              ? 'fill-yellow-400 text-yellow-400'
-              : 'text-gray-300'
-          }`}
-        />
-      );
-    }
-    return stars;
-  };
+  const filteredSuggestions = useMemo(() => {
+    const q = searchInput.trim().toLowerCase();
+    if (!q) return POPULAR_SEARCH_KEYWORDS;
+    return POPULAR_SEARCH_KEYWORDS.filter((kw) => kw.toLowerCase().includes(q));
+  }, [searchInput]);
 
+  const activeFilterCount =
+    filters.categories.length +
+    (filters.minPrice > 0 || filters.maxPrice < MAX_PRICE_SLIDER ? 1 : 0) +
+    (filters.hasRating ? 1 : 0) +
+    (filters.hasImage ? 1 : 0) +
+    (filters.freeOnly ? 1 : 0) +
+    (filters.lang !== "all" ? 1 : 0);
 
+  const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
+
+  // SEO metadata preserved
   const siteUrl = "https://salemylink.com";
-  const currentQuery = searchParams.get('q') || '';
-  const currentCategorySlug = categories.find(c => c.id === selectedCategory)?.slug;
-  
-  // Build canonical URL - strip sort/filter params for cleaner canonical
-  const canonicalUrl = currentQuery 
-    ? `${siteUrl}/search?q=${encodeURIComponent(currentQuery)}`
+  const singleCategory =
+    filters.categories.length === 1
+      ? categories.find((c) => c.slug === filters.categories[0])
+      : undefined;
+
+  const metaTitle = filters.q
+    ? `${filters.q} - Tìm kiếm sản phẩm Digital | Salemylink.com`
+    : singleCategory
+      ? `${singleCategory.name} - Sản phẩm Digital | Salemylink.com`
+      : "Tìm kiếm sản phẩm Digital chất lượng cao | Salemylink.com";
+
+  const metaDescription = filters.q
+    ? `Tìm thấy ${totalCount} sản phẩm digital cho "${filters.q}" tại Salemylink.com. Ebook, tài liệu, khóa học online giá tốt, thanh toán an toàn, tải về ngay.`
+    : `Khám phá ${totalCount}+ sản phẩm digital chất lượng cao tại Salemylink.com. Ebook, tài liệu học tập, khóa học online với giá tốt nhất Việt Nam.`;
+
+  const canonicalUrl = filters.q
+    ? `${siteUrl}/search?q=${encodeURIComponent(filters.q)}`
     : `${siteUrl}/search`;
 
-  // Dynamic SEO content based on search context
-  const categoryName = categories.find(c => c.id === selectedCategory)?.name;
-  
-  const metaTitle = currentQuery
-    ? `${currentQuery} - Tìm kiếm sản phẩm Digital | Salemylink.com`
-    : categoryName && selectedCategory !== 'all'
-    ? `${categoryName} - Sản phẩm Digital | Salemylink.com`
-    : "Tìm kiếm sản phẩm Digital chất lượng cao | Salemylink.com";
-  
-  const metaDescription = currentQuery
-    ? `Tìm thấy ${products.length} sản phẩm digital cho "${currentQuery}" tại Salemylink.com. Ebook, tài liệu, khóa học online giá tốt, thanh toán an toàn, tải về ngay.`
-    : `Khám phá ${products.length}+ sản phẩm digital chất lượng cao tại Salemylink.com. Ebook, tài liệu học tập, khóa học online với giá tốt nhất Việt Nam.`;
-
   const metaKeywords = [
-    currentQuery,
-    categoryName,
-    'sản phẩm digital', 'ebook', 'tài liệu online', 'khóa học', 
-    'mua bán online', 'salemylink', 'tải ebook', 'digital marketplace việt nam'
-  ].filter(Boolean).join(', ');
-
-  // noindex search pages with query params to avoid thin/duplicate content
-  const shouldNoindex = !!currentQuery;
+    filters.q,
+    singleCategory?.name,
+    "sản phẩm digital",
+    "ebook",
+    "tài liệu online",
+    "khóa học",
+    "salemylink",
+  ]
+    .filter(Boolean)
+    .join(", ");
 
   return (
-    <div className="min-h-screen">
-      <SEO 
+    <div className="min-h-screen bg-background">
+      <SEO
         title={metaTitle}
         description={metaDescription}
         keywords={metaKeywords}
         url={canonicalUrl}
-        noindex={shouldNoindex}
+        noindex={Boolean(filters.q)}
       />
+
       <Header />
-      
-      <main className="container mx-auto px-4 py-8">
-        {/* Search and Filter Section */}
-        <div className="mb-8 space-y-4">
-          <h1 className="text-3xl font-bold">
-            {currentQuery 
-              ? <>Kết quả tìm kiếm: <span className="text-primary">"{currentQuery}"</span></>
-              : categoryName && selectedCategory !== 'all'
-              ? <>Sản phẩm <span className="text-primary">{categoryName}</span></>
-              : "Tìm kiếm sản phẩm Digital"
-            }
-          </h1>
-          
-          <div className="flex flex-col md:flex-row gap-4">
-            {/* Search Input */}
-            <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-              <Input
-                type="text"
-                placeholder="Tìm kiếm sản phẩm..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
-                className="pl-10"
-              />
+
+      <main className="mx-auto max-w-[1280px] px-4 py-6 sm:px-6 lg:px-8">
+        <Breadcrumb items={[{ label: "Tìm kiếm & Lọc tài liệu" }]} />
+
+        {/* Page Title + Search Input with Popular Keywords Autocomplete */}
+        <section className="mb-6 rounded-2xl border border-border bg-surface p-4 sm:p-6">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+            <div className="min-w-0">
+              <h1 className="text-xl font-bold tracking-tight text-foreground sm:text-2xl">
+                {filters.q ? (
+                  <>
+                    Kết quả cho{" "}
+                    <span className="text-primary">“{filters.q}”</span>
+                  </>
+                ) : singleCategory ? (
+                  <>
+                    Tài liệu{" "}
+                    <span className="text-primary">{singleCategory.name}</span>
+                  </>
+                ) : (
+                  "Khám phá & tìm kiếm tài liệu số"
+                )}
+              </h1>
+              <p className="mt-1 text-sm text-muted-foreground tabular-nums">
+                {loading
+                  ? "Đang tìm kiếm tài liệu..."
+                  : `Hiển thị ${products.length} / ${totalCount} sản phẩm phù hợp`}
+              </p>
             </div>
 
-            {/* Category Filter */}
-            <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-              <SelectTrigger className="w-full md:w-48">
-                <Filter className="h-4 w-4 mr-2" />
-                <SelectValue placeholder="Danh mục" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Tất cả danh mục</SelectItem>
-                {categories.map((category) => (
-                  <SelectItem key={category.id} value={category.id}>
-                    {category.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            {/* Search bar with Autocomplete */}
+            <div ref={searchBoxRef} className="relative w-full lg:w-[400px] lg:shrink-0">
+              <form onSubmit={handleSearchSubmit} className="flex gap-2">
+                <div className="relative flex-1 min-w-0">
+                  <Search className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <input
+                    type="text"
+                    value={searchInput}
+                    onFocus={() => setShowSuggestions(true)}
+                    onChange={(e) => {
+                      setSearchInput(e.target.value);
+                      setShowSuggestions(true);
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === "Escape") setShowSuggestions(false);
+                    }}
+                    placeholder="Tìm tài liệu..."
+                    className={`h-11 w-full rounded-lg border border-border-strong bg-surface pl-9 ${searchInput ? "pr-9" : "pr-3"} text-sm text-foreground placeholder:text-muted-foreground outline-hidden focus:border-primary focus:ring-2 focus:ring-ring/20`}
+                  />
+                  {searchInput && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSearchInput("");
+                        updateFilters({ q: "", page: 1 });
+                      }}
+                      aria-label="Xoá từ khóa"
+                      className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded-full p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
+                    >
+                      <X className="h-3.5 w-3.5" />
+                    </button>
+                  )}
+                </div>
+                <Button type="submit" className="h-11 px-4 shrink-0">
+                  <Search className="h-4 w-4 sm:mr-2" />
+                  <span className="hidden sm:inline">Tìm</span>
+                </Button>
+              </form>
 
-            {/* Sort */}
-            <Select value={sortBy} onValueChange={setSortBy}>
-              <SelectTrigger className="w-full md:w-48">
-                <SelectValue placeholder="Sắp xếp" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="newest">Mới nhất</SelectItem>
-                <SelectItem value="oldest">Cũ nhất</SelectItem>
-                <SelectItem value="price_asc">Giá: Thấp đến cao</SelectItem>
-                <SelectItem value="price_desc">Giá: Cao đến thấp</SelectItem>
-                <SelectItem value="popular">Phổ biến nhất</SelectItem>
-                <SelectItem value="rating">Đánh giá cao nhất</SelectItem>
-              </SelectContent>
-            </Select>
-
-            {/* Search Button */}
-            <Button onClick={handleSearch}>
-              <Search className="h-4 w-4 mr-2" />
-              Tìm kiếm
-            </Button>
+              {showSuggestions && (
+                <div className="absolute left-0 right-0 top-[calc(100%+6px)] z-40 rounded-xl border border-border bg-surface p-2 shadow-[var(--shadow-popover)] animate-[popIn_140ms_ease-out]">
+                  <div className="px-2.5 py-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                    <TrendingUp className="h-3.5 w-3.5 text-accent" />
+                    <span>Gợi ý tìm kiếm</span>
+                  </div>
+                  {filteredSuggestions.map((kw) => (
+                    <button
+                      key={kw}
+                      type="button"
+                      onClick={() => {
+                        setSearchInput(kw);
+                        setShowSuggestions(false);
+                        updateFilters({ q: kw, page: 1 });
+                      }}
+                      className="flex w-full items-center justify-between rounded-lg px-2.5 py-2 text-left text-sm text-foreground hover:bg-muted"
+                    >
+                      <span className="flex items-center gap-2 truncate">
+                        <Search className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                        <span className="truncate">{kw}</span>
+                      </span>
+                      <ArrowUpRight className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
 
-          {/* Category Quick Links for SEO */}
-          <nav className="flex flex-wrap gap-2" aria-label="Danh mục sản phẩm">
-            {categories.map((category) => (
-              <Link
-                key={category.id}
-                to={`/danh-muc/${category.slug}`}
-                className="text-sm px-3 py-1.5 rounded-full bg-muted hover:bg-primary hover:text-primary-foreground transition-colors"
+          {/* Active filter chips + category shortcuts */}
+          {(activeFilterCount > 0 || filters.q) && (
+            <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-border pt-3">
+              <span className="text-xs font-medium text-muted-foreground">
+                Đang lọc:
+              </span>
+              {filters.q && (
+                <button
+                  type="button"
+                  onClick={() => updateFilters({ q: "", page: 1 })}
+                  className="inline-flex items-center gap-1 rounded-full bg-secondary px-2.5 py-1 text-xs font-medium text-primary hover:bg-primary hover:text-primary-foreground transition-colors"
+                >
+                  <span>Từ khóa: “{filters.q}”</span>
+                  <X className="h-3 w-3" />
+                </button>
+              )}
+              {filters.categories.map((catSlug) => {
+                const cat = categories.find((c) => c.slug === catSlug);
+                return (
+                  <button
+                    key={catSlug}
+                    type="button"
+                    onClick={() =>
+                      updateFilters({
+                        categories: filters.categories.filter((c) => c !== catSlug),
+                        page: 1,
+                      })
+                    }
+                    className="inline-flex items-center gap-1 rounded-full bg-secondary px-2.5 py-1 text-xs font-medium text-primary hover:bg-primary hover:text-primary-foreground transition-colors"
+                  >
+                    <span>{cat?.name || catSlug}</span>
+                    <X className="h-3 w-3" />
+                  </button>
+                );
+              })}
+              {filters.freeOnly && (
+                <button
+                  type="button"
+                  onClick={() => updateFilters({ freeOnly: false, page: 1 })}
+                  className="inline-flex items-center gap-1 rounded-full bg-secondary px-2.5 py-1 text-xs font-medium text-primary hover:bg-primary hover:text-primary-foreground transition-colors"
+                >
+                  <span>Miễn phí</span>
+                  <X className="h-3 w-3" />
+                </button>
+              )}
+              {!filters.freeOnly &&
+                (filters.minPrice > 0 || filters.maxPrice < MAX_PRICE_SLIDER) && (
+                  <button
+                    type="button"
+                    onClick={() =>
+                      updateFilters({
+                        minPrice: 0,
+                        maxPrice: MAX_PRICE_SLIDER,
+                        page: 1,
+                      })
+                    }
+                    className="inline-flex items-center gap-1 rounded-full bg-secondary px-2.5 py-1 text-xs font-medium text-primary hover:bg-primary hover:text-primary-foreground transition-colors"
+                  >
+                    <span>
+                      Giá: {formatMoneyVnd(filters.minPrice)} –{" "}
+                      {formatMoneyVnd(filters.maxPrice)}
+                    </span>
+                    <X className="h-3 w-3" />
+                  </button>
+                )}
+              {filters.hasRating && (
+                <button
+                  type="button"
+                  onClick={() => updateFilters({ hasRating: false, page: 1 })}
+                  className="inline-flex items-center gap-1 rounded-full bg-secondary px-2.5 py-1 text-xs font-medium text-primary hover:bg-primary hover:text-primary-foreground transition-colors"
+                >
+                  <span>Có đánh giá</span>
+                  <X className="h-3 w-3" />
+                </button>
+              )}
+              {filters.hasImage && (
+                <button
+                  type="button"
+                  onClick={() => updateFilters({ hasImage: false, page: 1 })}
+                  className="inline-flex items-center gap-1 rounded-full bg-secondary px-2.5 py-1 text-xs font-medium text-primary hover:bg-primary hover:text-primary-foreground transition-colors"
+                >
+                  <span>Có ảnh bìa</span>
+                  <X className="h-3 w-3" />
+                </button>
+              )}
+              {filters.lang !== "all" && (
+                <button
+                  type="button"
+                  onClick={() => updateFilters({ lang: "all", page: 1 })}
+                  className="inline-flex items-center gap-1 rounded-full bg-secondary px-2.5 py-1 text-xs font-medium text-primary hover:bg-primary hover:text-primary-foreground transition-colors"
+                >
+                  <span>{LANGUAGE_LABELS[filters.lang]}</span>
+                  <X className="h-3 w-3" />
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={resetFilters}
+                className="text-xs font-medium text-accent hover:underline ml-1"
               >
-                {category.name}
-              </Link>
-            ))}
-          </nav>
+                Xoá tất cả
+              </button>
+            </div>
+          )}
+        </section>
+
+        {/* Main 12-Col Layout: Sticky Filter Sidebar + Results Grid */}
+        <div className="grid gap-6 lg:grid-cols-12 items-start">
+          {/* Desktop Sticky Sidebar */}
+          <aside
+            className="hidden lg:block lg:col-span-3 lg:sticky lg:top-20 rounded-2xl border border-border bg-surface p-5"
+            aria-label="Bộ lọc sản phẩm"
+          >
+            <ProductFilterControls
+              filters={filters}
+              categories={categories}
+              onChange={updateFilters}
+              onReset={resetFilters}
+            />
+          </aside>
+
+          {/* Main Column */}
+          <div className="lg:col-span-9 min-w-0 space-y-5">
+            {/* Toolbar: Mobile Filter Bottom Sheet + Sort */}
+            <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border bg-surface p-3.5">
+              <div className="flex items-center gap-2">
+                <Sheet open={mobileFilterOpen} onOpenChange={setMobileFilterOpen}>
+                  <SheetTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="lg:hidden h-12 px-4 gap-2 scroll-mt-24"
+                    >
+                      <Filter className="h-4 w-4" />
+                      <span>Bộ lọc</span>
+                      {activeFilterCount > 0 && (
+                        <span className="inline-flex size-5 items-center justify-center rounded-full bg-primary text-xs font-semibold text-primary-foreground tabular-nums">
+                          {activeFilterCount}
+                        </span>
+                      )}
+                    </Button>
+                  </SheetTrigger>
+                  <SheetContent
+                    side="bottom"
+                    className="max-h-[85vh] flex flex-col rounded-t-2xl p-0"
+                  >
+                    <SheetHeader className="border-b border-border px-5 py-4 text-left">
+                      <SheetTitle>Bộ lọc tìm kiếm</SheetTitle>
+                    </SheetHeader>
+                    <div className="flex-1 overflow-y-auto overflow-x-hidden px-5 py-4">
+                      <ProductFilterControls
+                        filters={filters}
+                        categories={categories}
+                        onChange={updateFilters}
+                        onReset={resetFilters}
+                        onCloseMobile={() => setMobileFilterOpen(false)}
+                        showResetTop={false}
+                      />
+                    </div>
+                  </SheetContent>
+                </Sheet>
+
+                <span className="hidden sm:inline text-sm font-medium text-muted-foreground tabular-nums">
+                  {totalCount} kết quả
+                </span>
+              </div>
+
+              <div className="flex items-center gap-2 ml-auto">
+                <span className="hidden sm:inline text-xs font-medium text-muted-foreground">
+                  Sắp xếp:
+                </span>
+                <Select
+                  value={filters.sort}
+                  onValueChange={(value) =>
+                    updateFilters({ sort: value as ProductSortOption, page: 1 })
+                  }
+                >
+                  <SelectTrigger className="h-12 sm:h-10 w-[165px] min-[375px]:w-[180px] sm:w-[200px]">
+                    <SelectValue placeholder="Sắp xếp" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="newest">Mới nhất</SelectItem>
+                    <SelectItem value="popular">Phổ biến nhất</SelectItem>
+                    <SelectItem value="rating">Đánh giá cao nhất</SelectItem>
+                    <SelectItem value="price_asc">Giá: Thấp đến cao</SelectItem>
+                    <SelectItem value="price_desc">Giá: Cao đến thấp</SelectItem>
+                    <SelectItem value="oldest">Cũ nhất</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            {/* Grid / States */}
+            {loading ? (
+              <ProductGridSkeleton count={6} />
+            ) : error ? (
+              <ErrorState
+                title="Không thể tải danh sách sản phẩm"
+                description="Đã có sự cố khi kết nối dữ liệu. Vui lòng thử lại."
+                onRetry={() => setReloadKey((k) => k + 1)}
+              />
+            ) : products.length === 0 ? (
+              <EmptyState
+                title="Không tìm thấy sản phẩm"
+                description="Không tìm thấy sản phẩm. Thử từ khóa khác hoặc điều chỉnh lại khoảng giá và danh mục."
+                action={
+                  <div className="flex flex-wrap justify-center gap-2">
+                    <Button variant="default" onClick={resetFilters}>
+                      Xoá bộ lọc
+                    </Button>
+                    <Button variant="outline" asChild>
+                      <Link to="/">Về trang chủ</Link>
+                    </Button>
+                  </div>
+                }
+              />
+            ) : (
+              <>
+                <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3 lg:gap-5">
+                  {products.map((product, index) => (
+                    <ProductCard
+                      key={product.id}
+                      product={product}
+                      loading={index < 3 ? "eager" : "lazy"}
+                      fetchPriority={index < 2 ? "high" : "auto"}
+                    />
+                  ))}
+                </div>
+
+                {/* Pagination */}
+                {totalPages > 1 && (
+                  <nav
+                    aria-label="Phân trang"
+                    className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border bg-surface px-4 py-3"
+                  >
+                    <span className="text-xs sm:text-sm text-muted-foreground tabular-nums">
+                      Trang <strong>{filters.page}</strong> / {totalPages}
+                    </span>
+
+                    <div className="flex items-center gap-1.5">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        disabled={filters.page <= 1}
+                        onClick={() =>
+                          updateFilters({ page: Math.max(1, filters.page - 1) })
+                        }
+                        className="h-11 sm:h-10 px-3"
+                      >
+                        <ChevronLeft className="h-4 w-4 mr-1" />
+                        <span>Trước</span>
+                      </Button>
+
+                      {Array.from({ length: totalPages })
+                        .slice(
+                          Math.max(0, filters.page - 3),
+                          Math.min(totalPages, filters.page + 2)
+                        )
+                        .map((_, idx) => {
+                          const start = Math.max(0, filters.page - 3);
+                          const pageNum = start + idx + 1;
+                          return (
+                            <Button
+                              key={pageNum}
+                              variant={
+                                pageNum === filters.page ? "default" : "outline"
+                              }
+                              size="sm"
+                              onClick={() => updateFilters({ page: pageNum })}
+                              className={
+                                pageNum === filters.page
+                                  ? "h-11 sm:h-10 min-w-11 sm:min-w-10 px-2.5 tabular-nums"
+                                  : "hidden sm:inline-flex sm:h-10 sm:min-w-10 px-2.5 tabular-nums"
+                              }
+                            >
+                              {pageNum}
+                            </Button>
+                          );
+                        })}
+
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        disabled={filters.page >= totalPages}
+                        onClick={() =>
+                          updateFilters({
+                            page: Math.min(totalPages, filters.page + 1),
+                          })
+                        }
+                        className="h-11 sm:h-10 px-3"
+                      >
+                        <span>Sau</span>
+                        <ChevronRight className="h-4 w-4 ml-1" />
+                      </Button>
+                    </div>
+                  </nav>
+                )}
+              </>
+            )}
+          </div>
         </div>
 
-        {/* Results */}
-        {loading ? (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {Array.from({ length: 8 }).map((_, index) => (
-              <Card key={index} className="animate-pulse flex flex-col h-full">
-                <div className="aspect-[4/3] bg-muted rounded-t-lg"></div>
-                <CardContent className="p-4 flex-grow">
-                  <div className="h-4 bg-muted rounded mb-2 w-1/2"></div>
-                  <div className="h-5 bg-muted rounded mb-2"></div>
-                  <div className="h-4 bg-muted rounded mb-4 w-3/4"></div>
-                  <div className="h-6 bg-muted rounded w-1/2"></div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        ) : products.length === 0 ? (
-          <div className="text-center py-20">
-            <p className="text-lg text-muted-foreground mb-4">
-              Không tìm thấy sản phẩm nào
-            </p>
-            <Button onClick={() => navigate('/')}>
-              Quay về trang chủ
-            </Button>
-          </div>
-        ) : (
-          <>
-            <p className="text-sm text-muted-foreground mb-4">
-              Tìm thấy {products.length} sản phẩm
-            </p>
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {products.map((product, index) => {
-                const isFree = isFreeProduct(product.price);
-                const downloadUrl = getProductDownloadUrl(product.google_drive_link, product.download_only_link);
-
-                return <article 
-                  key={product.id} 
-                  className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-1 cursor-pointer flex flex-col h-full rounded-lg border bg-card text-card-foreground shadow-xs"
-                  onClick={() => navigate(`/san-pham/${product.slug}`)}
-                >
-                  <div className="relative overflow-hidden rounded-t-lg aspect-[4/3] bg-muted">
-                    <div className="w-full h-full group-hover:scale-105 transition-transform duration-300">
-                      <ProductThumbnail
-                        googleDriveLink={product.google_drive_link}
-                        thumbnailUrl={product.thumbnail_url}
-                        fileFormat={product.file_format}
-                        title={product.title}
-                        size={600}
-                        loading={index < 4 ? "eager" : "lazy"}
-                        fetchPriority={index < 2 ? "high" : "auto"}
-                      />
-                    </div>
-                    {product.original_price > product.price && (
-                      <Badge className="absolute top-3 left-3 bg-destructive text-destructive-foreground shadow-md z-10">
-                        -{Math.round(((product.original_price - product.price) / product.original_price) * 100)}%
-                      </Badge>
-                    )}
-                  </div>
-
-                  <CardContent className="p-4 flex-grow flex flex-col">
-                    <div className="mb-2 flex items-center gap-2 flex-wrap">
-                      <Link
-                        to={`/danh-muc/${product.categories?.slug}`}
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <Badge variant="secondary" className="text-xs hover:bg-primary hover:text-primary-foreground transition-colors cursor-pointer">
-                          {product.categories?.name}
-                        </Badge>
-                      </Link>
-                      {product.file_format && (
-                        <Badge variant="outline" className="text-xs font-medium bg-primary/10 text-primary border-primary/20">
-                          {product.file_format.toUpperCase()}
-                        </Badge>
-                      )}
-                    </div>
-                    
-                    <h3 className="font-semibold text-lg mb-2 line-clamp-2 min-h-[3.5rem]">
-                      {product.title}
-                    </h3>
-                    
-                    <p className="text-sm text-muted-foreground mb-3 line-clamp-2 min-h-[2.5rem]">
-                      {product.short_description || product.description}
-                    </p>
-
-                    {product.rating_count > 0 && (
-                      <div className="flex items-center mb-3">
-                        <div className="flex items-center mr-2">
-                          {renderStars(product.rating_average || 0)}
-                        </div>
-                        <span className="text-sm text-muted-foreground">
-                          ({product.rating_count})
-                        </span>
-                      </div>
-                    )}
-
-                    <div className="flex items-center text-xs text-muted-foreground mb-3 gap-3 flex-wrap">
-                      {product.download_count > 0 && (
-                        <div className="flex items-center">
-                          <Download className="h-3.5 w-3.5 mr-1" />
-                          <span>{product.download_count}</span>
-                        </div>
-                      )}
-                      {product.view_count > 0 && (
-                        <div className="flex items-center">
-                          <Eye className="h-3.5 w-3.5 mr-1" />
-                          <span>{product.view_count}</span>
-                        </div>
-                      )}
-                      {product.file_size && (
-                        <div className="flex items-center">
-                          <span>📄 {product.file_size}</span>
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="mt-auto">
-                      <div className="flex items-baseline gap-2 mb-2">
-                        <div className="text-xl font-bold text-primary">
-                          {isFree ? 'Miễn phí' : formatPrice(product.price)}
-                        </div>
-                        {product.original_price > product.price && (
-                          <div className="text-sm text-muted-foreground line-through">
-                            {formatPrice(product.original_price)}
-                          </div>
-                        )}
-                      </div>
-
-                      <div className="text-xs text-muted-foreground">
-                        Bởi: {product.profiles?.full_name || 'Ẩn danh'}
-                      </div>
-                    </div>
-                  </CardContent>
-
-                  <CardFooter className="p-4 pt-0 flex-col gap-2">
-                    {product.read_only ? (
-                      <Button
-                        variant="secondary"
-                        size="sm"
-                        className="w-full"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          navigate(`/read/${product.slug}`);
-                        }}
-                      >
-                        <BookOpen className="h-4 w-4 mr-2" />
-                        Đọc trực tuyến (Full màn hình)
-                      </Button>
-                    ) : isFree ? (
-                      <FreeDownloadButton
-                        size="sm"
-                        downloadUrl={downloadUrl}
-                        onMissingUrl={handleMissingFreeDownload}
-                        onClick={(e) => e.stopPropagation()}
-                      />
-                    ) : (
-                      <Button 
-                        className="w-full" 
-                        size="sm"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          addToCart(product.id);
-                        }}
-                      >
-                        <ShoppingCart className="h-4 w-4 mr-2" />
-                        Thêm vào giỏ
-                      </Button>
-                    )}
-                  </CardFooter>
-                </article>;
-              })}
-            </div>
-          </>
-        )}
+        <RelatedCategories />
       </main>
 
-      <RelatedCategories />
       <Footer />
     </div>
   );

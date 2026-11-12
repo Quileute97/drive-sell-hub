@@ -1,173 +1,170 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
+import { ArrowRight, CheckCircle2, Share2, ShieldCheck, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Play, Download, Users, Share2 } from "lucide-react";
 import { TelegramIcon } from "@/components/icons/TelegramIcon";
 import { supabase } from "@/integrations/supabase/client";
 import { Link } from "@/lib/router-compat";
-import heroImage from "@/assets/hero-digital-marketplace.jpg";
 
-export const Hero = () => {
-  const [stats, setStats] = useState({
-    sellers: 50,
-    products: 350,
-    downloads: 1500
-  });
+export interface PlatformStats {
+  sellers: number;
+  products: number;
+  downloads: number;
+}
+
+export const Hero = ({
+  initialStats,
+}: {
+  initialStats?: PlatformStats | undefined;
+}) => {
+  const [stats, setStats] = useState<PlatformStats>(
+    initialStats || {
+      sellers: 50,
+      products: 875,
+      downloads: 3500,
+    }
+  );
 
   useEffect(() => {
+    if (initialStats) return;
+    let cancelled = false;
+
+    const fetchStats = async () => {
+      try {
+        const [{ count: productsCount, data: productsData }, { count: sellersCount }] =
+          await Promise.all([
+            supabase
+              .from("products")
+              .select("seller_id, download_count", { count: "exact" })
+              .eq("status", "active")
+              .limit(1000),
+            supabase
+              .from("profiles")
+              .select("id", { count: "exact", head: true })
+              .eq("role", "seller"),
+          ]);
+
+        if (cancelled) return;
+        const realProductsCount = productsCount || 875;
+        const uniqueSellers = new Set(
+          (productsData || []).map((p) => p.seller_id).filter(Boolean)
+        ).size;
+        const realSellersCount = Math.max(sellersCount || 0, uniqueSellers, 50);
+        const calcDownloads = (productsData || []).reduce(
+          (sum, product) => sum + (product.download_count || 0),
+          0
+        );
+        const realDownloads = Math.max(calcDownloads, realProductsCount * 4, 1500);
+
+        setStats({
+          sellers: realSellersCount,
+          products: realProductsCount,
+          downloads: realDownloads,
+        });
+      } catch (error) {
+        console.error("Error fetching stats:", error);
+      }
+    };
+
     fetchStats();
-  }, []);
-
-  const fetchStats = async () => {
-    try {
-      // Get products count and download / seller info
-      const { count: productsCount, data: productsData } = await supabase
-        .from('products')
-        .select('seller_id, download_count', { count: 'exact' })
-        .eq('status', 'active');
-
-      const realProductsCount = productsCount || 350;
-
-      // Unique active sellers from products
-      const uniqueSellers = new Set((productsData || []).map(p => p.seller_id).filter(Boolean)).size;
-
-      // Query profiles count if permitted
-      const { count: sellersCount } = await supabase
-        .from('profiles')
-        .select('id', { count: 'exact', head: true })
-        .eq('role', 'seller');
-
-      const realSellersCount = Math.max(sellersCount || 0, uniqueSellers, 50);
-
-      // Total downloads
-      const calcDownloads = (productsData || []).reduce((sum, product) => sum + (product.download_count || 0), 0);
-      const realDownloads = Math.max(calcDownloads, realProductsCount * 4, 1500);
-
-      setStats({
-        sellers: realSellersCount,
-        products: realProductsCount,
-        downloads: realDownloads
-      });
-    } catch (error) {
-      console.error('Error fetching stats:', error);
-    }
-  };
+    return () => {
+      cancelled = true;
+    };
+  }, [initialStats]);
 
   return (
-    <section className="relative overflow-hidden gradient-subtle py-20 lg:py-32" aria-label="Hero section">
-      <div className="container mx-auto px-4">
-        <div className="grid lg:grid-cols-2 gap-12 items-center">
-          {/* Left Content */}
-          <div className="text-center lg:text-left animate-fade-in-up">
-            {/* Telegram Community Pill */}
-            <a
-              href="https://t.me/+2ZkLgrmVJgBkMGM1"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-3.5 py-1.5 mb-6 text-xs sm:text-sm font-semibold rounded-full bg-sky-500/10 text-sky-600 dark:text-sky-400 border border-sky-500/20 hover:bg-sky-500/20 hover:scale-105 transition-all shadow-xs"
-            >
-              <TelegramIcon className="h-4 w-4 shrink-0" />
-              <span>Tham gia Group Telegram Cộng đồng</span>
-              <ArrowRight className="h-3.5 w-3.5" />
-            </a>
-
-            <h1 className="text-4xl lg:text-6xl font-bold mb-6 leading-tight">
-              Mua bán tài liệu số, ebook,
-              <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-                {" "}khóa học online{" "}
-              </span>
-              qua Google Drive
-            </h1>
-            
-            <p className="text-xl text-muted-foreground mb-8 leading-relaxed">
-              Kết nối người mua và người bán sản phẩm số. Bán tài liệu, khóa học, 
-              ebook và nhiều sản phẩm digital khác một cách dễ dàng qua Google Drive.
-            </p>
-
-            <div className="flex flex-wrap gap-4 justify-center lg:justify-start mb-12">
-              <Button variant="hero" size="lg" className="group" asChild>
-                <Link to="/seller-signup">
-                  Đăng kí bán ngay
-                  <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
-                </Link>
-              </Button>
-              
-              <Button variant="outline" size="lg" className="group" asChild>
-                <Link to="/how-it-works">
-                  <Play className="mr-2 h-5 w-5" />
-                  Xem hướng dẫn
-                </Link>
-              </Button>
-
-              <Button
-                size="lg"
-                asChild
-                className="group gradient-accent text-accent-foreground shadow-[var(--shadow-accent)] transition-smooth hover:scale-105 hover:shadow-[0_15px_50px_-10px_hsl(var(--accent)/0.55)] hover:brightness-110"
-              >
-                <Link to="/affiliate">
-                  <Share2 className="mr-2 h-5 w-5 transition-transform group-hover:rotate-12" />
-                  Affiliate 5%
-                </Link>
-              </Button>
-
-              <Button
-                variant="outline"
-                size="lg"
-                className="group border-sky-500/40 text-sky-600 dark:text-sky-400 hover:bg-sky-500/10 hover:border-sky-500 transition-smooth"
-                asChild
-              >
-                <a href="https://t.me/+2ZkLgrmVJgBkMGM1" target="_blank" rel="noopener noreferrer">
-                  <TelegramIcon className="mr-2 h-5 w-5" />
-                  Group Tele (Cộng đồng)
-                </a>
-              </Button>
+    <section
+      className="mx-auto max-w-[1280px] px-4 pt-5 pb-3 sm:px-6 lg:px-8"
+      aria-label="Giới thiệu Salemylink"
+    >
+      <div className="rounded-2xl border border-border bg-surface p-5 sm:p-7 lg:p-8">
+        <div className="grid gap-6 lg:grid-cols-12 lg:items-center">
+          {/* Left Copy & Actions */}
+          <div className="lg:col-span-7 space-y-4">
+            <div className="inline-flex items-center gap-2 rounded-full bg-secondary px-3 py-1 text-xs font-semibold text-primary">
+              <Zap className="h-3.5 w-3.5 shrink-0 text-accent" />
+              <span className="text-balance">Marketplace tài liệu số qua Google Drive</span>
             </div>
 
-            {/* Stats */}
-            <div className="grid grid-cols-3 gap-8 text-center lg:text-left">
-              <div>
-                <div className="text-2xl font-bold text-primary">{stats.sellers.toLocaleString()}+</div>
-                <div className="text-sm text-muted-foreground">Người bán</div>
-              </div>
-              <div>
-                <div className="text-2xl font-bold text-primary">{stats.products.toLocaleString()}+</div>
-                <div className="text-sm text-muted-foreground">Sản phẩm</div>
-              </div>
-              <div>
-                <div className="text-2xl font-bold text-primary">{stats.downloads.toLocaleString()}+</div>
-                <div className="text-sm text-muted-foreground">Lượt tải</div>
-              </div>
+            <h1 className="text-2xl font-bold tracking-tight text-balance text-foreground sm:text-3xl lg:text-[34px] lg:leading-[1.2]">
+              Tìm kiếm &amp; đọc tài liệu số, ebook,{" "}
+              <span className="text-primary">khóa học online</span> giao tức thì
+            </h1>
+
+            <p className="max-w-2xl text-sm leading-relaxed text-pretty text-muted-foreground sm:text-base">
+              Khám phá tài liệu học tập, đề thi, source code và template chất lượng từ
+              cộng đồng tác giả Việt Nam. Xem trước nội dung, thanh toán PayOS và nhận
+              link Google Drive ngay.
+            </p>
+
+            <div className="flex flex-wrap items-center gap-2.5 pt-1">
+              <Button size="lg" className="h-12 px-5" asChild>
+                <Link to="/search">
+                  <span>Khám phá tài liệu</span>
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Link>
+              </Button>
+
+              <Button variant="outline" size="lg" className="h-12 px-5" asChild>
+                <Link to="/seller-signup">Đăng bán tài liệu</Link>
+              </Button>
+
+              <Link
+                to="/affiliate"
+                className="inline-flex h-10 items-center gap-1.5 rounded-lg px-2.5 text-sm font-medium text-accent hover:bg-button-hover transition-colors"
+              >
+                <Share2 className="h-4 w-4" />
+                <span>Affiliate 5%</span>
+              </Link>
+
+              <a
+                href="https://t.me/+2ZkLgrmVJgBkMGM1"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex h-10 items-center gap-1.5 rounded-lg px-2.5 text-sm font-medium text-sky-700 hover:bg-sky-50 transition-colors"
+              >
+                <TelegramIcon className="h-4 w-4" />
+                <span>Group Telegram</span>
+              </a>
             </div>
           </div>
 
-          {/* Right Image — LCP element: eager load, fetchpriority high, explicit dimensions */}
-          <div className="relative animate-float">
-            <div className="relative rounded-2xl overflow-hidden shadow-elegant">
-              <img 
-                src={heroImage} 
-                alt="Nền tảng thương mại điện tử bán sản phẩm digital - Kết nối người mua và người bán tài liệu, ebook, khóa học online qua Google Drive"
-                className="w-full h-auto"
-                loading="eager"
-                fetchPriority="high"
-                decoding="async"
-                width="800"
-                height="600"
-                style={{ aspectRatio: '4/3' }}
-              />
-              <div className="absolute inset-0 bg-gradient-to-tr from-primary/20 to-transparent"></div>
-            </div>
-            
-            {/* Floating Cards */}
-            <div className="absolute -top-4 -right-4 bg-card rounded-lg p-4 shadow-accent animate-bounce delay-100">
-              <div className="flex items-center space-x-2">
-                <Download className="h-5 w-5 text-accent" />
-                <span className="text-sm font-medium">Tải ngay</span>
+          {/* Right Live Stats & Guarantees */}
+          <div className="lg:col-span-5 space-y-3">
+            <dl className="grid grid-cols-3 gap-2 min-[375px]:gap-2.5 sm:gap-3">
+              <div className="flex flex-col justify-between rounded-xl border border-border bg-muted/60 px-2 py-3 min-[375px]:p-3 sm:p-4 text-center min-w-0">
+                <dt className="text-xs font-medium text-muted-foreground whitespace-nowrap truncate">
+                  Tài liệu số
+                </dt>
+                <dd className="mt-1 text-lg font-bold text-primary sm:text-2xl tabular-nums">
+                  {stats.products.toLocaleString("vi-VN")}+
+                </dd>
               </div>
-            </div>
-            
-            <div className="absolute -bottom-4 -left-4 bg-card rounded-lg p-4 shadow-primary animate-bounce delay-300">
-              <div className="flex items-center space-x-2">
-                <Users className="h-5 w-5 text-primary" />
-                <span className="text-sm font-medium">+999 đánh giá</span>
+              <div className="flex flex-col justify-between rounded-xl border border-border bg-muted/60 px-2 py-3 min-[375px]:p-3 sm:p-4 text-center min-w-0">
+                <dt className="text-xs font-medium text-muted-foreground whitespace-nowrap truncate">
+                  Người bán
+                </dt>
+                <dd className="mt-1 text-lg font-bold text-primary sm:text-2xl tabular-nums">
+                  {stats.sellers.toLocaleString("vi-VN")}+
+                </dd>
+              </div>
+              <div className="flex flex-col justify-between rounded-xl border border-border bg-muted/60 px-2 py-3 min-[375px]:p-3 sm:p-4 text-center min-w-0">
+                <dt className="text-xs font-medium text-muted-foreground whitespace-nowrap truncate">
+                  Lượt tải
+                </dt>
+                <dd className="mt-1 text-lg font-bold text-primary sm:text-2xl tabular-nums">
+                  {stats.downloads.toLocaleString("vi-VN")}+
+                </dd>
+              </div>
+            </dl>
+
+            <div className="grid grid-cols-1 gap-2 rounded-xl border border-border bg-muted/40 p-3.5 text-xs text-muted-foreground sm:grid-cols-2">
+              <div className="flex items-center gap-2">
+                <CheckCircle2 className="h-4 w-4 shrink-0 text-[var(--status-success)]" />
+                <span className="text-pretty">Xem trước &amp; mô tả chi tiết</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <ShieldCheck className="h-4 w-4 shrink-0 text-primary" />
+                <span className="text-pretty">Thanh toán PayOS tự động</span>
               </div>
             </div>
           </div>

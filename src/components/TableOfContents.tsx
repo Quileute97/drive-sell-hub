@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { List, ChevronDown, ChevronUp, Hash, BookOpen } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -95,8 +95,31 @@ export function TableOfContents({
 }: TableOfContentsProps) {
   const [isOpen, setIsOpen] = useState(defaultOpen);
   const [activeId, setActiveId] = useState<string>("");
+  const [headings, setHeadings] = useState<TocItem[]>([]);
 
-  const headings = useMemo(() => extractHeadings(htmlContent), [htmlContent]);
+  useEffect(() => {
+    const items = extractHeadings(htmlContent);
+    setHeadings(items);
+
+    if (items.length === 0 || typeof window === "undefined") return;
+
+    // Ensure rendered prose headings carry matching id + scroll offset without altering SSR HTML
+    const usedIds = new Set<string>();
+    const domHeadings = document.querySelectorAll(".prose h1, .prose h2, .prose h3, .prose h4");
+    domHeadings.forEach((el, index) => {
+      const text = el.textContent?.trim() || "";
+      if (!text) return;
+      let id = slugify(text) || `muc-${index + 1}`;
+      if (usedIds.has(id)) {
+        let i = 2;
+        while (usedIds.has(`${id}-${i}`)) i++;
+        id = `${id}-${i}`;
+      }
+      usedIds.add(id);
+      if (!el.id) el.id = id;
+      el.classList.add("scroll-mt-24");
+    });
+  }, [htmlContent]);
 
   // Intersection observer to highlight active heading
   useEffect(() => {
@@ -144,7 +167,7 @@ export function TableOfContents({
   return (
     <nav
       className={cn(
-        "rounded-xl border bg-card/70 backdrop-blur-xs p-4 mb-6 shadow-xs transition-all",
+        "mb-5 rounded-xl border border-border bg-muted/40 p-4",
         className
       )}
       aria-label="Mục lục bài viết"

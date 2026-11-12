@@ -155,7 +155,7 @@ export const TRANSLATIONS: Record<SupportedLanguage, Translations> = {
     nav: {
       home: "Trang chủ",
       search: "Tìm kiếm",
-      searchPlaceholder: "Tìm kiếm sản phẩm digital, ebook, tài liệu...",
+      searchPlaceholder: "Tìm tài liệu, ebook...",
       cart: "Giỏ hàng",
       wishlist: "Yêu thích",
       account: "Tài khoản",
@@ -281,7 +281,7 @@ export const TRANSLATIONS: Record<SupportedLanguage, Translations> = {
     nav: {
       home: "Home",
       search: "Search",
-      searchPlaceholder: "Search digital products, ebooks, documents...",
+      searchPlaceholder: "Search docs, ebooks...",
       cart: "Cart",
       wishlist: "Wishlist",
       account: "Account",
@@ -407,7 +407,7 @@ export const TRANSLATIONS: Record<SupportedLanguage, Translations> = {
     nav: {
       home: "首页",
       search: "搜索",
-      searchPlaceholder: "搜索数字产品、电子书、资料...",
+      searchPlaceholder: "搜索资料、电子书...",
       cart: "购物车",
       wishlist: "收藏夹",
       account: "账户",
@@ -533,7 +533,7 @@ export const TRANSLATIONS: Record<SupportedLanguage, Translations> = {
     nav: {
       home: "Inicio",
       search: "Buscar",
-      searchPlaceholder: "Buscar productos digitales, ebooks, documentos...",
+      searchPlaceholder: "Buscar ebooks, guías...",
       cart: "Carrito",
       wishlist: "Favoritos",
       account: "Cuenta",

@@ -69,7 +69,7 @@ export const Logo: React.FC<LogoProps> = ({
     <div className={`inline-flex items-center gap-2.5 select-none ${className}`}>
       {/* Icon Mark */}
       {variant !== "text" && (
-        <div className="transition-transform duration-200 hover:scale-105">
+        <div className="transition-opacity duration-200 hover:opacity-90">
           <LogoMark size={currentSize.markSize} />
         </div>
       )}
@@ -130,7 +130,7 @@ export const Logo: React.FC<LogoProps> = ({
     return (
       <Link
         to={href}
-        className="inline-flex items-center hover:opacity-90 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-lg"
+        className="inline-flex items-center hover:opacity-90 transition-opacity outline-hidden rounded-lg"
         aria-label="Salemylink.com Trang chủ"
       >
         {content}

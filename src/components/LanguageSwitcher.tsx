@@ -23,23 +23,25 @@ export const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({
 
   if (variant === 'footer') {
     return (
-      <div className={`flex flex-wrap items-center gap-2 ${className}`}>
+      <div className={`grid grid-cols-2 gap-2 ${className}`}>
         {LANGUAGE_LIST.map((lang) => {
           const isActive = lang.code === language;
           return (
             <button
               key={lang.code}
+              type="button"
+              aria-pressed={isActive}
               onClick={() => setLanguage(lang.code)}
-              className={`inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-md border transition-all duration-150 ${
+              className={`inline-flex min-h-9 w-full items-center justify-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-xs font-medium whitespace-nowrap transition-colors ${
                 isActive
-                  ? 'bg-primary text-primary-foreground border-primary shadow-xs'
-                  : 'bg-muted/40 text-muted-foreground hover:bg-muted hover:text-foreground border-transparent'
+                  ? 'border-primary bg-primary text-primary-foreground hover:bg-primary-hover'
+                  : 'border-border-strong bg-surface text-foreground hover:bg-button-hover'
               }`}
               title={`${lang.name} (${lang.nativeName})`}
               aria-label={`Switch language to ${lang.name}`}
             >
               <span>{lang.flag}</span>
-              <span>{lang.nativeName}</span>
+              <span className="truncate">{lang.nativeName}</span>
             </button>
           );
         })}
@@ -51,9 +53,9 @@ export const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button
-          variant="ghost"
-          size="sm"
-          className={`h-9 px-2.5 sm:px-3 text-xs font-medium flex items-center gap-1.5 rounded-lg border border-border/60 hover:bg-accent hover:text-accent-foreground ${className}`}
+          variant="outline"
+          size="default"
+          className={`h-10 px-3 text-sm font-medium flex items-center gap-1.5 rounded-xl ${className}`}
           aria-label="Select language"
         >
           <span className="text-base leading-none">{langMeta.flag}</span>
@@ -61,7 +63,7 @@ export const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({
           <Globe className="h-3.5 w-3.5 opacity-60 ml-0.5 hidden md:inline" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-44 p-1 shadow-lg rounded-xl border border-border/80">
+      <DropdownMenuContent align="end" className="w-44 p-1 shadow-[var(--shadow-popover)] rounded-xl border border-border bg-surface">
         {LANGUAGE_LIST.map((lang) => {
           const isSelected = lang.code === language;
           return (

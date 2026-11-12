@@ -1,280 +1,224 @@
-import { useState, useEffect } from "react";
-import { Link } from "@/lib/router-compat";
+import { useEffect, useState } from "react";
+import { ShieldCheck, Star, Store, Users, Zap } from "lucide-react";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
-import { Card, CardContent } from "@/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
+import { SEO } from "@/components/SEO";
+import { Breadcrumb } from "@/components/Breadcrumb";
+import { SellerCard, type SellerCardData } from "@/components/SellerCard";
+import { EmptyState } from "@/components/States";
 import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
-import { SEO } from "@/components/SEO";
-import { Star, Package, Users } from "lucide-react";
 
-interface Seller {
-  user_id: string;
-  full_name: string | null;
-  avatar_url: string | null;
-  created_at: string;
-  total_sales: number | null;
-  is_verified: boolean | null;
-  product_count: number;
-}
-
-export default function Sellers() {
-  const [sellers, setSellers] = useState<Seller[]>([]);
-  const [loading, setLoading] = useState(true);
+export default function Sellers({
+  initialSellers,
+}: {
+  initialSellers?: SellerCardData[];
+}) {
+  const [sellers, setSellers] = useState<SellerCardData[]>(
+    initialSellers || []
+  );
+  const [loading, setLoading] = useState(!initialSellers);
 
   useEffect(() => {
-    fetchSellers();
-  }, []);
+    if (initialSellers && initialSellers.length > 0) return;
 
-  const fetchSellers = async () => {
-    try {
-      // Fetch sellers with their product counts
-      const { data: sellersData, error: sellersError } = await supabase
-        .from('profiles')
-        .select('user_id, full_name, avatar_url, created_at, total_sales, is_verified')
-        .eq('role', 'seller')
-        .order('total_sales', { ascending: false });
+    let cancelled = false;
+    const fetchSellers = async () => {
+      try {
+        const { data: activeProducts, error } = await supabase
+          .from("products")
+          .select(
+            "seller_id, rating_average, rating_count, profiles!products_seller_id_fkey(user_id, full_name, avatar_url, created_at, is_verified)"
+          )
+          .eq("status", "active")
+          .limit(1000);
 
-      if (sellersError) throw sellersError;
+        if (error) throw error;
+        if (cancelled) return;
 
-      // Get product counts for each seller
-      const sellersWithCounts = await Promise.all(
-        (sellersData || []).map(async (seller) => {
-          const { count } = await supabase
-            .from('products')
-            .select('*', { count: 'exact', head: true })
-            .eq('seller_id', seller.user_id)
-            .eq('status', 'active');
-          
-          return {
-            ...seller,
-            product_count: count || 0
-          };
-        })
-      );
-
-      // Filter sellers with at least 1 product
-      const activeSellers = sellersWithCounts.filter(s => s.product_count > 0);
-      setSellers(activeSellers);
-    } catch (error) {
-      console.error('Error fetching sellers:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('vi-VN', {
-      year: 'numeric',
-      month: 'long'
-    });
-  };
-
-  const getInitials = (name: string | null) => {
-    if (!name) return 'S';
-    return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
-  };
-
-  const siteUrl = "https://salemylink.com";
-  const currentPath = "/nguoi-ban";
-  const pageUrl = `${siteUrl}${currentPath}`;
-
-  // Structured data for sellers page
-  const sellersStructuredData = [
-    {
-      "@context": "https://schema.org",
-      "@type": "CollectionPage",
-      "@id": pageUrl,
-      "name": "Người bán sản phẩm Digital - Salemylink.com",
-      "description": `Khám phá ${sellers.length} người bán uy tín trên Salemylink.com. Mua sản phẩm digital chất lượng từ các seller được xác minh.`,
-      "url": pageUrl,
-      "isPartOf": {
-        "@id": `${siteUrl}/#website`
-      },
-      "breadcrumb": {
-        "@type": "BreadcrumbList",
-        "itemListElement": [
+        const sellerMap = new Map<
+          string,
           {
-            "@type": "ListItem",
-            "position": 1,
-            "name": "Trang chủ",
-            "item": siteUrl
-          },
-          {
-            "@type": "ListItem",
-            "position": 2,
-            "name": "Người bán",
-            "item": pageUrl
+            user_id: string;
+            full_name: string | null;
+            avatar_url: string | null;
+            created_at: string | null;
+            is_verified: boolean | null;
+            productsCount: number;
+            weightedSum: number;
+            reviewsCount: number;
           }
-        ]
-      },
-      "mainEntity": {
-        "@type": "ItemList",
-        "name": "Danh sách người bán",
-        "numberOfItems": sellers.length,
-        "itemListElement": sellers.slice(0, 20).map((seller, index) => {
-          const imgUrl = seller.avatar_url
-            ? (seller.avatar_url.startsWith("http") ? seller.avatar_url : `${siteUrl}${seller.avatar_url.startsWith("/") ? "" : "/"}${seller.avatar_url}`)
-            : `${siteUrl}/og-image.png`;
-          return {
-            "@type": "ListItem",
-            "position": index + 1,
-            "item": {
-              "@type": "Person",
-              "@id": `${siteUrl}/nguoi-ban/${seller.user_id}`,
-              "name": seller.full_name || "Người bán",
-              "url": `${siteUrl}/nguoi-ban/${seller.user_id}`,
-              "image": imgUrl,
-              "jobTitle": "Digital Product Seller",
-              "worksFor": {
-                "@type": "Organization",
-                "name": "Salemylink.com"
-              }
-            }
+        >();
+
+        for (const row of activeProducts || []) {
+          const sid = (row as any).seller_id as string | null;
+          if (!sid) continue;
+          const prof = (row as any).profiles;
+          const item = sellerMap.get(sid) || {
+            user_id: sid,
+            full_name: prof?.full_name || "Người bán",
+            avatar_url: prof?.avatar_url || null,
+            created_at: prof?.created_at || null,
+            is_verified: prof?.is_verified ?? null,
+            productsCount: 0,
+            weightedSum: 0,
+            reviewsCount: 0,
           };
-        })
+          item.productsCount += 1;
+          const rc = Number((row as any).rating_count) || 0;
+          const ra = Number((row as any).rating_average) || 0;
+          if (rc > 0 && ra > 0) {
+            item.weightedSum += rc * ra;
+            item.reviewsCount += rc;
+          }
+          sellerMap.set(sid, item);
+        }
+
+        const formatted: SellerCardData[] = Array.from(sellerMap.values())
+          .sort(
+            (a, b) =>
+              (b.is_verified ? 50 : 0) +
+              b.reviewsCount * 20 +
+              b.productsCount * 3 -
+              ((a.is_verified ? 50 : 0) +
+                a.reviewsCount * 20 +
+                a.productsCount * 3)
+          )
+          .map((s) => ({
+            user_id: s.user_id,
+            full_name: s.full_name,
+            avatar_url: s.avatar_url,
+            created_at: s.created_at,
+            is_verified: s.is_verified,
+            productsCount: s.productsCount,
+            avgRating: s.reviewsCount > 0 ? s.weightedSum / s.reviewsCount : 0,
+          }));
+
+        setSellers(formatted);
+      } catch (error) {
+        console.error("Error fetching sellers:", error);
+      } finally {
+        if (!cancelled) setLoading(false);
       }
-    }
-  ];
+    };
+
+    fetchSellers();
+    return () => {
+      cancelled = true;
+    };
+  }, [initialSellers]);
+
+  const pageUrl = "https://salemylink.com/nguoi-ban";
 
   return (
-    <div className="min-h-screen">
-      <SEO 
+    <div className="min-h-screen bg-background">
+      <SEO
         title="Người bán sản phẩm Digital uy tín | Salemylink.com"
         description={`Khám phá ${sellers.length}+ người bán uy tín trên Salemylink.com. Mua ebook, tài liệu, khóa học online từ các seller được xác minh với đánh giá cao.`}
         keywords="người bán digital, seller uy tín, bán ebook, bán tài liệu, bán khóa học, salemylink sellers, người bán sản phẩm số"
         url={pageUrl}
       />
       <Header />
-      
-      <main className="container mx-auto px-4 py-12">
+
+      <main className="mx-auto max-w-[1280px] px-4 py-6 sm:px-6 lg:px-8 space-y-6">
+        <Breadcrumb items={[{ label: "Người bán" }]} />
+
         {/* Page Header */}
-        <header className="text-center mb-12">
-          <h1 className="text-4xl font-bold mb-4">Người bán trên Salemylink</h1>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Khám phá các người bán uy tín với sản phẩm digital chất lượng cao. 
-            Mua sắm an toàn với hệ thống thanh toán bảo mật.
-          </p>
-          {!loading && (
-            <div className="flex items-center justify-center gap-2 mt-4">
-              <Users className="h-5 w-5 text-primary" />
-              <span className="text-lg font-semibold">{sellers.length} người bán</span>
+        <header className="rounded-2xl border border-border bg-surface p-5 sm:p-7">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <div className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-primary">
+                <Store className="h-3.5 w-3.5" />
+                <span>Cộng đồng tác giả &amp; Shop uy tín</span>
+              </div>
+              <h1 className="mt-1 text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
+                Người bán trên Salemylink
+              </h1>
+              <p className="mt-1 max-w-2xl text-pretty text-sm text-muted-foreground sm:text-base">
+                Khám phá các người bán chất lượng với kho tài liệu, ebook,
+                template được cộng đồng đánh giá cao.
+              </p>
             </div>
-          )}
+            {!loading && (
+              <div className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-secondary px-3.5 py-1.5 text-xs font-semibold text-primary tabular-nums">
+                <Users className="h-4 w-4" />
+                <span>{sellers.length} người bán</span>
+              </div>
+            )}
+          </div>
         </header>
 
         {/* Sellers Grid */}
         {loading ? (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {Array.from({ length: 8 }).map((_, index) => (
-              <Card key={index} className="animate-pulse">
-                <CardContent className="p-6">
-                  <div className="flex flex-col items-center text-center">
-                    <Skeleton className="h-20 w-20 rounded-full mb-4" />
-                    <Skeleton className="h-5 w-32 mb-2" />
-                    <Skeleton className="h-4 w-24 mb-4" />
-                    <Skeleton className="h-4 w-full" />
+          <div className="grid gap-3.5 sm:gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {Array.from({ length: 6 }).map((_, index) => (
+              <div
+                key={index}
+                className="rounded-2xl border border-border bg-surface p-4 space-y-3"
+              >
+                <div className="flex items-center gap-3">
+                  <Skeleton className="size-10 rounded-full" />
+                  <div className="flex-1 space-y-1.5">
+                    <Skeleton className="h-4 w-2/3" />
+                    <Skeleton className="h-3 w-1/2" />
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+                <Skeleton className="h-8 w-full rounded-lg" />
+              </div>
             ))}
           </div>
         ) : sellers.length === 0 ? (
-          <div className="text-center py-20">
-            <Users className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
-            <p className="text-lg text-muted-foreground">
-              Chưa có người bán nào trên nền tảng
-            </p>
-          </div>
+          <EmptyState
+            icon={Users}
+            title="Chưa có người bán nào trên nền tảng"
+            description="Hãy quay lại sau để khám phá các người bán nổi bật."
+          />
         ) : (
-          <section className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <section
+            aria-label="Danh sách người bán"
+            className="grid gap-3.5 sm:gap-4 md:grid-cols-2 lg:grid-cols-3"
+          >
             {sellers.map((seller) => (
-              <Link 
-                key={seller.user_id} 
-                to={`/nguoi-ban/${seller.user_id}`}
-                className="block"
-              >
-                <Card className="h-full hover:shadow-lg transition-all duration-300 hover:-translate-y-1 cursor-pointer group">
-                  <CardContent className="p-6">
-                    <div className="flex flex-col items-center text-center">
-                      {/* Avatar */}
-                      <Avatar className="h-20 w-20 mb-4 ring-2 ring-primary/20 group-hover:ring-primary/50 transition-all">
-                        <AvatarImage 
-                          src={seller.avatar_url || undefined} 
-                          alt={`Avatar của ${seller.full_name || 'Người bán'}`}
-                        />
-                        <AvatarFallback className="text-lg bg-primary/10 text-primary">
-                          {getInitials(seller.full_name)}
-                        </AvatarFallback>
-                      </Avatar>
-
-                      {/* Name & Verified Badge */}
-                      <div className="flex items-center gap-2 mb-2">
-                        <h2 className="font-semibold text-lg group-hover:text-primary transition-colors">
-                          {seller.full_name || 'Người bán'}
-                        </h2>
-                        {seller.is_verified && (
-                          <Badge variant="secondary" className="text-xs">
-                            <Star className="h-3 w-3 mr-1 fill-yellow-400 text-yellow-400" />
-                            Xác minh
-                          </Badge>
-                        )}
-                      </div>
-
-                      {/* Stats */}
-                      <div className="flex items-center gap-4 text-sm text-muted-foreground mb-3">
-                        <div className="flex items-center gap-1">
-                          <Package className="h-4 w-4" />
-                          <span>{seller.product_count} sản phẩm</span>
-                        </div>
-                      </div>
-
-                      {/* Member since */}
-                      <p className="text-xs text-muted-foreground">
-                        Thành viên từ {formatDate(seller.created_at)}
-                      </p>
-
-                      {/* Total Sales */}
-                      {(seller.total_sales || 0) > 0 && (
-                        <Badge variant="outline" className="mt-3">
-                          {new Intl.NumberFormat('vi-VN').format(seller.total_sales || 0)}đ doanh thu
-                        </Badge>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-              </Link>
+              <SellerCard key={seller.user_id} seller={seller} />
             ))}
           </section>
         )}
 
-        {/* SEO Content */}
-        <section className="mt-16 prose prose-gray dark:prose-invert max-w-4xl mx-auto">
-          <h2 className="text-2xl font-bold text-center mb-6">
+        {/* Trust Highlights */}
+        <section
+          aria-label="Cam kết từ người bán"
+          className="rounded-2xl border border-border bg-surface p-5 sm:p-7"
+        >
+          <h2 className="mb-5 text-lg font-bold tracking-tight text-foreground sm:text-xl">
             Tại sao nên mua từ người bán trên Salemylink?
           </h2>
-          <div className="grid md:grid-cols-3 gap-6 not-prose">
-            <div className="text-center p-6 rounded-lg bg-muted/50">
-              <div className="text-3xl mb-3">🔒</div>
-              <h3 className="font-semibold mb-2">An toàn & Bảo mật</h3>
-              <p className="text-sm text-muted-foreground">
-                Thanh toán qua cổng PayOS uy tín, bảo vệ thông tin khách hàng
+          <div className="grid gap-4 md:grid-cols-3">
+            <div className="rounded-xl border border-border bg-muted/40 p-4">
+              <ShieldCheck className="mb-2.5 h-5 w-5 text-primary" />
+              <h3 className="text-sm font-semibold text-foreground">
+                An toàn &amp; Bảo mật
+              </h3>
+              <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                Thanh toán qua cổng PayOS uy tín, bảo vệ thông tin khách hàng.
               </p>
             </div>
-            <div className="text-center p-6 rounded-lg bg-muted/50">
-              <div className="text-3xl mb-3">⚡</div>
-              <h3 className="font-semibold mb-2">Giao hàng tức thì</h3>
-              <p className="text-sm text-muted-foreground">
-                Nhận link tải ngay sau khi thanh toán thành công
+            <div className="rounded-xl border border-border bg-muted/40 p-4">
+              <Zap className="mb-2.5 h-5 w-5 text-accent" />
+              <h3 className="text-sm font-semibold text-foreground">
+                Giao hàng tức thì
+              </h3>
+              <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                Nhận link Google Drive ngay lập tức sau khi thanh toán thành công.
               </p>
             </div>
-            <div className="text-center p-6 rounded-lg bg-muted/50">
-              <div className="text-3xl mb-3">⭐</div>
-              <h3 className="font-semibold mb-2">Chất lượng đảm bảo</h3>
-              <p className="text-sm text-muted-foreground">
-                Sản phẩm được kiểm duyệt, có đánh giá từ người mua thực
+            <div className="rounded-xl border border-border bg-muted/40 p-4">
+              <Star className="mb-2.5 h-5 w-5 text-[var(--status-star)]" />
+              <h3 className="text-sm font-semibold text-foreground">
+                Chất lượng kiểm chứng
+              </h3>
+              <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                Đánh giá minh bạch từ người mua thực tế giúp bạn chọn tài liệu
+                chuẩn.
               </p>
             </div>
           </div>

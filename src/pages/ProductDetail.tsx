@@ -1,32 +1,58 @@
-import { useState, useEffect } from "react";
-import { useParams, useNavigate, Link } from "@/lib/router-compat";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Star, Download, Eye, ArrowLeft, Share2, ShoppingCart, BookOpen, Pencil, Edit3 } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
-import { useAuth } from "@/contexts/AuthContext";
+import { useEffect, useState } from "react";
+import {
+  BookOpen,
+  CheckCircle2,
+  Download,
+  Eye,
+  FileText,
+  Pencil,
+  ShoppingCart,
+  Star,
+  Store,
+  Sun,
+  Type,
+  X,
+} from "lucide-react";
+import DOMPurify from "dompurify";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { RelatedProducts } from "@/components/RelatedProducts";
 import { RecommendedProducts } from "@/components/RecommendedProducts";
-import { ProductReviews } from "@/components/ProductReviews";
+import { ProductReviews, type ProductReview } from "@/components/ProductReviews";
 import EditProductForm from "@/components/EditProductForm";
-import { useCart } from "@/hooks/useCart";
 import { Breadcrumb } from "@/components/Breadcrumb";
-import { fixVietnameseEncoding } from "@/lib/vietnameseText";
 import { ProductFAQ } from "@/components/ProductFAQ";
 import { RelatedCategories } from "@/components/RelatedCategories";
 import { FreeDownloadButton } from "@/components/FreeDownloadButton";
+import { WishlistButton } from "@/components/WishlistButton";
+import { FollowButton } from "@/components/FollowButton";
+import { ShareButtons } from "@/components/ShareButtons";
+import { VerifiedBadge } from "@/components/VerifiedBadge";
+import { ErrorState } from "@/components/States";
+import { TableOfContents } from "@/components/TableOfContents";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { useAuth } from "@/contexts/AuthContext";
+import { useCart } from "@/hooks/useCart";
+import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { Link, useNavigate, useParams } from "@/lib/router-compat";
+import {
+  getGoogleDrivePreviewUrl,
+  getProductDownloadUrl,
+  isFreeProduct,
+} from "@/lib/productAccess";
+import { sanitizeImageArray, sanitizeImageUrl } from "@/lib/productImages";
+import {
+  SHORT_LANG_LABELS,
+  formatMoneyVnd,
+  inferProductLanguage,
+} from "@/lib/productQuery";
+import { getSellerSlug } from "@/lib/sellerUtils";
+import { fixVietnameseEncoding } from "@/lib/vietnameseText";
 
-import { TableOfContents, injectHeadingIds } from "@/components/TableOfContents";
-import { getProductDownloadUrl, isFreeProduct, getGoogleDrivePreviewUrl } from "@/lib/productAccess";
-import { generateSku, safeIsoDate } from "@/lib/skuUtils";
-import { resolveAllProductImages, resolveProductImage, sanitizeImageUrl, sanitizeImageArray } from "@/lib/productImages";
-import DOMPurify from "dompurify";
-
-// Sanitize seller-provided HTML. Allow common rich-text + trusted iframes only.
 // Sanitize seller-provided HTML. Allow common rich-text + trusted iframes only.
 const sanitizeProductHtml = (html: string) => {
   if (!html) return "";
@@ -37,12 +63,12 @@ const sanitizeProductHtml = (html: string) => {
       .replace(/on\w+="[^"]*"/gi, "")
       .replace(/on\w+='[^']*'/gi, "");
   }
-  // Restrict iframes to trusted embed domains (YouTube, Google Drive/Docs, Vimeo).
   DOMPurify.removeAllHooks();
   DOMPurify.addHook("uponSanitizeElement", (node, data) => {
     if (data.tagName === "iframe") {
       const src = (node as HTMLIFrameElement).getAttribute("src") || "";
-      const allowed = /^https:\/\/(www\.)?(youtube\.com|youtube-nocookie\.com|youtu\.be|drive\.google\.com|docs\.google\.com|player\.vimeo\.com)\//i;
+      const allowed =
+        /^https:\/\/(www\.)?(youtube\.com|youtube-nocookie\.com|youtu\.be|drive\.google\.com|docs\.google\.com|player\.vimeo\.com)\//i;
       if (!allowed.test(src)) {
         node.parentNode?.removeChild(node);
       }
@@ -50,13 +76,38 @@ const sanitizeProductHtml = (html: string) => {
   });
   return DOMPurify.sanitize(html, {
     ADD_TAGS: ["iframe"],
-    ADD_ATTR: ["allow", "allowfullscreen", "frameborder", "scrolling", "target", "id", "class"],
-    FORBID_TAGS: ["script", "style", "object", "embed", "form", "input", "button"],
-    FORBID_ATTR: ["onerror", "onload", "onclick", "onmouseover", "onfocus", "onblur", "onchange", "onsubmit"],
+    ADD_ATTR: [
+      "allow",
+      "allowfullscreen",
+      "frameborder",
+      "scrolling",
+      "target",
+      "id",
+      "class",
+    ],
+    FORBID_TAGS: [
+      "script",
+      "style",
+      "object",
+      "embed",
+      "form",
+      "input",
+      "button",
+    ],
+    FORBID_ATTR: [
+      "onerror",
+      "onload",
+      "onclick",
+      "onmouseover",
+      "onfocus",
+      "onblur",
+      "onchange",
+      "onsubmit",
+    ],
   });
 };
 
-interface ProductDetail {
+interface ProductDetailData {
   id: string;
   slug: string;
   title: string;
@@ -72,6 +123,7 @@ interface ProductDetail {
   rating_count: number;
   file_size: string;
   file_format: string;
+  language?: string | null;
   tags: string[];
   seller_id: string;
   category_id: string;
@@ -83,42 +135,56 @@ interface ProductDetail {
   created_at: string;
   updated_at: string;
   status: string;
-  profiles: {
-    full_name: string;
-    avatar_url: string;
-  };
-  categories: {
+  profiles?: {
+    user_id?: string | null;
+    full_name: string | null;
+    avatar_url: string | null;
+    is_verified?: boolean | null;
+  } | null;
+  categories?: {
+    id?: string;
     name: string;
     slug: string;
-  };
-}
-
-interface Review {
-  id: string;
-  rating: number;
-  comment: string | null;
-  created_at: string;
-  profiles: {
-    full_name: string | null;
   } | null;
 }
 
-export default function ProductDetail({ initialProduct }: { initialProduct?: ProductDetail | any }) {
+export default function ProductDetail({
+  initialProduct,
+}: {
+  initialProduct?: ProductDetailData | any;
+}) {
   const { slug } = useParams();
   const navigate = useNavigate();
-  const { user } = useAuth();
-  const [product, setProduct] = useState<ProductDetail | null>(initialProduct || null);
-  const [reviews, setReviews] = useState<Review[]>(initialProduct?.reviews || []);
+  const { user, loading: authLoading } = useAuth();
+  const [product, setProduct] = useState<ProductDetailData | null>(
+    initialProduct || null
+  );
+  const [reviews, setReviews] = useState<ProductReview[]>(
+    initialProduct?.reviews || []
+  );
   const [loading, setLoading] = useState(!initialProduct);
   const [isEditing, setIsEditing] = useState(false);
+
+  // Reading mode controls
+  const [readingMode, setReadingMode] = useState(false);
+  const [readingPaper, setReadingPaper] = useState<"white" | "sepia">("white");
+  const [readingFontSize, setReadingFontSize] = useState<"sm" | "base" | "lg">(
+    "base"
+  );
+
+  // Seller aggregated stats for the sticky seller block
+  const [sellerStats, setSellerStats] = useState<{
+    productsCount: number;
+    avgRating: number;
+  } | null>(null);
+
   const { toast } = useToast();
   const { addToCart } = useCart();
 
   const isOwner = Boolean(
-    user && product && (
-      user.id === product.seller_id ||
-      (user as any).role === 'admin'
-    )
+    user &&
+      product &&
+      (user.id === product.seller_id || (user as any).role === "admin")
   );
 
   useEffect(() => {
@@ -127,6 +193,7 @@ export default function ProductDetail({ initialProduct }: { initialProduct?: Pro
     } else if (!initialProduct) {
       setLoading(false);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [slug]);
 
   const fetchProduct = async () => {
@@ -136,32 +203,34 @@ export default function ProductDetail({ initialProduct }: { initialProduct?: Pro
     }
 
     try {
-      const cleanSlug = decodeURIComponent(slug).trim().replace(/\/$/, '');
-      const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(cleanSlug);
+      const cleanSlug = decodeURIComponent(slug).trim().replace(/\/$/, "");
+      const isUuid =
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+          cleanSlug
+        );
 
-      let query = supabase
-        .from('products')
-        .select(`
+      let query = supabase.from("products").select(`
           *,
-          profiles!products_seller_id_fkey(full_name, avatar_url),
-          categories(name, slug)
+          profiles!products_seller_id_fkey(user_id, full_name, avatar_url, is_verified),
+          categories(id, name, slug)
         `);
 
       if (isUuid) {
         query = query.or(`id.eq.${cleanSlug},slug.eq."${cleanSlug}"`);
       } else {
-        query = query.eq('slug', cleanSlug);
+        query = query.eq("slug", cleanSlug);
       }
 
       let { data, error } = await query.maybeSingle();
 
-      // If relation query returned nothing or had an error, try resilient fallback query
       if (!data) {
-        let fallbackQuery = supabase.from('products').select('*');
+        let fallbackQuery = supabase.from("products").select("*");
         if (isUuid) {
-          fallbackQuery = fallbackQuery.or(`id.eq.${cleanSlug},slug.eq."${cleanSlug}"`);
+          fallbackQuery = fallbackQuery.or(
+            `id.eq.${cleanSlug},slug.eq."${cleanSlug}"`
+          );
         } else {
-          fallbackQuery = fallbackQuery.eq('slug', cleanSlug);
+          fallbackQuery = fallbackQuery.eq("slug", cleanSlug);
         }
         const fallbackRes = await fallbackQuery.maybeSingle();
         if (fallbackRes.data) {
@@ -171,7 +240,7 @@ export default function ProductDetail({ initialProduct }: { initialProduct?: Pro
       }
 
       if (error) {
-        console.error('Error fetching product from Supabase:', error);
+        console.error("Error fetching product from Supabase:", error);
       }
 
       if (!data) {
@@ -183,160 +252,158 @@ export default function ProductDetail({ initialProduct }: { initialProduct?: Pro
       setProduct({
         ...(data as any),
         title: fixVietnameseEncoding((data as any)?.title),
-        short_description: fixVietnameseEncoding((data as any)?.short_description),
-      } as any);
+        short_description: fixVietnameseEncoding(
+          (data as any)?.short_description
+        ),
+        thumbnail_url: sanitizeImageUrl((data as any)?.thumbnail_url),
+        images: sanitizeImageArray((data as any)?.images),
+      } as ProductDetailData);
 
-      // Fetch reviews for structured data
       if (data?.id) {
-        try {
-          const { data: reviewsData } = await supabase
-            .from('reviews')
-            .select(`
+        supabase
+          .from("reviews")
+          .select(
+            `
               id,
               rating,
               comment,
+              is_verified_purchase,
               created_at,
-              profiles:buyer_id(full_name)
-            `)
-            .eq('product_id', data.id)
-            .eq('is_approved', true)
-            .order('created_at', { ascending: false })
-            .limit(10);
+              profiles:buyer_id(full_name, avatar_url)
+            `
+          )
+          .eq("product_id", data.id)
+          .eq("is_approved", true)
+          .order("created_at", { ascending: false })
+          .limit(10)
+          .then(
+            ({ data: reviewsData }) => {
+              if (reviewsData) {
+                setReviews(reviewsData as unknown as ProductReview[]);
+              }
+            },
+            () => {}
+          );
 
-          if (reviewsData) {
-            setReviews(reviewsData as Review[]);
-          }
-        } catch (revErr) {
-          console.warn('Reviews fetch skipped or failed:', revErr);
-        }
-
-        // Increment view count (non-blocking)
+        // Non-blocking view increment
         supabase
-          .from('products')
+          .from("products")
           .update({ view_count: ((data as any).view_count || 0) + 1 })
-          .eq('id', data.id)
-          .then(() => {})
-          .catch(() => {});
+          .eq("id", data.id)
+          .then(
+            () => {},
+            () => {}
+          );
       }
     } catch (error) {
-      console.error('Error fetching product:', error);
-      // Gracefully show not found UI instead of redirect loop
+      console.error("Error fetching product:", error);
       setProduct(null);
     } finally {
       setLoading(false);
     }
   };
 
-
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('vi-VN', {
-      style: 'currency',
-      currency: 'VND'
-    }).format(price);
-  };
-
-  const renderStars = (rating: number) => {
-    const stars = [];
-    for (let i = 0; i < 5; i++) {
-      stars.push(
-        <Star
-          key={i}
-          className={`h-5 w-5 ${
-            i < Math.floor(rating)
-              ? 'fill-yellow-400 text-yellow-400'
-              : 'text-gray-300'
-          }`}
-        />
+  // Load seller's aggregate stats for the seller sidebar card
+  useEffect(() => {
+    if (!product?.seller_id) return;
+    let cancelled = false;
+    supabase
+      .from("products")
+      .select("rating_average, rating_count")
+      .eq("seller_id", product.seller_id)
+      .eq("status", "active")
+      .then(
+        ({ data }) => {
+          if (cancelled || !data) return;
+          let wSum = 0;
+          let rTotal = 0;
+          for (const row of data) {
+            const rc = Number(row.rating_count) || 0;
+            const ra = Number(row.rating_average) || 0;
+            if (rc > 0 && ra > 0) {
+              wSum += rc * ra;
+              rTotal += rc;
+            }
+          }
+          setSellerStats({
+            productsCount: data.length,
+            avgRating: rTotal > 0 ? wSum / rTotal : 0,
+          });
+        },
+        () => {}
       );
-    }
-    return stars;
-  };
-
-  const getGoogleDrivePreviewUrl = (driveUrl: string) => {
-    // Convert Google Drive view URL to preview URL for embedding
-    const fileIdMatch = driveUrl.match(/\/file\/d\/([a-zA-Z0-9-_]+)/);
-    if (fileIdMatch) {
-      return `https://drive.google.com/file/d/${fileIdMatch[1]}/preview`;
-    }
-    return driveUrl;
-  };
+    return () => {
+      cancelled = true;
+    };
+  }, [product?.seller_id]);
 
   const handleBuyNow = () => {
     if (product) {
       addToCart(product.id);
-      navigate('/cart');
+      navigate("/cart");
     }
   };
 
-  const handleShare = async () => {
-    const url = window.location.href;
-    
-    // Try using Web Share API first (mobile friendly)
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: product?.title ?? '',
-          text: product?.short_description || product?.description || '',
-          url: url,
-        });
-        toast({
-          title: "Thành công",
-          description: "Đã chia sẻ sản phẩm",
-        });
-      } catch (error) {
-        // User cancelled or error occurred
-        console.log('Share cancelled or error:', error);
-      }
-    } else {
-      // Fallback to copying link
-      try {
-        await navigator.clipboard.writeText(url);
-        toast({
-          title: "Đã sao chép",
-          description: "Link sản phẩm đã được sao chép vào clipboard",
-        });
-      } catch (error) {
-        toast({
-          title: "Lỗi",
-          description: "Không thể sao chép link",
-          variant: "destructive",
-        });
-      }
-    }
+  const cycleFontSize = (dir: "down" | "up") => {
+    const order: Array<"sm" | "base" | "lg"> = ["sm", "base", "lg"];
+    const idx = order.indexOf(readingFontSize);
+    const nextIdx =
+      dir === "up"
+        ? Math.min(order.length - 1, idx + 1)
+        : Math.max(0, idx - 1);
+    setReadingFontSize(order[nextIdx] || "base");
   };
 
   if (loading) {
     return (
-      <div className="min-h-screen">
+      <div className="min-h-screen bg-background">
         <Header />
-        <div className="container mx-auto px-4 py-8">
-          <div className="animate-pulse">
-            <div className="h-8 bg-gray-200 rounded mb-4 w-1/3"></div>
-            <div className="grid lg:grid-cols-2 gap-8">
-              <div className="h-96 bg-gray-200 rounded"></div>
-              <div className="space-y-4">
-                <div className="h-8 bg-gray-200 rounded"></div>
-                <div className="h-4 bg-gray-200 rounded"></div>
-                <div className="h-20 bg-gray-200 rounded"></div>
-              </div>
+        <main className="mx-auto max-w-[1280px] px-4 py-8 sm:px-6 lg:px-8 space-y-6">
+          <div className="h-5 w-64 animate-pulse rounded bg-muted" />
+          <div className="grid gap-6 lg:grid-cols-12">
+            <div className="lg:col-span-8 space-y-4">
+              <div className="h-32 animate-pulse rounded-2xl bg-muted" />
+              <div className="h-[460px] animate-pulse rounded-2xl bg-muted" />
+            </div>
+            <div className="lg:col-span-4 space-y-4">
+              <div className="h-80 animate-pulse rounded-2xl bg-muted" />
+              <div className="h-48 animate-pulse rounded-2xl bg-muted" />
             </div>
           </div>
-        </div>
+        </main>
         <Footer />
       </div>
     );
   }
 
-  if (!product) {
+  const isUnavailable =
+    !product ||
+    product.status === "deleted" ||
+    (!authLoading &&
+      !isOwner &&
+      Boolean(product.status) &&
+      product.status !== "active");
+
+  if (isUnavailable || !product) {
     return (
-      <div className="min-h-screen">
+      <div className="min-h-screen bg-background">
         <Header />
-        <div className="container mx-auto px-4 py-8 text-center">
-          <h1 className="text-2xl font-bold mb-4">Không tìm thấy sản phẩm</h1>
-          <Button onClick={() => navigate('/')}>
-            Quay về trang chủ
-          </Button>
-        </div>
+        <main className="mx-auto max-w-[1280px] px-4 py-12 sm:px-6 lg:px-8">
+          <ErrorState
+            title="Sản phẩm này hiện không có sẵn"
+            description="Tài liệu này có thể đã bị người bán gỡ bỏ, tạm ẩn hoặc đường dẫn không tồn tại."
+            action={
+              <div className="flex flex-wrap justify-center gap-2">
+                <Button asChild>
+                  <Link to="/search">Tìm tài liệu khác</Link>
+                </Button>
+                <Button variant="outline" asChild>
+                  <Link to="/">Về trang chủ</Link>
+                </Button>
+              </div>
+            }
+          />
+        </main>
         <Footer />
       </div>
     );
@@ -345,422 +412,756 @@ export default function ProductDetail({ initialProduct }: { initialProduct?: Pro
   const siteUrl = "https://salemylink.com";
   const currentPath = `/san-pham/${product.slug}`;
   const productUrl = `${siteUrl}${currentPath}`;
-  
-  // SEO title & description
-  const cleanText = (s?: string | null) =>
-    (s || '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
-  const customTitle = cleanText(product.meta_title);
-  const formattedPrice =
-    Number(product.price) === 0
-      ? "Miễn phí"
-      : new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(product.price);
-
-  const metaTitle =
-    customTitle && customTitle.length >= 15
-      ? (customTitle.includes("Salemylink") ? customTitle : `${customTitle} | Salemylink`)
-      : `${product.title} - ${formattedPrice} | Salemylink`;
-
-  const categoryName = product.categories?.name || 'Sản phẩm digital';
-  const customDesc = cleanText(product.meta_description);
-  const shortDesc = cleanText(product.short_description);
-  const bodyDesc = cleanText(product.description);
-  const baseDesc =
-    (customDesc.length >= 30 && customDesc) ||
-    (shortDesc.length >= 30 && shortDesc) ||
-    (bodyDesc.length >= 50 && `${bodyDesc.substring(0, 140)}...`) ||
-    '';
-  const metaDescription = baseDesc
-    ? `${baseDesc} — Tải ngay tại Salemylink.`
-    : `${product.title} (${categoryName})${product.file_format ? ` định dạng ${product.file_format}` : ''}. Giao dịch an toàn, tải xuống ngay sau khi thanh toán qua Google Drive trên Salemylink.`;
-
-  const cleanThumb = sanitizeImageUrl(product.thumbnail_url);
-  const cleanImages = sanitizeImageArray(product.images);
-  const productImages = resolveAllProductImages({
-    thumbnail_url: cleanThumb,
-    images: cleanImages,
-    google_drive_link: product.google_drive_link,
-  });
-  const mainImage = productImages[0] || `${siteUrl}/og-image.png`;
-  const hasRealImages = !mainImage.endsWith('/og-image.png');
-
-  const rawDesc = cleanText(product.description) || cleanText(product.short_description) || metaDescription;
-  const productDescription = rawDesc.length >= 10 ? rawDesc : `${product.title} - ${categoryName}. Tải xuống ngay sau khi thanh toán tại Salemylink.`;
-
-  const defaultValidFrom = safeIsoDate(Date.now() - 30 * 24 * 60 * 60 * 1000);
-  const validFrom = safeIsoDate(product.created_at, defaultValidFrom);
-  const priceValidUntil = safeIsoDate(Date.now() + 365 * 24 * 60 * 60 * 1000);
-  const datePublished = safeIsoDate(product.created_at, validFrom);
-  const dateModified = safeIsoDate(product.updated_at || product.created_at, datePublished);
   const isFree = isFreeProduct(product.price);
-  const freeDownloadUrl = getProductDownloadUrl(product.google_drive_link, product.download_only_link);
-  const productSku = generateSku(product.id, product.slug);
+  const freeDownloadUrl = getProductDownloadUrl(
+    product.google_drive_link,
+    product.download_only_link
+  );
+  const discount =
+    product.original_price && product.original_price > product.price
+      ? Math.round(
+          ((product.original_price - product.price) / product.original_price) *
+            100
+        )
+      : 0;
 
-  // SEO keywords: product-specific + long-tail
-  const seoKeywords = [
-    product.title,
-    `${product.title} tải xuống`,
-    `mua ${product.title}`,
-    product.categories?.name,
-    ...(product.tags || []),
-    product.file_format ? `tài liệu ${product.file_format}` : null,
-    "sản phẩm digital",
-    "tải xuống nhanh",
-    "salemylink",
-  ].filter(Boolean).join(", ");
+  const langCode = inferProductLanguage(product);
+  const langLabel = SHORT_LANG_LABELS[langCode] || "Tiếng Việt";
+  const sellerName = fixVietnameseEncoding(
+    product.profiles?.full_name || "Người bán"
+  );
+  const sellerSlug = getSellerSlug({
+    full_name: sellerName,
+    user_id: product.profiles?.user_id || product.seller_id,
+  });
+  const sellerHref = `/nguoi-ban/${sellerSlug}`;
+
+  const proseSizeClass =
+    readingFontSize === "sm"
+      ? "prose-sm"
+      : readingFontSize === "lg"
+        ? "prose-lg"
+        : "prose-base";
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-background">
       <Header />
-      
-      <main className="container mx-auto px-4 py-8">
+
+      {/* Sticky Reading Mode Utility Bar when Reading Mode is active */}
+      {readingMode && (
+        <div className="sticky top-16 z-30 border-b border-border bg-surface">
+          <div className="mx-auto flex max-w-[1280px] flex-wrap items-center justify-between gap-2 px-4 py-2.5 sm:px-6 lg:px-8">
+            <div className="flex items-center gap-2 min-w-0">
+              <BookOpen className="h-4 w-4 shrink-0 text-primary" />
+              <span className="truncate text-sm font-semibold text-foreground">
+                Chế độ đọc: {product.title}
+              </span>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-1.5">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="min-h-11 sm:h-9 px-2.5 text-xs"
+                onClick={() => cycleFontSize("down")}
+                disabled={readingFontSize === "sm"}
+                aria-label="Giảm cỡ chữ"
+              >
+                <Type className="h-3.5 w-3.5 mr-1" />
+                A-
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="min-h-11 sm:h-9 px-2.5 text-xs"
+                onClick={() => cycleFontSize("up")}
+                disabled={readingFontSize === "lg"}
+                aria-label="Tăng cỡ chữ"
+              >
+                <Type className="h-3.5 w-3.5 mr-1" />
+                A+
+              </Button>
+              <Button
+                type="button"
+                variant={readingPaper === "sepia" ? "default" : "outline"}
+                size="sm"
+                className="min-h-11 sm:h-9 px-2.5 text-xs gap-1"
+                onClick={() =>
+                  setReadingPaper((p) => (p === "white" ? "sepia" : "white"))
+                }
+              >
+                <Sun className="h-3.5 w-3.5" />
+                <span>{readingPaper === "sepia" ? "Nền trắng" : "Giấy ngà"}</span>
+              </Button>
+              <Button
+                type="button"
+                variant="secondary"
+                size="sm"
+                className="min-h-11 sm:h-9 px-3 text-xs gap-1"
+                onClick={() => setReadingMode(false)}
+              >
+                <X className="h-3.5 w-3.5" />
+                <span>Thoát</span>
+              </Button>
+              {isFree ? (
+                <FreeDownloadButton
+                  size="sm"
+                  className="min-h-11 sm:h-9 px-3 text-xs"
+                  downloadUrl={freeDownloadUrl}
+                  onMissingUrl={() => {
+                    toast({
+                      title: "Thiếu link tải",
+                      description: "Tài liệu miễn phí này hiện chưa có link tải hợp lệ",
+                      variant: "destructive",
+                    });
+                  }}
+                />
+              ) : (
+                <Button
+                  type="button"
+                  size="sm"
+                  className="min-h-11 sm:h-9 px-3 text-xs"
+                  onClick={handleBuyNow}
+                >
+                  Mua ngay · {formatMoneyVnd(product.price)}
+                </Button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      <main className="mx-auto max-w-[1280px] px-4 py-6 sm:px-6 lg:px-8">
         {/* Seller Owner Banner */}
         {isOwner && (
-          <div className="mb-6 rounded-xl border border-primary/30 bg-primary/5 dark:bg-primary/10 p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-xs">
-            <div className="flex items-start sm:items-center gap-3">
-              <div className="p-2.5 bg-primary/10 text-primary rounded-xl shrink-0">
+          <div className="mb-5 flex flex-col justify-between gap-4 rounded-2xl border border-primary/25 bg-secondary/50 p-4 sm:flex-row sm:items-center sm:p-5">
+            <div className="flex items-start gap-3 sm:items-center">
+              <div className="shrink-0 rounded-xl bg-primary/10 p-2.5 text-primary">
                 <Pencil className="h-5 w-5" />
               </div>
               <div>
-                <div className="flex items-center gap-2 flex-wrap">
-                  <span className="font-bold text-sm sm:text-base text-foreground">Bạn là người bán sản phẩm này</span>
-                  <Badge variant={product.status === 'active' ? 'default' : 'secondary'} className="text-xs">
-                    {product.status === 'active' ? 'Đang mở bán' : 'Bản nháp'}
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="text-sm font-bold text-foreground sm:text-base">
+                    Bạn là người bán tài liệu này
+                  </span>
+                  <Badge
+                    variant={
+                      product.status === "active" ? "default" : "secondary"
+                    }
+                    className="text-xs"
+                  >
+                    {product.status === "active" ? "Đang mở bán" : "Bản nháp"}
                   </Badge>
                 </div>
-                <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
-                  Bạn có thể chỉnh sửa mô tả chuẩn SEO, tiêu đề H1-H4, giá bán, hình ảnh và tệp tải xuống bất cứ lúc nào.
+                <p className="mt-0.5 text-xs text-muted-foreground sm:text-sm">
+                  Cập nhật mô tả, tiêu đề SEO, giá bán và link Google Drive bất cứ
+                  lúc nào.
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-2.5 shrink-0 self-end sm:self-center">
+            <div className="flex shrink-0 items-center gap-2 self-end sm:self-center">
               <Button
                 size="sm"
                 onClick={() => setIsEditing(true)}
-                className="gap-1.5 font-semibold shadow-sm"
+                className="gap-1.5"
               >
                 <Pencil className="h-4 w-4" />
-                Chỉnh sửa sản phẩm
+                <span>Chỉnh sửa</span>
               </Button>
-              <Button
-                size="sm"
-                variant="outline"
-                asChild
-              >
-                <Link to="/seller-dashboard">
-                  Quản lý kho
-                </Link>
+              <Button size="sm" variant="outline" asChild>
+                <Link to="/seller-dashboard">Quản lý kho</Link>
               </Button>
             </div>
           </div>
         )}
 
-        <Breadcrumb 
+        {/* Breadcrumb */}
+        <Breadcrumb
           items={[
-            { 
-              label: product.categories?.name || 'Danh mục', 
-              href: product.categories?.slug ? `/danh-muc/${product.categories.slug}` : undefined 
-            },
-            { label: product.title }
+            ...(product.categories?.slug
+              ? [
+                  {
+                    label: product.categories.name,
+                    href: `/danh-muc/${product.categories.slug}`,
+                  },
+                ]
+              : product.categories?.name
+                ? [{ label: product.categories.name }]
+                : []),
+            { label: product.title },
           ]}
         />
 
-        <div className="grid lg:grid-cols-2 gap-8">
-          {/* Product Preview */}
-          <div className="space-y-4">
-            {/* Preview Header */}
-            <div className="flex border-b">
-              <div className="px-4 py-2 font-medium border-b-2 border-primary text-primary">
-                Xem trước
-              </div>
-            </div>
-
-            {/* Preview Content */}
-            <div className="rounded-lg overflow-hidden relative border bg-muted" style={{ height: '70vh', maxHeight: '600px' }}>
-              {product.download_only_link ? (
-                // Download-only file (EXE, video, images) - show thumbnail with download info
-                <div className="w-full h-full flex flex-col items-center justify-center p-8 text-center">
-                  <img
-                    src={product.thumbnail_url || "/placeholder.svg"}
-                    alt={`${product.title} - ${product.categories?.name}`}
-                    className="max-w-full max-h-48 object-contain rounded-lg mb-6"
-                    loading="lazy"
-                  />
-                  <div className="space-y-4">
-                    <div className="text-muted-foreground">
-                      <p className="font-medium text-lg">File không thể xem trước</p>
-                      <p className="text-sm">Định dạng: {product.file_format || 'EXE/Video/Image'}</p>
-                      {product.file_size && <p className="text-sm">Dung lượng: {product.file_size}</p>}
-                    </div>
-                      <p className="text-sm text-muted-foreground">
-                        {isFree ? 'Tải miễn phí ngay để nhận tài liệu' : 'Mua sản phẩm để nhận link tải xuống trực tiếp'}
-                      </p>
-                  </div>
-                </div>
-              ) : product.google_drive_link ? (
-                // Google Drive Preview - allows scrolling inside iframe
-                <iframe
-                  src={getGoogleDrivePreviewUrl(product.google_drive_link)}
-                  className="w-full h-full"
-                  frameBorder="0"
-                  title={`Xem trước ${product.title}`}
-                  sandbox="allow-same-origin allow-scripts"
-                  allowFullScreen
-                />
-              ) : (
-                // Fallback to thumbnail if no preview
-                <img
-                  src={product.thumbnail_url || "/placeholder.svg"}
-                  alt={`${product.title} - ${product.categories?.name} - Sản phẩm digital chất lượng cao trên Salemylink`}
-                  className="w-full h-full object-cover"
-                  loading="lazy"
-                />
-              )}
-            </div>
-
-            {/* Preview Note */}
-            {product.google_drive_link && !product.download_only_link && (
-              <p className="text-sm text-muted-foreground text-center">
-                Đây là bản xem trước tài liệu. Mua sản phẩm để tải về phiên bản đầy đủ.
-              </p>
-            )}
-          </div>
-
-          {/* Product Info (Right Column) */}
-          <div className="space-y-4">
-            {/* Header: Category + File specs + Title + Short Desc */}
-            <header className="space-y-2">
+        {/* Two-column layout: Reader Left (8 cols) + Sticky Purchase/Seller/Related Right (4 cols) */}
+        <div
+          className={
+            readingMode
+              ? "mx-auto max-w-4xl space-y-6"
+              : "grid items-start gap-6 lg:grid-cols-12"
+          }
+        >
+          {/* MAIN READING & CONTENT COLUMN */}
+          <div className={readingMode ? "space-y-6" : "min-w-0 space-y-6 lg:col-span-8"}>
+            {/* Product Header Card */}
+            <header className="rounded-2xl border border-border bg-surface p-5 sm:p-6 space-y-3">
               <div className="flex flex-wrap items-center gap-2">
-                <Badge variant="secondary" className="text-xs font-medium">
-                  {product.categories?.name}
-                </Badge>
+                {product.categories && (
+                  <Link
+                    to={`/danh-muc/${product.categories.slug}`}
+                    className="inline-flex min-h-11 sm:min-h-7 items-center rounded-full bg-secondary px-3 py-1 sm:px-2.5 sm:py-0.5 text-xs font-medium text-secondary-foreground hover:bg-primary hover:text-primary-foreground transition-colors"
+                  >
+                    {product.categories.name}
+                  </Link>
+                )}
                 {product.file_format && (
                   <Badge variant="outline" className="text-xs font-mono uppercase">
                     {product.file_format}
                   </Badge>
                 )}
+                <Badge variant="outline" className="text-xs font-medium">
+                  {langLabel}
+                </Badge>
                 {product.file_size && (
-                  <span className="text-xs text-muted-foreground flex items-center gap-1">
-                    • Dung lượng: {product.file_size}
+                  <span className="text-xs text-muted-foreground">
+                    · {product.file_size}
                   </span>
                 )}
               </div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-foreground leading-snug">
+
+              <h1 className="break-words [overflow-wrap:anywhere] text-2xl font-bold leading-snug tracking-tight text-balance text-foreground sm:text-3xl">
                 {product.title}
               </h1>
+
               {product.short_description && (
-                <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
+                <p className="break-words [overflow-wrap:anywhere] text-sm leading-relaxed text-pretty text-muted-foreground sm:text-base">
                   {product.short_description}
                 </p>
               )}
+
+              {/* Quick Stats Row */}
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-border pt-3 text-xs sm:text-sm text-muted-foreground">
+                <div className="flex items-center gap-1.5">
+                  <div className="flex items-center gap-0.5">
+                    {Array.from({ length: 5 }).map((_, i) => (
+                      <Star
+                        key={i}
+                        className={
+                          i <
+                          Math.round(
+                            product.rating_count > 0
+                              ? product.rating_average || 0
+                              : 0
+                          )
+                            ? "h-4 w-4 fill-[var(--status-star)] text-[var(--status-star)]"
+                            : "h-4 w-4 text-muted-foreground/30"
+                        }
+                      />
+                    ))}
+                  </div>
+                  {product.rating_count > 0 ? (
+                    <span className="font-medium text-foreground tabular-nums">
+                      {(product.rating_average || 5).toFixed(1)} ★{" "}
+                      <span className="font-normal text-muted-foreground">
+                        ({product.rating_count} đánh giá)
+                      </span>
+                    </span>
+                  ) : (
+                    <span>Chưa có đánh giá</span>
+                  )}
+                </div>
+
+                <div className="flex items-center gap-1 tabular-nums">
+                  <Download className="h-4 w-4 text-muted-foreground" />
+                  <span>{product.download_count || 0} lượt tải</span>
+                </div>
+
+                <div className="flex items-center gap-1 tabular-nums">
+                  <Eye className="h-4 w-4 text-muted-foreground" />
+                  <span>{product.view_count || 0} lượt xem</span>
+                </div>
+              </div>
             </header>
 
-            {/* Quick Stats: Rating, Downloads, Views */}
-            <div className="flex flex-wrap items-center gap-4 text-xs sm:text-sm text-muted-foreground py-0.5">
-              <div className="flex items-center">
-                {renderStars(product.rating_average || 0)}
-                <span className="ml-1.5 font-medium text-foreground">
-                  {product.rating_count > 0 ? (product.rating_average || 5).toFixed(1) : "5.0"}
-                </span>
-                <span className="ml-1 text-muted-foreground">
-                  ({product.rating_count || 0})
-                </span>
-              </div>
-              <span className="text-muted-foreground/30">•</span>
-              <div className="flex items-center gap-1">
-                <Download className="h-3.5 w-3.5 text-muted-foreground" />
-                <span>{product.download_count} tải</span>
-              </div>
-              <span className="text-muted-foreground/30">•</span>
-              <div className="flex items-center gap-1">
-                <Eye className="h-3.5 w-3.5 text-muted-foreground" />
-                <span>{product.view_count} xem</span>
-              </div>
-            </div>
+            {/* Mobile Quick Purchase Card (<lg) */}
+            {!readingMode && (
+              <div className="rounded-2xl border border-border bg-surface p-4 space-y-3 lg:hidden">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex flex-wrap items-baseline gap-2">
+                    <span className="text-xl font-bold text-primary tabular-nums">
+                      {isFree ? "Miễn phí" : formatMoneyVnd(product.price)}
+                    </span>
+                    {discount > 0 && product.original_price && (
+                      <>
+                        <span className="text-xs text-muted-foreground line-through tabular-nums">
+                          {formatMoneyVnd(product.original_price)}
+                        </span>
+                        <span className="rounded-full bg-[var(--tint-danger-bg)] px-2 py-0.5 text-xs font-semibold text-[var(--status-danger)] tabular-nums">
+                          -{discount}%
+                        </span>
+                      </>
+                    )}
+                  </div>
+                  <WishlistButton productId={product.id} variant="inline" />
+                </div>
 
-            {/* Main Unified Purchase & Seller Card */}
-            <Card className="border-border/70 shadow-xs overflow-hidden">
-              <CardContent className="p-4 sm:p-5 space-y-4">
-                {/* Price + Seller Row */}
-                <div className="flex items-center justify-between gap-3 border-b pb-3.5">
+                {product.read_only ? (
+                  product.google_drive_link && (
+                    <Button
+                      size="lg"
+                      className="h-12 w-full gap-2 font-semibold"
+                      onClick={() => navigate(`/read/${product.slug}`)}
+                    >
+                      <BookOpen className="h-4 w-4" />
+                      <span>Đọc trực tuyến (Toàn màn hình)</span>
+                    </Button>
+                  )
+                ) : isFree ? (
+                  <FreeDownloadButton
+                    size="lg"
+                    className="h-12 w-full font-semibold"
+                    downloadUrl={freeDownloadUrl}
+                    onMissingUrl={() => {
+                      toast({
+                        title: "Thiếu link tải",
+                        description:
+                          "Tài liệu miễn phí này hiện chưa có link tải hợp lệ",
+                        variant: "destructive",
+                      });
+                    }}
+                  />
+                ) : (
+                  <div className="grid grid-cols-2 gap-2.5">
+                    <Button
+                      size="lg"
+                      variant="outline"
+                      onClick={() => addToCart(product.id)}
+                      className="h-12 gap-1.5 font-medium"
+                    >
+                      <ShoppingCart className="h-4 w-4" />
+                      <span>Thêm giỏ</span>
+                    </Button>
+                    <Button
+                      size="lg"
+                      onClick={handleBuyNow}
+                      className="h-12 font-semibold"
+                    >
+                      Mua ngay
+                    </Button>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Preview & Reading Mode Frame */}
+            <section
+              aria-label="Xem trước tài liệu"
+              className="rounded-2xl border border-border bg-surface p-4 sm:p-5 space-y-3"
+            >
+              <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border pb-3">
+                <div className="flex items-center gap-2">
+                  <FileText className="h-4 w-4 text-primary" />
+                  <span className="text-sm font-semibold text-foreground">
+                    Xem trước tài liệu
+                  </span>
+                </div>
+
+                {/* Inline Reading Mode Controls */}
+                <div className="flex flex-wrap items-center gap-1.5">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="min-h-11 sm:h-9 px-2.5 text-xs"
+                    onClick={() => cycleFontSize("down")}
+                    disabled={readingFontSize === "sm"}
+                    title="Giảm cỡ chữ"
+                  >
+                    A-
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="min-h-11 sm:h-9 px-2.5 text-xs"
+                    onClick={() => cycleFontSize("up")}
+                    disabled={readingFontSize === "lg"}
+                    title="Tăng cỡ chữ"
+                  >
+                    A+
+                  </Button>
+                  <Button
+                    type="button"
+                    variant={readingPaper === "sepia" ? "secondary" : "outline"}
+                    size="sm"
+                    className="min-h-11 sm:h-9 px-2.5 text-xs gap-1"
+                    onClick={() =>
+                      setReadingPaper((p) => (p === "white" ? "sepia" : "white"))
+                    }
+                  >
+                    <Sun className="h-3.5 w-3.5" />
+                    <span>{readingPaper === "sepia" ? "Nền trắng" : "Giấy ngà"}</span>
+                  </Button>
+                  <Button
+                    type="button"
+                    variant={readingMode ? "default" : "outline"}
+                    size="sm"
+                    className="min-h-11 sm:h-9 px-3 text-xs gap-1.5"
+                    onClick={() => setReadingMode((r) => !r)}
+                  >
+                    <BookOpen className="h-3.5 w-3.5" />
+                    <span>
+                      {readingMode ? "Thoát chế độ đọc" : "Chế độ đọc"}
+                    </span>
+                  </Button>
+                </div>
+              </div>
+
+              <div className="relative h-[420px] sm:h-[520px] w-full overflow-hidden rounded-xl border border-border bg-muted">
+                {product.download_only_link ? (
+                  <div className="flex h-full w-full flex-col items-center justify-center p-6 text-center">
+                    {product.thumbnail_url && (
+                      <img
+                        src={product.thumbnail_url}
+                        alt={`${product.title} - ${product.categories?.name || ""}`}
+                        className="mb-5 max-h-48 max-w-full rounded-lg object-contain"
+                        loading="lazy"
+                      />
+                    )}
+                    <p className="text-base font-semibold text-foreground">
+                      Tài liệu đóng gói để tải trực tiếp
+                    </p>
+                    <p className="mt-1 text-sm text-muted-foreground">
+                      Định dạng: {product.file_format || "ZIP/File"}
+                      {product.file_size ? ` · ${product.file_size}` : ""}
+                    </p>
+                    <p className="mt-2 text-xs text-muted-foreground">
+                      {isFree
+                        ? "Nhấn tải miễn phí bên dưới hoặc ở thanh công cụ để nhận link Google Drive."
+                        : "Mua sản phẩm để nhận link tải xuống ngay lập tức."}
+                    </p>
+                  </div>
+                ) : product.google_drive_link ? (
+                  <iframe
+                    src={
+                      getGoogleDrivePreviewUrl(product.google_drive_link) ||
+                      undefined
+                    }
+                    className="h-full w-full"
+                    frameBorder="0"
+                    title={`Xem trước ${product.title}`}
+                    sandbox="allow-same-origin allow-scripts"
+                    allowFullScreen
+                  />
+                ) : product.thumbnail_url ? (
+                  <img
+                    src={product.thumbnail_url}
+                    alt={product.title}
+                    className="h-full w-full object-contain bg-surface"
+                    loading="lazy"
+                  />
+                ) : (
+                  <div className="flex h-full w-full flex-col items-center justify-center p-6 text-center text-muted-foreground">
+                    <FileText className="mb-2 h-10 w-10 opacity-40" />
+                    <p className="text-sm font-medium">
+                      Chưa có bản xem trước cho tài liệu này
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              {product.google_drive_link && !product.download_only_link && (
+                <p className="text-center text-xs text-muted-foreground">
+                  Đây là bản xem trước trực tuyến qua Google Drive. Mua sản phẩm để
+                  mở khóa bản đầy đủ và tải về máy.
+                </p>
+              )}
+            </section>
+
+            {/* Detailed Description + Table Of Contents (respects Reading Mode Paper & Size) */}
+            <article
+              className={`rounded-2xl border p-5 sm:p-7 transition-colors ${
+                readingPaper === "sepia"
+                  ? "border-[#e6dcc4] bg-[#fbf6ea] text-[#3a2f1d]"
+                  : "border-border bg-surface text-foreground"
+              }`}
+            >
+              <div className={readingMode ? "mx-auto max-w-[65ch]" : "max-w-[72ch]"}>
+                <div className="mb-4 flex flex-wrap items-center justify-between gap-2 border-b border-current/10 pb-3">
+                  <h2 className="text-lg font-bold tracking-tight sm:text-xl">
+                    Nội dung chi tiết tài liệu
+                  </h2>
+                  {product.read_only && product.google_drive_link && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => navigate(`/read/${product.slug}`)}
+                      className="h-9 gap-1.5 text-xs"
+                    >
+                      <BookOpen className="h-3.5 w-3.5" />
+                      <span>Mở toàn màn hình</span>
+                    </Button>
+                  )}
+                </div>
+
+                <TableOfContents htmlContent={product.description || ""} />
+
+                {product.description ? (
+                  <div
+                    className={`prose ${proseSizeClass} max-w-none break-words [overflow-wrap:anywhere] prose-headings:font-bold prose-headings:scroll-mt-24 prose-a:text-primary prose-img:rounded-xl prose-img:mx-auto ${
+                      readingPaper === "sepia"
+                        ? "text-[#3a2f1d] prose-headings:text-[#2a2112]"
+                        : ""
+                    }`}
+                    dangerouslySetInnerHTML={{
+                      __html: sanitizeProductHtml(product.description || ""),
+                    }}
+                  />
+                ) : (
+                  <p className="text-sm text-muted-foreground">
+                    Người bán chưa bổ sung mô tả chi tiết cho tài liệu này.
+                  </p>
+                )}
+              </div>
+            </article>
+
+            {/* Product FAQ */}
+            <Card className="rounded-2xl border-border bg-surface">
+              <CardContent className="p-5 sm:p-6">
+                <ProductFAQ
+                  productName={product.title}
+                  category={product.categories?.name || "Digital"}
+                  fileFormat={product.file_format}
+                />
+              </CardContent>
+            </Card>
+
+            {/* Product Reviews */}
+            <ProductReviews productId={product.id} initialReviews={reviews} />
+          </div>
+
+          {/* STICKY RIGHT SIDEBAR (Purchase + Share + Seller + 3 Related Products) */}
+          {!readingMode && (
+            <aside className="space-y-4 lg:col-span-4 lg:sticky lg:top-20">
+              {/* 1. Purchase (Desktop only, avoids repeating mobile CTA) + Share & Tags Card */}
+              <div className="rounded-2xl border border-border bg-surface p-4 sm:p-5 space-y-4">
+                <div className="hidden lg:block space-y-4">
                   <div>
-                    <span className="text-xs text-muted-foreground block mb-0.5">Giá sản phẩm</span>
-                    <div className="flex items-baseline gap-2 flex-wrap">
-                      <span className="text-2xl sm:text-3xl font-extrabold text-primary tracking-tight">
-                        {isFree ? 'Miễn phí' : formatPrice(product.price)}
+                    <span className="text-xs font-medium text-muted-foreground">
+                      Giá tài liệu
+                    </span>
+                    <div className="mt-1 flex flex-wrap items-baseline gap-2">
+                      <span className="text-2xl font-bold text-primary sm:text-3xl tabular-nums">
+                        {isFree ? "Miễn phí" : formatMoneyVnd(product.price)}
                       </span>
-                      {product.original_price > product.price && (
+                      {discount > 0 && product.original_price && (
                         <>
-                          <span className="text-sm text-muted-foreground line-through">
-                            {formatPrice(product.original_price)}
+                          <span className="text-sm text-muted-foreground line-through tabular-nums">
+                            {formatMoneyVnd(product.original_price)}
                           </span>
-                          <Badge variant="destructive" className="text-[10px] px-1.5 py-0 h-4">
-                            -{Math.round(((product.original_price - product.price) / product.original_price) * 100)}%
-                          </Badge>
+                          <span className="rounded-full bg-[var(--tint-danger-bg)] px-2 py-0.5 text-xs font-semibold text-[var(--status-danger)] tabular-nums">
+                            -{discount}%
+                          </span>
                         </>
                       )}
                     </div>
                   </div>
 
-                  {/* Compact Seller Badge */}
-                  <Link
-                    to={`/nguoi-ban/${product.seller_id}`}
-                    className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-muted/60 hover:bg-muted transition-colors text-xs shrink-0 max-w-[160px]"
-                  >
-                    <img
-                      src={product.profiles?.avatar_url || "/placeholder.svg"}
-                      alt={product.profiles?.full_name || 'Người bán'}
-                      className="w-7 h-7 rounded-full object-cover border"
-                      loading="lazy"
-                    />
-                    <div className="truncate">
-                      <span className="font-medium text-foreground block truncate text-xs">
-                        {product.profiles?.full_name || 'Người bán'}
-                      </span>
-                      <span className="text-[10px] text-primary block leading-none font-medium">Xem shop</span>
-                    </div>
-                  </Link>
-                </div>
-
-                {/* Primary & Secondary Action Buttons */}
-                <div className="space-y-2.5">
-                  {/* Primary CTA */}
-                  {product.read_only ? (
-                    product.google_drive_link && (
-                      <Button
+                  {/* Primary CTAs */}
+                  <div className="space-y-2.5">
+                    {product.read_only ? (
+                      product.google_drive_link && (
+                        <Button
+                          size="lg"
+                          className="h-12 w-full gap-2 font-semibold"
+                          onClick={() => navigate(`/read/${product.slug}`)}
+                        >
+                          <BookOpen className="h-4 w-4" />
+                          <span>Đọc trực tuyến (Toàn màn hình)</span>
+                        </Button>
+                      )
+                    ) : isFree ? (
+                      <FreeDownloadButton
                         size="lg"
-                        className="w-full font-semibold shadow-xs gap-2"
-                        onClick={() => navigate(`/read/${product.slug}`)}
-                      >
-                        <BookOpen className="h-4 w-4" />
-                        Đọc trực tuyến (Full màn hình)
-                      </Button>
-                    )
-                  ) : isFree ? (
-                    <FreeDownloadButton
-                      size="lg"
-                      className="w-full font-semibold shadow-xs"
-                      downloadUrl={freeDownloadUrl}
-                      onMissingUrl={() => {
-                        toast({
-                          title: "Thiếu link tải",
-                          description: "Tài liệu miễn phí này hiện chưa có link tải hợp lệ",
-                          variant: "destructive",
-                        });
-                      }}
-                    />
-                  ) : (
-                    <div className="grid grid-cols-2 gap-2.5">
-                      <Button 
-                        size="lg" 
-                        variant="outline"
-                        onClick={() => addToCart(product.id)}
-                        className="gap-1.5 font-medium"
-                      >
-                        <ShoppingCart className="h-4 w-4" />
-                        Thêm giỏ
-                      </Button>
-                      <Button 
-                        size="lg"
-                        onClick={handleBuyNow}
-                        className="gap-1.5 font-semibold shadow-xs"
-                      >
-                        Mua ngay
-                      </Button>
-                    </div>
-                  )}
+                        className="h-12 w-full font-semibold"
+                        downloadUrl={freeDownloadUrl}
+                        onMissingUrl={() => {
+                          toast({
+                            title: "Thiếu link tải",
+                            description:
+                              "Tài liệu miễn phí này hiện chưa có link tải hợp lệ",
+                            variant: "destructive",
+                          });
+                        }}
+                      />
+                    ) : (
+                      <div className="grid grid-cols-2 gap-2.5">
+                        <Button
+                          size="lg"
+                          variant="outline"
+                          onClick={() => addToCart(product.id)}
+                          className="h-12 gap-1.5 font-medium"
+                        >
+                          <ShoppingCart className="h-4 w-4" />
+                          <span>Thêm giỏ</span>
+                        </Button>
+                        <Button
+                          size="lg"
+                          onClick={handleBuyNow}
+                          className="h-12 gap-1.5 font-semibold"
+                        >
+                          <span>Mua ngay</span>
+                        </Button>
+                      </div>
+                    )}
 
-                  {/* Secondary Utility Buttons Row */}
-                  <div className="flex items-center gap-2">
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      className="flex-1 text-xs gap-1.5 h-9"
-                      onClick={handleShare}
-                    >
-                      <Share2 className="h-3.5 w-3.5" />
-                      Chia sẻ
-                    </Button>
+                    <WishlistButton
+                      productId={product.id}
+                      variant="inline"
+                      showLabel
+                      className="w-full justify-center"
+                    />
 
                     {isOwner && (
                       <Button
                         variant="outline"
                         size="sm"
-                        className="flex-1 text-xs border-primary/40 text-primary hover:bg-primary/10 gap-1.5 h-9 font-medium"
+                        className="h-10 w-full gap-1.5 border-primary/30 text-primary"
                         onClick={() => setIsEditing(true)}
                       >
                         <Pencil className="h-3.5 w-3.5" />
-                        Chỉnh sửa
+                        <span>Chỉnh sửa sản phẩm</span>
                       </Button>
                     )}
                   </div>
+
+                  {/* Instant delivery guarantees */}
+                  <div className="space-y-1.5 rounded-xl bg-muted/50 p-3 text-xs text-pretty text-muted-foreground">
+                    <div className="flex items-center gap-2">
+                      <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-[var(--status-success)]" />
+                      <span>Nhận link Google Drive tức thì sau thanh toán</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-[var(--status-success)]" />
+                      <span>Thanh toán tự động PayOS / VietQR 24/7</span>
+                    </div>
+                  </div>
                 </div>
 
-                {/* Tags Inline */}
+                {/* Social Share Buttons (Zalo / FB / Telegram / Copy) */}
+                <div className="lg:border-t lg:border-border lg:pt-3.5">
+                  <span className="mb-2 block text-xs font-medium text-muted-foreground">
+                    Chia sẻ tài liệu
+                  </span>
+                  <ShareButtons url={productUrl} title={product.title} />
+                </div>
+
+                {/* Tags */}
                 {product.tags && product.tags.length > 0 && (
-                  <div className="pt-2 border-t flex items-center gap-1.5 flex-wrap">
-                    <span className="text-[11px] text-muted-foreground font-medium mr-1">Tags:</span>
-                    {product.tags.map((tag, index) => (
-                      <Link key={index} to={`/tag/${encodeURIComponent(tag)}`}>
-                        <Badge
-                          variant="secondary"
-                          className="text-[11px] font-normal px-2 py-0.5 hover:bg-primary hover:text-primary-foreground transition-colors cursor-pointer"
+                  <div className="border-t border-border pt-3.5">
+                    <span className="mb-2 block text-xs font-medium text-muted-foreground">
+                      Tags liên quan
+                    </span>
+                    <div className="flex flex-wrap gap-1.5">
+                      {product.tags.map((tag, index) => (
+                        <Link
+                          key={index}
+                          to={`/tag/${encodeURIComponent(tag)}`}
+                          className="inline-flex min-h-11 sm:min-h-8 items-center rounded-full border border-border bg-surface px-3 py-1 sm:px-2.5 sm:py-0.5 text-xs text-foreground hover:bg-button-hover hover:text-primary transition-colors"
                         >
-                          {tag}
-                        </Badge>
-                      </Link>
-                    ))}
+                          #{tag}
+                        </Link>
+                      ))}
+                    </div>
                   </div>
                 )}
-              </CardContent>
-            </Card>
+              </div>
 
-          </div>
+              {/* 2. Seller Info + Follow Card */}
+              <div className="rounded-2xl border border-border bg-surface p-4 sm:p-5 space-y-3">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                    <Store className="h-3.5 w-3.5 text-primary" />
+                    <span>Tác giả / Người bán</span>
+                  </span>
+                  <Link
+                    to={sellerHref}
+                    className="inline-flex min-h-11 sm:min-h-8 items-center text-xs font-medium text-primary hover:underline"
+                  >
+                    Xem shop →
+                  </Link>
+                </div>
+
+                <Link
+                  to={sellerHref}
+                  className="group flex min-h-14 items-center gap-3 rounded-xl border border-border bg-surface p-2 hover:bg-button-hover transition-colors"
+                >
+                  <Avatar className="size-11 shrink-0 ring-1 ring-border">
+                    {product.profiles?.avatar_url && (
+                      <AvatarImage
+                        src={product.profiles.avatar_url}
+                        alt={sellerName}
+                        className="object-cover"
+                      />
+                    )}
+                    <AvatarFallback className="text-xs font-semibold">
+                      {sellerName.charAt(0).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-1.5">
+                      <span className="truncate text-sm font-semibold text-foreground group-hover:text-primary transition-colors">
+                        {sellerName}
+                      </span>
+                      <VerifiedBadge
+                        verified={product.profiles?.is_verified}
+                        size="sm"
+                      />
+                    </div>
+                    <p className="mt-0.5 text-xs text-muted-foreground tabular-nums">
+                      {sellerStats
+                        ? `${sellerStats.productsCount} sản phẩm${
+                            sellerStats.avgRating > 0
+                              ? ` · ${sellerStats.avgRating.toFixed(1)} ★`
+                              : ""
+                          }`
+                        : "Xem toàn bộ tài liệu của người bán"}
+                    </p>
+                  </div>
+                </Link>
+
+                {product.seller_id && (
+                  <FollowButton
+                    sellerId={product.seller_id}
+                    showCount
+                    fullWidth
+                  />
+                )}
+              </div>
+
+              {/* 3. Related Products (3 items in sticky right sidebar per Spec 3.3) */}
+              <RelatedProducts
+                variant="sidebar"
+                limit={3}
+                categoryId={product.category_id}
+                currentProductId={product.id}
+                categorySlug={product.categories?.slug}
+              />
+            </aside>
+          )}
         </div>
 
-        {/* Description */}
-        <article className="mt-12">
-          <Card>
-            <CardContent className="p-6">
-              <h2 className="text-2xl font-bold mb-4">Mô tả chi tiết {product.title}</h2>
-              <TableOfContents htmlContent={product.description || ''} />
-              <div 
-                className="prose prose-sm sm:prose-base max-w-none prose-headings:font-bold prose-a:text-primary prose-img:rounded-lg prose-img:mx-auto prose-headings:scroll-mt-20" 
-                dangerouslySetInnerHTML={{ __html: sanitizeProductHtml(injectHeadingIds(product.description || '')) }}
-              />
-            </CardContent>
-          </Card>
-        </article>
-
-        {/* Product FAQ */}
-        <div className="mt-12">
-          <Card>
-            <CardContent className="p-6">
-              <ProductFAQ 
-                productName={product.title}
-                category={product.categories?.name || 'Digital'}
-                fileFormat={product.file_format}
-              />
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Product Reviews */}
-        <ProductReviews productId={product.id} initialReviews={reviews} />
-
-        {/* Related Products */}
-        <RelatedProducts 
-          categoryId={product.category_id} 
-          currentProductId={product.id}
-          categorySlug={product.categories?.slug}
+        {/* Bottom Recommendations ("Sản phẩm bạn có thể thích" — Spec 3.5) */}
+        <RecommendedProducts
+          title="Sản phẩm bạn có thể thích"
+          limit={3}
+          categoryId={product.category_id}
+          excludeIds={[product.id]}
         />
 
-        {/* Personalized recommendations */}
-        <RecommendedProducts excludeIds={[product.id]} />
-
-
-
         {/* Related Categories — internal linking for SEO */}
-        <RelatedCategories 
+        <RelatedCategories
           currentCategoryId={product.category_id}
           title="Khám phá danh mục khác"
         />

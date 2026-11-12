@@ -17,7 +17,7 @@ export const Route = createFileRoute("/san-pham/$slug")({
       let query = supabase
         .from("products")
         .select(
-          "id, slug, title, short_description, description, price, original_price, thumbnail_url, images, google_drive_link, download_only_link, read_only, meta_title, meta_description, rating_average, rating_count, download_count, view_count, file_size, file_format, tags, seller_id, category_id, created_at, updated_at, status, profiles!products_seller_id_fkey(full_name, avatar_url), categories(id, name, slug)"
+          "id, slug, title, short_description, description, price, original_price, thumbnail_url, images, google_drive_link, download_only_link, read_only, meta_title, meta_description, rating_average, rating_count, download_count, view_count, file_size, file_format, tags, seller_id, category_id, created_at, updated_at, status, profiles!products_seller_id_fkey(user_id, full_name, avatar_url, is_verified), categories(id, name, slug)"
         );
 
       let { data } = isUuid

@@ -93,9 +93,9 @@ export function buildHead(input: HeadInput) {
     links.push({ rel: "canonical", href: canonical });
 
     // Hreflang tags for Vietnamese (Primary / Default) and x-default fallback
-    links.push({ rel: "alternate", hreflang: "vi", href: canonical });
-    links.push({ rel: "alternate", hreflang: "vi-VN", href: canonical });
-    links.push({ rel: "alternate", hreflang: "x-default", href: canonical });
+    links.push({ rel: "alternate", hrefLang: "vi", href: canonical });
+    links.push({ rel: "alternate", hrefLang: "vi-VN", href: canonical });
+    links.push({ rel: "alternate", hrefLang: "x-default", href: canonical });
   }
 
   const head: {

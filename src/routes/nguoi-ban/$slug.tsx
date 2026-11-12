@@ -14,11 +14,18 @@ export const Route = createFileRoute("/nguoi-ban/$slug")({
 
       const { data: products } = await supabase
         .from("products")
-        .select("id, title, slug, description, short_description, thumbnail_url, images, google_drive_link, price, original_price, rating_average, rating_count, download_count, created_at, updated_at")
+        .select(`
+          id, title, slug, description, short_description, thumbnail_url, images,
+          google_drive_link, download_only_link, read_only, price, original_price,
+          rating_average, rating_count, download_count, view_count,
+          file_format, file_size, tags, seller_id, created_at, updated_at,
+          profiles!products_seller_id_fkey(user_id, full_name, avatar_url, is_verified),
+          categories(id, name, slug)
+        `)
         .eq("seller_id", seller.user_id)
         .eq("status", "active")
         .order("download_count", { ascending: false })
-        .limit(10);
+        .limit(48);
 
       return {
         seller,

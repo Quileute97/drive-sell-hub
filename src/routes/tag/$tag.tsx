@@ -12,7 +12,7 @@ export const Route = createFileRoute("/tag/$tag")({
       const decoded = decodeURIComponent(params.tag || "");
       const { data } = await supabase
         .from("products")
-        .select(`*, profiles!products_seller_id_fkey(full_name), categories(id, name, slug)`)
+        .select(`*, profiles!products_seller_id_fkey(user_id, full_name, avatar_url, is_verified), categories(id, name, slug)`)
         .eq("status", "active")
         .contains("tags", [decoded])
         .order("download_count", { ascending: false })

@@ -1,314 +1,283 @@
-
-import { useState, useEffect } from "react";
-import { useNavigate, Link } from "@/lib/router-compat";
-import { Card, CardContent, CardFooter } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Star, Download, Eye, ShoppingCart, ArrowRight, BookOpen } from "lucide-react";
+import { useEffect, useState } from "react";
+import { ArrowRight, Flame, Sparkles, Store } from "lucide-react";
+import { Link } from "@/lib/router-compat";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
-import { useCart } from "@/hooks/useCart";
-import { ProductThumbnail } from "@/components/ProductThumbnail";
-import { FreeDownloadButton } from "@/components/FreeDownloadButton";
-import { WishlistButton } from "@/components/WishlistButton";
-import { ProductGridSkeleton } from "@/components/States";
-import { getProductDownloadUrl, isFreeProduct, getGoogleDrivePreviewUrl } from "@/lib/productAccess";
+import { ProductCard, type ProductCardData } from "@/components/ProductCard";
+import { SellerCard, type SellerCardData } from "@/components/SellerCard";
+import { EmptyState, ProductGridSkeleton } from "@/components/States";
+import { sanitizeImageArray, sanitizeImageUrl } from "@/lib/productImages";
 
-interface Product {
-  id: string;
-  slug: string;
-  title: string;
-  description: string;
-  short_description: string;
-  price: number;
-  original_price: number;
-  thumbnail_url: string;
-  google_drive_link: string;
-  download_only_link?: string | null;
-  read_only?: boolean | null;
-  download_count: number;
-  view_count: number;
-  rating_average: number;
-  rating_count: number;
-  seller_id: string;
-  category_id: string;
-  file_format: string;
-  file_size: string;
-  profiles: {
-    full_name: string;
-  };
-  categories: {
-    name: string;
-    slug: string;
-  };
+interface ProductListProps {
+  initialProducts?: ProductCardData[] | undefined;
+  initialHotProducts?: ProductCardData[] | undefined;
+  initialTopSellers?: SellerCardData[] | undefined;
 }
 
-export const ProductList = ({ initialProducts }: { initialProducts?: Product[] }) => {
-  const [products, setProducts] = useState<Product[]>(initialProducts || []);
-  const [loading, setLoading] = useState(!initialProducts);
-  const navigate = useNavigate();
-  const { toast } = useToast();
-  const { addToCart } = useCart();
+const CLIENT_PRODUCT_SELECT = `
+  id, slug, title, short_description, description, price, original_price,
+  thumbnail_url, images, google_drive_link, download_only_link, read_only,
+  download_count, view_count, rating_average, rating_count, seller_id,
+  category_id, file_format, file_size, tags, created_at,
+  profiles!products_seller_id_fkey(user_id, full_name, avatar_url, is_verified),
+  categories(id, name, slug)
+`;
+
+export const ProductList = ({
+  initialProducts,
+  initialHotProducts,
+  initialTopSellers,
+}: ProductListProps) => {
+  const [latestProducts, setLatestProducts] = useState<ProductCardData[]>(
+    initialProducts || []
+  );
+  const [hotProducts, setHotProducts] = useState<ProductCardData[]>(
+    initialHotProducts || []
+  );
+  const [topSellers, setTopSellers] = useState<SellerCardData[]>(
+    initialTopSellers || []
+  );
+  const [loading, setLoading] = useState(
+    !(initialProducts && initialProducts.length > 0)
+  );
 
   useEffect(() => {
-    if (!initialProducts || initialProducts.length === 0) {
-      fetchProducts();
-    }
-  }, []);
-
-  const fetchProducts = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('products')
-        .select(`
-          *,
-          profiles!products_seller_id_fkey(full_name),
-          categories(name, slug)
-        `)
-        .eq('status', 'active')
-        .order('created_at', { ascending: false })
-        .limit(12);
-
-      if (error) throw error;
-      setProducts((data || []) as any);
-    } catch (error) {
-      console.error('Error fetching products:', error);
-      toast({
-        title: "Lỗi",
-        description: "Không thể tải danh sách sản phẩm",
-        variant: "destructive",
-      });
-    } finally {
+    if (
+      initialProducts &&
+      initialProducts.length > 0 &&
+      initialHotProducts &&
+      initialHotProducts.length > 0
+    ) {
+      setLatestProducts(initialProducts);
+      setHotProducts(initialHotProducts);
+      if (initialTopSellers) setTopSellers(initialTopSellers);
       setLoading(false);
+      return;
     }
-  };
 
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('vi-VN', {
-      style: 'currency',
-      currency: 'VND'
-    }).format(price);
-  };
+    let cancelled = false;
+    const fetchDiscovery = async () => {
+      try {
+        const [latestRes, hotRes, sellerMetricsRes] = await Promise.all([
+          supabase
+            .from("products")
+            .select(CLIENT_PRODUCT_SELECT)
+            .eq("status", "active")
+            .order("created_at", { ascending: false })
+            .limit(6),
+          supabase
+            .from("products")
+            .select(CLIENT_PRODUCT_SELECT)
+            .eq("status", "active")
+            .order("download_count", { ascending: false })
+            .limit(6),
+          supabase
+            .from("products")
+            .select(
+              "seller_id, download_count, rating_average, rating_count, profiles!products_seller_id_fkey(user_id, full_name, avatar_url, created_at, is_verified)"
+            )
+            .eq("status", "active")
+            .limit(500),
+        ]);
 
-  const renderStars = (rating: number) => {
-    const stars = [];
-    for (let i = 0; i < 5; i++) {
-      stars.push(
-        <Star
-          key={i}
-          className={`h-4 w-4 ${
-            i < Math.floor(rating)
-              ? 'fill-yellow-400 text-yellow-400'
-              : 'text-gray-300'
-          }`}
-        />
-      );
-    }
-    return stars;
-  };
+        if (cancelled) return;
 
-  const handleMissingFreeDownload = () => {
-    toast({
-      title: "Thiếu link tải",
-      description: "Tài liệu miễn phí này hiện chưa có link tải hợp lệ",
-      variant: "destructive",
-    });
-  };
+        const clean = (rows: any[]) =>
+          rows.map((p) => ({
+            ...p,
+            thumbnail_url: sanitizeImageUrl(p.thumbnail_url),
+            images: sanitizeImageArray(p.images),
+          }));
 
-  if (loading) {
-    return (
-      <section className="py-20">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold mb-4">Đang tải sản phẩm...</h2>
-          </div>
-          <ProductGridSkeleton count={8} />
-        </div>
-      </section>
-    );
-  }
+        setLatestProducts(clean(latestRes.data || []));
+        setHotProducts(clean(hotRes.data || []));
+
+        const sellerMap = new Map<
+          string,
+          {
+            user_id: string;
+            full_name: string | null;
+            avatar_url: string | null;
+            created_at: string | null;
+            is_verified: boolean | null;
+            productsCount: number;
+            weightedSum: number;
+            reviewsCount: number;
+          }
+        >();
+
+        for (const row of sellerMetricsRes.data || []) {
+          const sid = (row as any).seller_id as string | null;
+          if (!sid) continue;
+          const prof = (row as any).profiles;
+          const item = sellerMap.get(sid) || {
+            user_id: sid,
+            full_name: prof?.full_name || "Người bán",
+            avatar_url: prof?.avatar_url || null,
+            created_at: prof?.created_at || null,
+            is_verified: prof?.is_verified ?? null,
+            productsCount: 0,
+            weightedSum: 0,
+            reviewsCount: 0,
+          };
+          item.productsCount += 1;
+          const rc = Number((row as any).rating_count) || 0;
+          const ra = Number((row as any).rating_average) || 0;
+          if (rc > 0 && ra > 0) {
+            item.weightedSum += ra * rc;
+            item.reviewsCount += rc;
+          }
+          sellerMap.set(sid, item);
+        }
+
+        const rankedSellers: SellerCardData[] = Array.from(sellerMap.values())
+          .sort(
+            (a, b) =>
+              b.reviewsCount * 20 +
+              b.productsCount * 3 -
+              (a.reviewsCount * 20 + a.productsCount * 3)
+          )
+          .slice(0, 6)
+          .map((s) => ({
+            user_id: s.user_id,
+            full_name: s.full_name,
+            avatar_url: s.avatar_url,
+            created_at: s.created_at,
+            is_verified: s.is_verified,
+            productsCount: s.productsCount,
+            avgRating: s.reviewsCount > 0 ? s.weightedSum / s.reviewsCount : 0,
+          }));
+
+        setTopSellers(rankedSellers);
+      } catch (error) {
+        console.error("Error fetching discovery products:", error);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    };
+
+    fetchDiscovery();
+    return () => {
+      cancelled = true;
+    };
+  }, [initialProducts, initialHotProducts, initialTopSellers]);
 
   return (
-    <section className="py-20 bg-gradient-to-br from-background to-muted/50">
-      <div className="container mx-auto px-4">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl lg:text-4xl font-bold mb-4">
-            Sản phẩm 
-            <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-              {" "}nổi bật
-            </span>
-          </h2>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Khám phá các sản phẩm digital chất lượng cao từ những người bán uy tín
-          </p>
-        </div>
-
-        {products.length === 0 ? (
-          <div className="text-center py-20">
-            <p className="text-lg text-muted-foreground">Chưa có sản phẩm nào</p>
+    <div className="mx-auto max-w-[1280px] space-y-8 px-4 py-6 sm:px-6 lg:px-8">
+      {/* 1. SẢN PHẨM MỚI */}
+      <section aria-labelledby="latest-products-heading">
+        <div className="mb-4 flex items-end justify-between gap-4">
+          <div>
+            <div className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-primary">
+              <Sparkles className="h-3.5 w-3.5 text-accent" />
+              <span>Mới cập nhật</span>
+            </div>
+            <h2
+              id="latest-products-heading"
+              className="mt-0.5 text-xl font-bold tracking-tight text-balance text-foreground sm:text-2xl"
+            >
+              Sản phẩm mới
+            </h2>
           </div>
-        ) : (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {products.map((product, index) => {
-              const isFree = isFreeProduct(product.price);
-              const downloadUrl = getProductDownloadUrl(product.google_drive_link, product.download_only_link);
-
-              return (
-                <article key={product.id} className="group flex flex-col h-full">
-                  <Card 
-                    className="hover:shadow-lg transition-all duration-300 hover:-translate-y-1 flex flex-col h-full overflow-hidden"
-                  >
-                    <div className="relative overflow-hidden aspect-[4/3] bg-muted">
-                      <Link to={`/san-pham/${product.slug}`} className="block w-full h-full">
-                        <div className="w-full h-full group-hover:scale-105 transition-transform duration-300">
-                          <ProductThumbnail
-                            googleDriveLink={product.google_drive_link}
-                            thumbnailUrl={product.thumbnail_url}
-                            fileFormat={product.file_format}
-                            title={product.title}
-                            size={600}
-                            loading={index < 4 ? "eager" : "lazy"}
-                            fetchPriority={index < 2 ? "high" : "auto"}
-                          />
-                        </div>
-                      </Link>
-                      {product.original_price > product.price && (
-                        <Badge className="absolute top-3 left-3 bg-destructive text-destructive-foreground shadow-md z-10">
-                          -{Math.round(((product.original_price - product.price) / product.original_price) * 100)}%
-                        </Badge>
-                      )}
-                      <WishlistButton productId={product.id} />
-                    </div>
-
-                    <CardContent className="p-4 flex-grow flex flex-col">
-                      <div className="mb-2 flex items-center gap-2 flex-wrap">
-                        {product.categories && (
-                          <Link 
-                            to={`/danh-muc/${product.categories.slug}`}
-                          >
-                            <Badge variant="secondary" className="text-xs hover:bg-primary hover:text-primary-foreground transition-colors cursor-pointer">
-                              {product.categories.name}
-                            </Badge>
-                          </Link>
-                        )}
-                        {product.file_format && (
-                          <Badge variant="outline" className="text-xs font-medium bg-primary/10 text-primary border-primary/20">
-                            {product.file_format.toUpperCase()}
-                          </Badge>
-                        )}
-                      </div>
-                      
-                      <Link to={`/san-pham/${product.slug}`} className="block mb-2">
-                        <h3 className="font-semibold text-lg line-clamp-2 min-h-[3.5rem] group-hover:text-primary transition-colors">
-                          {product.title}
-                        </h3>
-                      </Link>
-                      
-                      <p className="text-sm text-muted-foreground mb-3 line-clamp-2 min-h-[2.5rem]">
-                        {product.short_description || product.description}
-                      </p>
-
-                  {product.rating_count > 0 && (
-                    <div className="flex items-center mb-3">
-                      <div className="flex items-center mr-2">
-                        {renderStars(product.rating_average || 0)}
-                      </div>
-                      <span className="text-sm text-muted-foreground">
-                        ({product.rating_count})
-                      </span>
-                    </div>
-                  )}
-
-                  <div className="flex items-center text-xs text-muted-foreground mb-3 gap-3 flex-wrap">
-                    {product.download_count > 0 && (
-                      <div className="flex items-center">
-                        <Download className="h-3.5 w-3.5 mr-1" />
-                        <span>{product.download_count}</span>
-                      </div>
-                    )}
-                    {product.view_count > 0 && (
-                      <div className="flex items-center">
-                        <Eye className="h-3.5 w-3.5 mr-1" />
-                        <span>{product.view_count}</span>
-                      </div>
-                    )}
-                    {product.file_size && (
-                      <div className="flex items-center">
-                        <span>📄 {product.file_size}</span>
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="mt-auto">
-                    <div className="flex items-baseline gap-2 mb-2">
-                      <div className="text-xl font-bold text-primary">
-                        {isFree ? 'Miễn phí' : formatPrice(product.price)}
-                      </div>
-                      {product.original_price > product.price && (
-                        <div className="text-sm text-muted-foreground line-through">
-                          {formatPrice(product.original_price)}
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="text-xs text-muted-foreground">
-                      Bởi: {product.profiles?.full_name || 'Ẩn danh'}
-                    </div>
-                  </div>
-                </CardContent>
-
-                <CardFooter className="p-4 pt-0 flex-col gap-2">
-                  {product.read_only ? (
-                    product.google_drive_link && (
-                      <Button
-                        variant="secondary"
-                        size="sm"
-                        className="w-full"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          navigate(`/read/${product.slug}`);
-                        }}
-                      >
-                        <BookOpen className="h-4 w-4 mr-2" />
-                        Đọc trực tuyến (Full màn hình)
-                      </Button>
-                    )
-                  ) : isFree ? (
-                    <FreeDownloadButton
-                      size="sm"
-                      downloadUrl={downloadUrl}
-                      onMissingUrl={handleMissingFreeDownload}
-                      onClick={(e) => e.stopPropagation()}
-                    />
-                  ) : (
-                    <Button 
-                      className="w-full" 
-                      size="sm"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        addToCart(product.id);
-                      }}
-                    >
-                      <ShoppingCart className="h-4 w-4 mr-2" />
-                      Thêm vào giỏ
-                    </Button>
-                  )}
-                </CardFooter>
-              </Card>
-            </article>
-          );
-        })}
-      </div>
-    )}
-
-        <div className="text-center mt-12">
-          <a href="/search" className="inline-block">
-            <Button variant="outline" size="lg">
-              Xem tất cả sản phẩm
-            </Button>
-          </a>
+          <Link
+            to="/search?sort=newest"
+            className="inline-flex min-h-10 items-center gap-1 text-sm font-medium text-primary hover:underline whitespace-nowrap"
+          >
+            <span>Xem tất cả</span>
+            <ArrowRight className="h-4 w-4" />
+          </Link>
         </div>
-      </div>
-    </section>
+
+        {loading ? (
+          <ProductGridSkeleton count={6} />
+        ) : latestProducts.length === 0 ? (
+          <EmptyState title="Chưa có sản phẩm mới nào" />
+        ) : (
+          <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3 lg:gap-5">
+            {latestProducts.map((product, index) => (
+              <ProductCard
+                key={product.id}
+                product={product}
+                loading={index < 3 ? "eager" : "lazy"}
+                fetchPriority={index < 2 ? "high" : "auto"}
+              />
+            ))}
+          </div>
+        )}
+      </section>
+
+      {/* 2. HOT TUẦN NÀY */}
+      {(loading || hotProducts.length > 0) && (
+        <section aria-labelledby="hot-products-heading">
+          <div className="mb-4 flex items-end justify-between gap-4">
+            <div>
+              <div className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-accent">
+                <Flame className="h-3.5 w-3.5" />
+                <span>Tải nhiều nhất</span>
+              </div>
+              <h2
+                id="hot-products-heading"
+                className="mt-0.5 text-xl font-bold tracking-tight text-balance text-foreground sm:text-2xl"
+              >
+                Hot tuần này
+              </h2>
+            </div>
+            <Link
+              to="/search?sort=popular"
+              className="inline-flex min-h-10 items-center gap-1 text-sm font-medium text-primary hover:underline whitespace-nowrap"
+            >
+              <span>Xem bảng xếp hạng</span>
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+          </div>
+
+          {loading ? (
+            <ProductGridSkeleton count={6} />
+          ) : (
+            <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3 lg:gap-5">
+              {hotProducts.map((product, index) => (
+                <ProductCard
+                  key={product.id}
+                  product={product}
+                  hotRank={index + 1}
+                />
+              ))}
+            </div>
+          )}
+        </section>
+      )}
+
+      {/* 3. NGƯỜI BÁN NỔI BẬT */}
+      {topSellers.length > 0 && (
+        <section aria-labelledby="featured-sellers-heading">
+          <div className="mb-4 flex items-end justify-between gap-4">
+            <div>
+              <div className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-primary">
+                <Store className="h-3.5 w-3.5" />
+                <span>Tác giả &amp; Shop uy tín</span>
+              </div>
+              <h2
+                id="featured-sellers-heading"
+                className="mt-0.5 text-xl font-bold tracking-tight text-balance text-foreground sm:text-2xl"
+              >
+                Người bán nổi bật
+              </h2>
+            </div>
+            <Link
+              to="/nguoi-ban"
+              className="inline-flex min-h-10 items-center gap-1 text-sm font-medium text-primary hover:underline whitespace-nowrap"
+            >
+              <span>Tất cả người bán</span>
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+          </div>
+
+          <div className="grid gap-3.5 sm:gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {topSellers.map((seller) => (
+              <SellerCard key={seller.user_id} seller={seller} />
+            ))}
+          </div>
+        </section>
+      )}
+    </div>
   );
 };

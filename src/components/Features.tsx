@@ -1,13 +1,12 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { 
-  Shield, 
-  Zap, 
-  DollarSign, 
-  FileText, 
-  Users, 
+import {
+  Shield,
+  Zap,
+  DollarSign,
+  FileText,
+  Users,
   BarChart3,
   Globe,
-  Headphones
+  Headphones,
 } from "lucide-react";
 
 const features = [
@@ -15,93 +14,79 @@ const features = [
     icon: FileText,
     title: "Sản phẩm đa dạng",
     description: "Từ tài liệu, ebook, khóa học đến template và nhiều hơn nữa",
-    color: "text-blue-600"
   },
   {
     icon: Shield,
     title: "Bảo mật tuyệt đối",
-    description: "Link Google Drive an toàn, chống sao chép trái phép",
-    color: "text-green-600"
+    description: "Link Google Drive an toàn, bảo vệ quyền lợi tác giả",
   },
   {
     icon: Zap,
     title: "Giao dịch nhanh chóng",
     description: "Thanh toán và nhận sản phẩm trong tích tắc",
-    color: "text-yellow-600"
   },
   {
     icon: DollarSign,
     title: "Hoa hồng thấp",
     description: "Chỉ 5% phí dịch vụ, giữ lại 95% doanh thu của bạn",
-    color: "text-purple-600"
   },
   {
     icon: BarChart3,
     title: "Dashboard thông minh",
     description: "Theo dõi doanh số, đơn hàng và khách hàng chi tiết",
-    color: "text-orange-600"
   },
   {
     icon: Users,
     title: "Cộng đồng lớn",
     description: "Kết nối với hàng nghìn người bán khác",
-    color: "text-pink-600"
   },
   {
     icon: Globe,
     title: "Tiếp cận toàn cầu",
-    description: "Bán cho khách hàng trên toàn thế giới",
-    color: "text-indigo-600"
+    description: "Bán cho khách hàng đa ngôn ngữ trên toàn thế giới",
   },
   {
     icon: Headphones,
     title: "Hỗ trợ 24/7",
     description: "Đội ngũ chăm sóc khách hàng chuyên nghiệp",
-    color: "text-red-600"
-  }
+  },
 ];
 
 export const Features = () => {
   return (
-    <section className="py-20 bg-background" aria-labelledby="features-heading">
-      <div className="container mx-auto px-4">
-        <header className="text-center mb-16 animate-fade-in-up">
-          <h2 id="features-heading" className="text-3xl lg:text-5xl font-bold mb-6">
-            Tại sao chọn 
-            <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-              {" "}Salemylink?
-            </span>
-          </h2>
-          <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-            Nền tảng toàn diện giúp bạn kinh doanh sản phẩm digital hiệu quả nhất
-          </p>
-        </header>
+    <section
+      className="mx-auto max-w-[1280px] px-4 py-8 sm:px-6 lg:px-8"
+      aria-labelledby="features-heading"
+    >
+      <div className="mb-6">
+        <h2
+          id="features-heading"
+          className="text-xl font-bold tracking-tight text-balance text-foreground sm:text-2xl"
+        >
+          Tại sao chọn <span className="text-primary">Salemylink?</span>
+        </h2>
+        <p className="mt-1 text-sm text-pretty text-muted-foreground">
+          Nền tảng toàn diện giúp bạn tìm kiếm, đọc và kinh doanh tài liệu số hiệu quả
+        </p>
+      </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {features.map((feature, index) => (
-            <Card 
-              key={index} 
-              className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-2 border-2 hover:border-primary/20"
-              style={{
-                animationDelay: `${index * 100}ms`
-              }}
-            >
-              <CardHeader className="text-center">
-                <div className={`mx-auto w-16 h-16 rounded-full bg-gradient-to-br from-primary/10 to-accent/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}>
-                  <feature.icon className={`h-8 w-8 ${feature.color}`} />
-                </div>
-                <CardTitle className="text-lg font-semibold group-hover:text-primary transition-colors">
-                  {feature.title}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <CardDescription className="text-center leading-relaxed">
-                  {feature.description}
-                </CardDescription>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4 sm:gap-4">
+        {features.map((feature) => (
+          <div
+            key={feature.title}
+            className="rounded-2xl border border-border bg-surface p-4 sm:p-5 transition-colors hover:border-border-strong"
+          >
+            <div className="mb-3 flex size-10 items-center justify-center rounded-xl bg-secondary text-primary">
+              <feature.icon className="h-5 w-5" />
+            </div>
+            <h3 className="text-sm font-semibold text-foreground sm:text-base">
+              {feature.title}
+            </h3>
+            <p className="mt-1 text-xs leading-relaxed text-pretty text-muted-foreground sm:text-sm">
+              {feature.description}
+            </p>
+          </div>
+        ))}
       </div>
     </section>
   );

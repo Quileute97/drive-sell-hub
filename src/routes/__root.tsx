@@ -19,6 +19,9 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { AffiliateTracker } from "@/components/AffiliateTracker";
 import { TelegramCommunityWidget } from "@/components/TelegramCommunityWidget";
+import { BackToTop } from "@/components/BackToTop";
+import { QuickViewModal } from "@/components/QuickViewModal";
+import { QuickViewProvider } from "@/contexts/QuickViewContext";
 import { reportLovableError } from "@/lib/lovable-error-reporting";
 import NotFound from "@/pages/NotFound";
 import appCss from "../styles.css?url";
@@ -137,7 +140,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         name: "yandexbot",
         content: "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
       },
-      { name: "theme-color", content: "#0f3a7e" },
+      { name: "theme-color", content: "#06317a" },
       { name: "format-detection", content: "telephone=no" },
       { name: "geo.region", content: "VN" },
       { name: "geo.placename", content: "Vietnam" },
@@ -210,11 +213,15 @@ function RootComponent() {
       <LanguageProvider>
         <AuthProvider>
           <TooltipProvider>
-            <Toaster />
-            <Sonner />
-            <AffiliateTracker />
-            <TelegramCommunityWidget />
-            <Outlet />
+            <QuickViewProvider>
+              <Toaster />
+              <Sonner />
+              <AffiliateTracker />
+              <TelegramCommunityWidget />
+              <BackToTop />
+              <QuickViewModal />
+              <Outlet />
+            </QuickViewProvider>
           </TooltipProvider>
         </AuthProvider>
       </LanguageProvider>

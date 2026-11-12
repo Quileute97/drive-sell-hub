@@ -21,7 +21,7 @@ export const ProductFAQ = ({ productName, category, fileFormat }: ProductFAQProp
   const faqs: FAQ[] = [
     {
       question: `${productName} có định dạng file gì?`,
-      answer: fileFormat 
+      answer: fileFormat
         ? `Sản phẩm được cung cấp ở định dạng ${fileFormat}. Bạn có thể tải xuống và sử dụng ngay sau khi thanh toán thành công.`
         : `Sản phẩm được cung cấp ở định dạng digital, bạn có thể tải xuống ngay sau khi thanh toán thành công.`
     },
@@ -47,14 +47,13 @@ export const ProductFAQ = ({ productName, category, fileFormat }: ProductFAQProp
   // This component only renders the UI
 
   return (
-    <section className="space-y-6">
-      
+    <section className="space-y-4">
       <div>
-        <h2 className="text-2xl font-bold text-foreground mb-2">
+        <h2 className="text-lg font-bold text-foreground sm:text-xl">
           Câu hỏi thường gặp
         </h2>
-        <p className="text-muted-foreground">
-          Các câu hỏi phổ biến về {productName}
+        <p className="mt-1 text-sm text-muted-foreground">
+          Các thắc mắc phổ biến khi mua {productName}
         </p>
       </div>
 

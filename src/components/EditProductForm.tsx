@@ -41,6 +41,10 @@ import {
 } from 'lucide-react';
 import { TagInput } from '@/components/TagInput';
 import {
+  GeminiDriveAutofillCard,
+  type GeminiGeneratedProductFields,
+} from '@/components/GeminiDriveAutofillCard';
+import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
@@ -161,6 +165,29 @@ const EditProductForm = ({ product, onClose, onSuccess, onDelete }: EditProductF
 
     if (field === 'title' && !formData.meta_title) {
       setFormData(prev => ({ ...prev, meta_title: value }));
+    }
+  };
+
+  const applyGeminiResult = (res: GeminiGeneratedProductFields) => {
+    const nextTitle = res.title || formData.title;
+    const nextSlug = generateSlugFromTitle(nextTitle);
+    setFormData((prev) => ({
+      ...prev,
+      title: nextTitle,
+      slug: nextSlug || prev.slug,
+      short_description: res.short_description || prev.short_description,
+      description: res.description_html || prev.description,
+      meta_title: res.meta_title || prev.meta_title,
+      meta_description: res.meta_description || prev.meta_description,
+      file_format: res.file_format || prev.file_format,
+      category_id:
+        prev.category_id || res.suggested_category_id || prev.category_id,
+    }));
+    if (res.focus_keyword) {
+      setFocusKeyword(res.focus_keyword);
+    }
+    if (res.tags && res.tags.length > 0) {
+      setTags(res.tags);
     }
   };
 
@@ -351,7 +378,7 @@ const EditProductForm = ({ product, onClose, onSuccess, onDelete }: EditProductF
 
         <form onSubmit={handleSubmit} className="p-6">
           <Tabs defaultValue="basic" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-4">
+            <TabsList className="grid h-auto w-full grid-cols-2 sm:grid-cols-4">
               <TabsTrigger value="basic">Thông tin cơ bản</TabsTrigger>
               <TabsTrigger value="media">Hình ảnh & Link</TabsTrigger>
               <TabsTrigger value="pricing">Giá & Thông số</TabsTrigger>
@@ -360,6 +387,21 @@ const EditProductForm = ({ product, onClose, onSuccess, onDelete }: EditProductF
 
             {/* Basic Information */}
             <TabsContent value="basic" className="space-y-6">
+              <GeminiDriveAutofillCard
+                googleDriveLink={formData.google_drive_link}
+                onGoogleDriveLinkChange={(val) =>
+                  handleInputChange('google_drive_link', val)
+                }
+                existingTitle={formData.title}
+                categoryId={formData.category_id}
+                categories={categories.map((c) => ({ id: c.id, name: c.name }))}
+                defaultAutoOnPaste={false}
+                hasExistingContent={Boolean(
+                  formData.title.trim() && formData.description.trim()
+                )}
+                onApplyResult={applyGeminiResult}
+              />
+
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
@@ -368,7 +410,7 @@ const EditProductForm = ({ product, onClose, onSuccess, onDelete }: EditProductF
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <div>
                       <Label htmlFor="title">Tên sản phẩm *</Label>
                       <Input

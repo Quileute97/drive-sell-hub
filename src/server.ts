@@ -2,6 +2,7 @@ import "./lib/error-capture";
 
 import { consumeLastCapturedError } from "./lib/error-capture";
 import { renderErrorPage } from "./lib/error-page";
+import { handleGeminiSeoRequest } from "./server/geminiDriveSeo";
 
 type ServerEntry = {
   fetch: (request: Request, env: unknown, ctx: unknown) => Promise<Response> | Response;
@@ -95,6 +96,12 @@ export default {
   async fetch(request: Request, env: unknown, ctx: unknown) {
     try {
       const url = new URL(request.url);
+
+      // Server API route for Gemini SEO generation from Google Drive link
+      if (url.pathname === "/api/gemini-seo") {
+        const apiRes = await handleGeminiSeoRequest(request, env);
+        return applySecurityHeaders(apiRes);
+      }
 
       // Explicit handler for sitemap-index.xml to prevent 500/404 SSR errors
       if (url.pathname === "/sitemap-index.xml") {

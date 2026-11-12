@@ -6,7 +6,7 @@ import Placeholder from '@tiptap/extension-placeholder';
 import TextAlign from '@tiptap/extension-text-align';
 import Underline from '@tiptap/extension-underline';
 import { Node, mergeAttributes } from '@tiptap/react';
-import { useCallback, useState, useMemo } from 'react';
+import { useCallback, useEffect, useState, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -331,6 +331,15 @@ export const RichTextEditor = ({
       },
     },
   });
+
+  // Sync externally updated HTML (e.g., Gemini AI SEO generator or form reset)
+  useEffect(() => {
+    if (!editor) return;
+    const nextHtml = value || '';
+    if (nextHtml !== editor.getHTML()) {
+      editor.commands.setContent(nextHtml, { emitUpdate: false });
+    }
+  }, [editor, value]);
 
   const addImage = useCallback(() => {
     if (!editor || !mediaUrl.trim()) return;
